@@ -1,0 +1,137 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Generator collision fixture",
+    "version": "1"
+  },
+  "paths": {
+    "/reports": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "MontraClient": {
+        "in": "header",
+        "name": "X-Montra-Client",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "headers": {
+      "RequestID": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "Report": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "json",
+              "value",
+              "values",
+              "name",
+              "index",
+              "unrecognized",
+              "toJson",
+              "in",
+              "is",
+              "default",
+              "import",
+              "type",
+              "25k_50k",
+              "JSON",
+              "--"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "name_max_length": {
+            "type": "integer"
+          },
+          "hash_code": {
+            "type": "string"
+          },
+          "to_json": {
+            "type": "string"
+          },
+          "in": {
+            "type": "boolean"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user-id": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "json",
+                "other"
+              ]
+            }
+          }
+        },
+        "required": [
+          "format",
+          "name"
+        ]
+      },
+      "ReportFormat": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "Duration": {
+        "type": "object",
+        "properties": {
+          "seconds": {
+            "type": "integer"
+          }
+        }
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "span": {
+            "$ref": "#/components/schemas/Duration"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+version: "2"
+run:
+  timeout: 5m
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - depguard
+    - errorlint
+    - gosec
+    - misspell
+    - noctx
+    - unconvert
+    - rowserrcheck
+    - sqlclosecheck
+  settings:
+    depguard:
+      rules:
+        domain-is-pure:
+          files:
+            - "**/internal/domain/**"
+          deny:
+            - pkg: net/http
+              desc: domain packages must not depend on HTTP (spec §8)
+            - pkg: github.com/jackc/pgx/v5
+              desc: domain packages must not depend on the database
+            - pkg: github.com/danielgtaylor/huma/v2
+              desc: domain packages must not depend on the transport layer
+            - pkg: montra/backend/internal/platform
+              desc: domain packages must stay independent of infrastructure
+    gosec:
+      excludes:
+        - G115 # integer conversions are bounds-checked explicitly where they matter (money uses big.Int)
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters: [gosec, noctx, bodyclose]
+      - path: internal/store/db/
+        linters: [errorlint]
+formatters:
+  enable:
+    - gofmt

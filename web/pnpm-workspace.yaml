@@ -1,0 +1,12 @@
+# pnpm settings for the standalone web package (no workspace packages).
+
+# Supply-chain guard: never resolve a dependency version (direct or
+# transitive) that was published less than 14 days ago (minutes).
+minimumReleaseAge: 20160
+
+peerDependencyRules:
+  allowedVersions:
+    # eslint-plugin-jsx-a11y 6.10.2 declares eslint <=9, but only uses
+    # context.options/report/settings, which ESLint 10 still supports.
+    # ESLint 9 is end-of-life, so we run ESLint 10. Re-check on upgrade.
+    eslint-plugin-jsx-a11y>eslint: '10'

@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Local environment (never commit real values; .env.example is the template)
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.DS_Store

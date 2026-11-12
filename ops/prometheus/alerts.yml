@@ -1,0 +1,96 @@
+# Prometheus alerting rules for Montra (spec §13, ADR-025). Load into the
+# owner's Prometheus or Grafana Agent. Thresholds are planning targets;
+# tune them after launch. Metric names come from
+# backend/internal/platform/observability/metrics.go.
+groups:
+  - name: montra-api
+    rules:
+      - alert: MontraAPIErrorRateHigh
+        expr: |
+          sum(rate(montra_http_requests_total{status="5xx"}[5m]))
+            / clamp_min(sum(rate(montra_http_requests_total[5m])), 1) > 0.02
+        for: 10m
+        labels: { severity: page }
+        annotations:
+          summary: "API 5xx rate above 2% for 10 minutes"
+          runbook: "docs/RUNBOOKS.md#api-or-database-outage"
+      - alert: MontraReadLatencyHigh
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(montra_http_request_duration_seconds_bucket{method="GET"}[10m]))) > 0.5
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: "Read p95 above 500 ms (ADR-025)"
+      - alert: MontraWriteLatencyHigh
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(montra_http_request_duration_seconds_bucket{method=~"POST|PATCH|PUT|DELETE"}[10m]))) > 0.8
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: "Write p95 above 800 ms (ADR-025)"
+      - alert: MontraRLSDenials
+        expr: increase(montra_rls_denials_total[15m]) > 0
+        labels: { severity: ticket }
+        annotations:
+          summary: "PostgreSQL row-level security rejected a query (a service check was missed or a client probed another user's data)"
+          runbook: "docs/RUNBOOKS.md#privacy-incident-suspected-data-exposure"
+      - alert: MontraAuthFailuresSpike
+        expr: sum(rate(montra_auth_events_total{event=~"login_failed|login_throttled_.*"}[5m])) > 5
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: "Sustained failed or throttled sign-ins (possible credential stuffing)"
+          runbook: "docs/RUNBOOKS.md#account-takeover"
+
+  - name: montra-worker
+    rules:
+      - alert: MontraJobBacklog
+        expr: montra_job_queue_depth{status="queued"} > 1000
+        for: 15m
+        labels: { severity: page }
+        annotations:
+          summary: "More than 1000 queued jobs for 15 minutes"
+          runbook: "docs/RUNBOOKS.md#queue-backlog-or-worker-crash"
+      - alert: MontraDeadJobs
+        expr: increase(montra_jobs_processed_total{outcome="dead"}[1h]) > 0
+        labels: { severity: ticket }
+        annotations:
+          summary: "Jobs exhausted their retries"
+          runbook: "docs/RUNBOOKS.md#queue-backlog-or-worker-crash"
+      - alert: MontraNoJobsProcessed
+        expr: sum(increase(montra_jobs_processed_total[30m])) == 0
+        for: 30m
+        labels: { severity: page }
+        annotations:
+          summary: "No jobs processed for 30 minutes (worker or scheduler down)"
+      - alert: MontraDeletionBacklog
+        expr: montra_account_deletion_backlog > 0
+        for: 24h
+        labels: { severity: ticket }
+        annotations:
+          summary: "Account deletions overdue for a day"
+          runbook: "docs/RUNBOOKS.md#failed-account-deletion"
+
+  - name: montra-providers
+    rules:
+      - alert: MontraProviderErrors
+        expr: |
+          sum by (provider) (rate(montra_provider_calls_total{outcome!="ok"}[10m]))
+            / clamp_min(sum by (provider) (rate(montra_provider_calls_total[10m])), 0.001) > 0.2
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: "More than 20% of {{ $labels.provider }} calls failing"
+      - alert: MontraNotificationFailures
+        expr: |
+          sum by (channel) (rate(montra_notifications_total{outcome="failed"}[30m]))
+            / clamp_min(sum by (channel) (rate(montra_notifications_total[30m])), 0.001) > 0.1
+        for: 30m
+        labels: { severity: ticket }
+        annotations:
+          summary: "More than 10% of {{ $labels.channel }} deliveries failing"
+      - alert: MontraAICostHigh
+        expr: sum(increase(montra_ai_cost_micro_usd_total[24h])) > 50000000
+        labels: { severity: ticket }
+        annotations:
+          summary: "Estimated AI spend above 50 USD in 24 h (spec §17 cost controls)"

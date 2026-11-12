@@ -1,0 +1,53 @@
+# Secrets and local configuration — never commit
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+key.properties
+
+# Local data (dev storage, dev mailbox, uploads, exports)
+.data/
+backend/.data/
+
+# Go
+backend/bin/
+backend/tmp/
+*.test
+*.out
+coverage.*
+!coverage.md
+
+# Node / web
+node_modules/
+web/dist/
+web/coverage/
+web/playwright-report/
+web/test-results/
+web/.vite/
+*.tsbuildinfo
+
+# Flutter / Dart
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/coverage/
+
+# Editors / OS
+.DS_Store
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
