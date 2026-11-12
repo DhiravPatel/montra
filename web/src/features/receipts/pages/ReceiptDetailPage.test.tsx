@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import type { ReceiptDetail } from '@/features/receipts/types';
 import { API, envelope, errorBody, makeUser } from '@/tests/fixtures';
@@ -224,6 +224,67 @@ describe('ReceiptDetailPage', () => {
     expect(matches).toEqual([{ transaction_id: TX_GROCERIES }]);
     const link = await screen.findByRole('link', { name: 'Big Bazaar' });
     expect(link).toHaveAttribute('href', `/transactions/${TX_GROCERIES}`);
+  });
+
+  it('confirms a link once and closes the dialog even when the link unmounts it, and unlinking does not reopen it', async () => {
+    let linked = false;
+    let candidateCalls = 0;
+    server.use(
+      http.get(`${API}/receipts/:id`, () =>
+        HttpResponse.json(
+          envelope(
+            linked
+              ? makeReviewedReceipt({ status: 'matched', transaction_id: TX_GROCERIES, version: 3 })
+              : makeReviewedReceipt({ version: 4 }),
+          ),
+        ),
+      ),
+      ...previewHandlers(),
+      // The refresh after linking reloads the receipt before the suggestions: the
+      // linked receipt removes the dialog while the write is still settling.
+      http.get(`${API}/receipts/:id/match-candidates`, async () => {
+        candidateCalls += 1;
+        if (candidateCalls > 1) await delay(150);
+        return HttpResponse.json(envelope([makeCandidate()]));
+      }),
+      http.get(`${API}/transactions`, () => HttpResponse.json(envelope([]))),
+      http.post(`${API}/receipts/:id/match-transaction`, () => {
+        linked = true;
+        return HttpResponse.json(
+          envelope(makeReviewedReceipt({ status: 'matched', transaction_id: TX_GROCERIES })),
+        );
+      }),
+      http.get(`${API}/transactions/:id`, () => HttpResponse.json(envelope(makeTransaction()))),
+      http.post(`${API}/receipts/:id/unlink`, () => {
+        linked = false;
+        return HttpResponse.json(envelope(makeReviewedReceipt({ version: 4 })));
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute(path, { user: signedIn() });
+    await findPageHeading('Cafe Uno');
+    await user.click(screen.getByRole('button', { name: 'Link existing transaction' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Link a transaction' });
+    await user.click(await within(dialog).findByRole('radio', { name: /Cafe Uno/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Link receipt' }));
+
+    expect(await screen.findByText('Receipt linked')).toBeInTheDocument();
+    const card = screen.getByRole('region', { name: 'Transaction' });
+    expect(await within(card).findByRole('link', { name: 'Big Bazaar' })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Link a transaction' })).not.toBeInTheDocument();
+    // Let the slow refresh finish: still exactly one confirmation.
+    await waitFor(() => {
+      expect(candidateCalls).toBeGreaterThan(1);
+    });
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(screen.getAllByText('Receipt linked')).toHaveLength(1);
+
+    await user.click(within(card).getByRole('button', { name: 'Unlink' }));
+    expect(await screen.findByText('Receipt unlinked')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Link existing transaction' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('explains when the chosen transaction already has a receipt', async () => {

@@ -39,6 +39,7 @@ export const en = {
   'nav.homeLinkSuffix': '(home)',
   'nav.account': 'Profile',
   'nav.security': 'Security',
+  'nav.profileSettings': 'Preferences',
   'nav.privacy': 'Privacy',
   'nav.securityInfo': 'Security',
   'nav.terms': 'Terms',
@@ -46,6 +47,7 @@ export const en = {
   'nav.signUp': 'Create account',
   'nav.goToAccount': 'Go to your account',
   'userMenu.label': 'Account menu',
+  'userMenu.profileSettings': 'Profile and preferences',
   'footer.support': 'Contact support',
   'footer.tagline': 'Montra {version} · Free for everyone, private by default.',
 
@@ -54,6 +56,7 @@ export const en = {
   'preferences.theme.system': 'Match system',
   'preferences.theme.light': 'Light',
   'preferences.theme.dark': 'Dark',
+  'preferences.themeNotSaved': 'The theme changed on this device only',
   'preferences.language': 'Language',
 
   // Generic states
@@ -378,13 +381,15 @@ export const en = {
   'account.title': 'Your account',
   'account.greeting': 'Hello, {name}. Here are your account details.',
   'account.profile.title': 'Profile',
+  'account.profile.edit': 'Edit profile',
   'account.profile.name': 'Display name',
   'account.profile.email': 'Email',
   'account.profile.verified': 'Verified',
   'account.profile.unverified': 'Not verified',
   'account.profile.memberSince': 'Member since',
   'account.preferences.title': 'Preferences',
-  'account.preferences.description': 'Set when you created your account.',
+  'account.preferences.edit': 'Change preferences',
+  'account.preferences.description': 'Your main currency, language and region, and time zone.',
   'account.preferences.currency': 'Main currency',
   'account.preferences.locale': 'Language and region',
   'account.preferences.timezone': 'Time zone',
@@ -395,6 +400,134 @@ export const en = {
   'account.security.manage': 'Manage security',
 
   // Settings: security
+  'profileSettings.title': 'Profile and preferences',
+  'profileSettings.description':
+    'How you appear to friends and groups, how Montra shows dates and money, and how the app looks. Changes apply on all your devices.',
+  'profileSettings.nothingChanged': 'Nothing to save: you haven’t changed anything',
+  'profileSettings.avatar.title': 'Profile photo',
+  'profileSettings.avatar.description': 'Shown next to your name to friends and group members.',
+  'profileSettings.avatar.help': 'A JPG, PNG or WebP image up to 5 MB.',
+  'profileSettings.avatar.upload': 'Upload a photo',
+  'profileSettings.avatar.change': 'Change photo',
+  'profileSettings.avatar.choose': 'Choose a profile photo',
+  'profileSettings.avatar.remove': 'Remove photo',
+  'profileSettings.avatar.uploading': 'Uploading your photo…',
+  'profileSettings.avatar.saving': 'Saving your photo…',
+  'profileSettings.avatar.saved': 'Profile photo updated',
+  'profileSettings.avatar.removed': 'Profile photo removed',
+  'profileSettings.avatar.loading': 'Loading your photo…',
+  'profileSettings.avatar.alt': 'Your profile photo',
+  'profileSettings.avatar.unavailable': 'Photo unavailable',
+  'profileSettings.avatar.previewFailed':
+    'Your photo couldn’t be shown right now. It is still saved.',
+  'profileSettings.avatar.type': 'Choose a JPG, PNG or WebP image.',
+  'profileSettings.avatar.invalid':
+    'That image can’t be used as your photo. Upload it again and wait for the upload to finish.',
+  'profileSettings.avatar.removeTitle': 'Remove your profile photo?',
+  'profileSettings.avatar.removeBody':
+    'Your initials are shown instead. The image stays in your files until you delete it.',
+  'profileSettings.avatar.removeConfirm': 'Remove photo',
+  'profileSettings.profile.title': 'Your profile',
+  'profileSettings.profile.description':
+    'Your name and username are what friends and groups see. The rest is optional.',
+  'profileSettings.profile.loading': 'Loading your profile…',
+  'profileSettings.profile.error': 'We couldn’t load your profile',
+  'profileSettings.profile.displayName': 'Display name',
+  'profileSettings.profile.displayNameHelp': 'Up to 80 characters.',
+  'profileSettings.profile.displayNameRequired': 'Enter a display name.',
+  'profileSettings.profile.displayNameTooLong': 'Use 80 characters or fewer.',
+  'profileSettings.profile.usernameHelp':
+    '3 to 30 characters: lowercase letters, numbers, dots and underscores. Leave it empty to remove it.',
+  'profileSettings.profile.bio': 'Bio',
+  'profileSettings.profile.bioHelp': 'A line or two about you, up to 280 characters.',
+  'profileSettings.profile.bioTooLong': 'Use 280 characters or fewer.',
+  'profileSettings.profile.interests': 'Interests',
+  'profileSettings.profile.interestsHelp': {
+    one: 'Separate them with commas. Up to {count} interest.',
+    other: 'Separate them with commas. Up to {count} interests.',
+  },
+  'profileSettings.profile.interestsInvalid': {
+    one: 'Use up to {count} interest, each up to {length} characters.',
+    other: 'Use up to {count} interests, each up to {length} characters.',
+  },
+  'profileSettings.profile.location': 'Location',
+  'profileSettings.profile.locationHelp': 'A city or region only, never your address.',
+  'profileSettings.profile.locationTooLong': 'Use 80 characters or fewer.',
+  'profileSettings.profile.save': 'Save profile',
+  'profileSettings.profile.saved': 'Profile saved',
+  'profileSettings.visibility.legend': 'Who can see your bio, interests and location',
+  'profileSettings.visibility.help':
+    'Your balances and transactions are never part of your profile.',
+  'profileSettings.visibility.private': 'Only me',
+  'profileSettings.visibility.privateHelp': 'Nobody else sees them.',
+  'profileSettings.visibility.connections': 'My friends',
+  'profileSettings.visibility.connectionsHelp': 'People you are friends with on Montra.',
+  'profileSettings.visibility.public': 'Anyone on Montra',
+  'profileSettings.visibility.publicHelp':
+    'Anyone who sees your profile, for example in a community.',
+  'profileSettings.discoverableHelp':
+    'People who type your exact username can find you and send a friend request.',
+  'profileSettings.showAchievements': 'Show my challenge achievements on my profile',
+  'profileSettings.showAchievementsHelp': 'Badges only; never amounts.',
+  'profileSettings.region.title': 'Region, money and display',
+  'profileSettings.region.description':
+    'Your currencies, time zone, formats and defaults. Only what you change is saved.',
+  'profileSettings.region.loading': 'Loading your preferences…',
+  'profileSettings.region.error': 'We couldn’t load your preferences',
+  'profileSettings.region.currenciesFailed':
+    'The currency list couldn’t be loaded, so only your current currencies are offered.',
+  'profileSettings.region.accountsFailed':
+    'Your accounts couldn’t be loaded right now; you can still clear the default.',
+  'profileSettings.region.money': 'Money',
+  'profileSettings.region.baseCurrencyHelp':
+    'Used for new budgets, goals, subscriptions and recurring items when you don’t pick a currency, and for amount filters. Each account keeps its own currency.',
+  'profileSettings.region.baseChangeTitle': 'What changing your main currency does',
+  'profileSettings.region.baseChangeBody':
+    'New records will start in {to} instead of {from}. Amounts you’ve already recorded, your accounts and their balances keep their currency and are not converted, and totals in different currencies are still shown separately.',
+  'profileSettings.region.displayCurrency': 'Display currency',
+  'profileSettings.region.displayCurrencyNone': 'None',
+  'profileSettings.region.displayCurrencyHelp':
+    'Optional. Analytics and reports can add converted totals in this currency, with the rates used. Your records are never converted.',
+  'profileSettings.region.place': 'Place and time',
+  'profileSettings.region.countryNone': 'Not set',
+  'profileSettings.region.formats': 'Formats',
+  'profileSettings.region.formatsHelp':
+    'Used in emails, exports and reports. The app itself follows your interface language.',
+  'profileSettings.region.dateFormat': 'Date format',
+  'profileSettings.region.dateFormat.locale': 'Same as the language and region',
+  'profileSettings.region.dateFormat.dmy': 'Day, month, year (31/12/2026)',
+  'profileSettings.region.dateFormat.mdy': 'Month, day, year (12/31/2026)',
+  'profileSettings.region.dateFormat.ymd': 'Year, month, day (2026-12-31)',
+  'profileSettings.region.numberFormat': 'Number format',
+  'profileSettings.region.numberFormat.locale': 'Same as the language and region',
+  'profileSettings.region.numberFormat.indian': 'Indian (1,00,000.00)',
+  'profileSettings.region.numberFormat.international': 'International (100,000.00)',
+  'profileSettings.region.periods': 'Weeks and months',
+  'profileSettings.region.monthStartHelp': 'Monthly budgets and reports start on this day.',
+  'profileSettings.region.defaultRange': 'Default period',
+  'profileSettings.region.defaultRangeHelp': 'What Home shows when you open it.',
+  'profileSettings.region.defaults': 'Defaults and theme',
+  'profileSettings.region.defaultAccount': 'Default account',
+  'profileSettings.region.defaultAccountNone': 'No default account',
+  'profileSettings.region.defaultAccountUnavailable': 'An account that is no longer active',
+  'profileSettings.region.defaultAccountHelp': 'Chosen first when you add a transaction.',
+  'profileSettings.region.themeHelp': 'Applies on all your devices.',
+  'profileSettings.region.save': 'Save preferences',
+  'profileSettings.region.saved': 'Preferences saved',
+  'profileSettings.accessibility.title': 'Accessibility',
+  'profileSettings.accessibility.description':
+    'These apply across Montra as soon as you save, on all your devices.',
+  'profileSettings.accessibility.reducedMotion': 'Reduce motion',
+  'profileSettings.accessibility.reducedMotionHelp':
+    'Turns off animations and transitions. Montra also follows your device’s setting.',
+  'profileSettings.accessibility.highContrast': 'High contrast',
+  'profileSettings.accessibility.highContrastHelp':
+    'Darker text, stronger borders and clearer status colors, in light and dark themes.',
+  'profileSettings.accessibility.textScale': 'Text size',
+  'profileSettings.accessibility.textScaleHelp': 'Makes all text and spacing larger or smaller.',
+  'profileSettings.accessibility.textScaleDefault': '{size} (default)',
+  'profileSettings.accessibility.save': 'Save accessibility settings',
+  'profileSettings.accessibility.saved': 'Accessibility settings saved',
   'settings.security.title': 'Security',
   'settings.security.description':
     'Manage how you sign in and which devices can access your account.',
@@ -1194,6 +1327,11 @@ export const en = {
     'Its amount follows the group expense or settlement. Change it from the group; only your share counts as your spending.',
   'transactions.detail.sharedBody':
     'This transaction is in an account shared with you, so it is view only.',
+  'transactions.detail.groupOpen': 'Open the group',
+  'transactions.detail.groupOpenExpense': 'Open the group expense',
+  'transactions.detail.groupOpenSettlement': 'Open the settlement',
+  'transactions.detail.groupHidden':
+    'The group isn’t visible to you any more, so it can’t be opened from here.',
   'transactions.detail.pendingBody':
     'Pending: it already affects the account balance but isn’t counted in your reports until it is posted.',
   'transactions.detail.draftBody':
@@ -1371,6 +1509,8 @@ export const en = {
   'dashboard.window': '{period} ({zone})',
   'dashboard.asOfNow': 'Current balances',
   'dashboard.inCurrency': 'In {currency}',
+  /** Names a widget's per-currency section, e.g. "Cash flow in INR" (unique per page). */
+  'dashboard.widgetInCurrency': '{widget} in {currency}',
   'dashboard.viewTransactions': 'View transactions',
   'dashboard.viewAccounts': 'View accounts',
   'dashboard.viewAll': 'View all',
@@ -1410,6 +1550,78 @@ export const en = {
   'dashboard.widget.data_coverage': 'About this data',
   'dashboard.widget.data_coverageHelp': 'How complete and current the figures are.',
   'dashboard.widget.other': 'Widget “{key}”',
+  'dashboard.widget.budgets': 'Budgets',
+  'dashboard.widget.budgetsHelp': 'Your fullest budgets and how fast you are spending.',
+  'dashboard.widget.upcoming': 'Coming up',
+  'dashboard.widget.upcomingHelp':
+    'Overdue items, then bills and renewals due in the next two weeks.',
+  'dashboard.widget.goals': 'Goals',
+  'dashboard.widget.goalsHelp': 'Your active goals, nearest target date first.',
+  'dashboard.widget.group_balances': 'Group balances',
+  'dashboard.widget.group_balancesHelp': 'Groups where you are owed or owe money.',
+  'dashboard.budgets.scope': 'Active budgets, fullest first',
+  'dashboard.budgets.loading': 'Loading your budgets…',
+  'dashboard.budgets.error': 'We couldn’t load your budgets',
+  'dashboard.budgets.count': {
+    one: '{shown} of {count} active budget',
+    other: '{shown} of {count} active budgets',
+  },
+  'dashboard.budgets.countOver': {
+    one: '{shown} of {count} active budget · {over} over budget',
+    other: '{shown} of {count} active budgets · {over} over budget',
+  },
+  'dashboard.budgets.viewAll': { one: 'View your budget', other: 'View all {count} budgets' },
+  'dashboard.budgets.empty': 'No active budgets',
+  'dashboard.budgets.emptyBody':
+    'Set a spending limit for a month or a category and see how you are doing here.',
+  'dashboard.budgets.create': 'Create a budget',
+  'dashboard.upcoming.scope': 'Overdue, and due through {date}',
+  'dashboard.upcoming.scopeGeneric': 'Overdue, and due in the next two weeks',
+  'dashboard.upcoming.loading': 'Loading what’s coming up…',
+  'dashboard.upcoming.error': 'We couldn’t load what’s coming up',
+  'dashboard.upcoming.count': {
+    one: '{shown} of {count} item',
+    other: '{shown} of {count} items',
+  },
+  'dashboard.upcoming.viewAll': {
+    one: 'Open the calendar',
+    other: 'View all {count} in the calendar',
+  },
+  'dashboard.upcoming.empty': 'Nothing due in the next two weeks',
+  'dashboard.upcoming.emptyBody':
+    'Bills, recurring payments, renewals and goal dates appear here when they are close.',
+  'dashboard.upcoming.overdue': 'Overdue',
+  'dashboard.upcoming.overdueNote': {
+    one: '1 item is past its due date. Mark it paid or skip it when you are ready.',
+    other: '{count} items are past their due date. Mark them paid or skip them when you are ready.',
+  },
+  'dashboard.upcoming.wasDue': 'Was due {date}',
+  'dashboard.upcoming.due': 'Due {date}',
+  'dashboard.upcoming.dueToday': 'Due today',
+  'dashboard.goals.scope': 'Active goals, nearest target date first',
+  'dashboard.goals.loading': 'Loading your goals…',
+  'dashboard.goals.error': 'We couldn’t load your goals',
+  'dashboard.goals.count': {
+    one: '{shown} of {count} active goal',
+    other: '{shown} of {count} active goals',
+  },
+  'dashboard.goals.viewAll': { one: 'View your goal', other: 'View all {count} goals' },
+  'dashboard.goals.empty': 'No active goals',
+  'dashboard.goals.emptyBody':
+    'Save towards a trip, an emergency fund or anything else, at your own pace.',
+  'dashboard.goals.create': 'Create a goal',
+  'dashboard.goals.targetDate': 'Target {date}',
+  'dashboard.goals.noTargetDate': 'No target date',
+  'dashboard.groupBalances.scope': 'Groups with an open balance',
+  'dashboard.groupBalances.loading': 'Loading your group balances…',
+  'dashboard.groupBalances.error': 'We couldn’t load your group balances',
+  'dashboard.groupBalances.count': {
+    one: '{shown} of {count} group with an open balance',
+    other: '{shown} of {count} groups with an open balance',
+  },
+  'dashboard.groupBalances.viewAll': { one: 'View your groups', other: 'View all {count} groups' },
+  'dashboard.groupBalances.empty': 'All settled up',
+  'dashboard.groupBalances.emptyBody': 'No one owes anything in your groups right now.',
   'dashboard.balances.netWorth': 'Net worth in {currency}',
   'dashboard.balances.empty': 'No balances yet',
   'dashboard.balances.emptyBody': 'Add an account to see your balances here.',
@@ -4299,7 +4511,7 @@ export const en = {
   'groupMoney.suggestions.modeOriginal': 'Based on the original debts from each expense.',
   'groupMoney.suggestions.listIn': 'Suggested payments in {currency}',
   'groupMoney.suggestions.record': 'Record this payment',
-  'groupMoney.suggestions.recordFor': 'Record a payment from {from} to {to}',
+  'groupMoney.suggestions.recordFor': 'Record this payment: {from} to {to}',
   'groupMoney.settlements.title': 'Payments',
   'groupMoney.settlements.body': 'Payments that members recorded, newest first.',
   'groupMoney.settlements.showVoided': 'Show voided',
@@ -4994,6 +5206,8 @@ export const en = {
     'Friends can be invited even if they turned off being found by username.',
   'groups.invite.friendNotFound':
     'This person is no longer your friend, so they can’t be invited this way. Invite them by username or with a link.',
+  'groups.invite.usernameOrUserId':
+    'Choose one person to invite: a username or one of your friends.',
   'groups.invite.invitee': 'For {name}',
   'groups.invite.invitedBy': 'Invited by {name}',
   'groups.invite.invitedByYou': 'Invited by you',
@@ -5169,6 +5383,7 @@ export const en = {
   'imports.rowStatus.invalid': 'Needs fixing',
   'imports.rowStatus.imported': 'Imported',
   'imports.rowStatus.skipped': 'Skipped',
+  'imports.rowStatus.removed': 'Removed by undo',
   'imports.rowStatus.failed': 'Not added',
   'imports.wizard.stepsLabel': 'Import steps',
   'imports.wizard.stepDone': '(done)',
@@ -5566,9 +5781,11 @@ export const en = {
   'insights.empty.filtered': 'No insights of this type',
   'insights.empty.body':
     'Montra checks your history once a day. An insight appears when something stands out or there’s a way to save, and only when there’s enough history to compare.',
-  'insights.link.missing': 'The insight you opened isn’t in this list any more.',
-  'insights.link.notActive':
-    'The insight you opened isn’t active. Show all insights to see dismissed, snoozed and muted ones.',
+  'insights.linked.title': 'The insight you opened',
+  'insights.linked.loading': 'Loading the insight you opened…',
+  'insights.linked.missing':
+    'This insight isn’t available any more. Montra may have removed it after your records changed.',
+  'insights.linked.error': 'We couldn’t load the insight you opened',
   'insights.noticed': 'Noticed {date}',
   'insights.kind.anomaly': 'Unusual activity',
   'insights.kind.savings': 'Savings idea',
@@ -8196,6 +8413,10 @@ export const en = {
   'reconciliation.errors.alreadyMatched': 'One of these records is already part of another match.',
   'reconciliation.errors.changed': 'This was already matched or changed. We’ve refreshed the list.',
   'reconciliation.errors.notFound': 'This match no longer exists.',
+  'reconciliation.errors.duplicate_item':
+    'Each transaction and statement row can be chosen only once in a match.',
+  'reconciliation.errors.transaction_already_matched':
+    'A transaction you chose is already matched or reconciled. We’ve refreshed the list.',
 
   // Reports
   'reports.title': 'Reports',
@@ -8498,6 +8719,7 @@ export const en = {
   'social.username.invalid':
     'Use 3 to 30 characters: lowercase letters, numbers, dots and underscores.',
   'social.username.taken': 'That username is taken. Try another one.',
+  'social.username.reserved': 'That username is kept for Montra. Choose another one.',
   'social.username.unavailable': 'That username isn’t available. Try another one.',
   'social.username.unchanged': '@{username} is already your username',
   'social.username.saved': 'Your username is now @{username}',
@@ -8587,6 +8809,10 @@ export const en = {
   'social.find.help': 'Enter their exact username, like @asha_rao. Partial usernames find no one.',
   'social.find.submit': 'Search',
   'social.find.required': 'Enter a username.',
+  'social.find.tooShort': {
+    one: 'Enter the full username (at least {count} character).',
+    other: 'Enter the full username (at least {count} characters).',
+  },
   'social.find.invalid':
     'Usernames have 3 to 30 characters: lowercase letters, numbers, dots and underscores.',
   'social.find.searching': 'Searching…',

@@ -15,7 +15,15 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { EmptyState, ErrorState, LoadingState, PermissionDenied } from '@/shared/components/states';
 import { TextLink } from '@/shared/components/TextLink';
 import { useToast } from '@/shared/components/toast/ToastContext';
-import { accountPath, paths, transactionEditPath, transactionPath } from '@/shared/config/paths';
+import {
+  accountPath,
+  groupExpensePath,
+  groupPath,
+  paths,
+  settlementPath,
+  transactionEditPath,
+  transactionPath,
+} from '@/shared/config/paths';
 import { categoriesById, categoryRefName } from '@/shared/finance/categories';
 import { TransactionAmount } from '@/shared/finance/components/TransactionAmount';
 import { invalidateFinance } from '@/shared/finance/keys';
@@ -46,6 +54,23 @@ import { readCreatedState } from '../duplicates';
 import { domainRuleMessage } from '@/shared/finance/domainErrors';
 
 const GROUP_TYPES = new Set(['group_expense', 'settlement']);
+
+/**
+ * Where a group-linked transaction's record lives: the expense or
+ * settlement in its group, else the group. `group_id` is only sent while
+ * you can still see the group, so there is no link without it.
+ */
+function groupRecordLink(transaction: Transaction): { to: string; settlement: boolean } | null {
+  const groupId = transaction.group_id;
+  if (!groupId) return null;
+  if (transaction.group_expense_id) {
+    return { to: groupExpensePath(groupId, transaction.group_expense_id), settlement: false };
+  }
+  if (transaction.settlement_id) {
+    return { to: settlementPath(groupId, transaction.settlement_id), settlement: true };
+  }
+  return { to: groupPath(groupId), settlement: false };
+}
 
 function DetailsCard({ transaction }: { transaction: Transaction }) {
   const { t, formatLocale } = useI18n();
@@ -252,6 +277,7 @@ export function TransactionDetailPage() {
   const voided = transaction.status === 'voided';
   const isTransfer = Boolean(transaction.transfer_id);
   const groupLinked = GROUP_TYPES.has(transaction.type);
+  const groupLink = groupRecordLink(transaction);
   const owned = transaction.owned;
   const canEdit = owned && !voided;
   const canVoid = owned && !voided && !groupLinked;
@@ -370,9 +396,21 @@ export function TransactionDetailPage() {
             ) : null}
           </Alert>
         ) : null}
-        {groupLinked ? (
+        {groupLinked || groupLink ? (
           <Alert tone="info" title={t('transactions.detail.groupTitle')}>
-            {t('transactions.detail.groupBody')}
+            <p>{t('transactions.detail.groupBody')}</p>
+            {groupLink ? (
+              <ButtonLink to={groupLink.to} variant="secondary" size="sm">
+                <Icon name="users" className="size-4" />
+                {transaction.group_expense_id
+                  ? t('transactions.detail.groupOpenExpense')
+                  : groupLink.settlement
+                    ? t('transactions.detail.groupOpenSettlement')
+                    : t('transactions.detail.groupOpen')}
+              </ButtonLink>
+            ) : (
+              <p>{t('transactions.detail.groupHidden')}</p>
+            )}
           </Alert>
         ) : null}
         {!owned ? (

@@ -136,7 +136,7 @@ func (s *Service) Report(ctx context.Context, in ModerationReportInput) (*Modera
 		if _, err := tx.Exec(ctx, `insert into community_reports (id, reporter_id, target_type, target_id, community_id, reason, details)
 			values ($1,$2,$3,$4,$5,$6,$7)`, id, uid, in.TargetType, in.TargetID, community, in.Reason, details); err != nil {
 			if database.IsUniqueViolation(err, "community_reports_dedupe") {
-				return apperr.Conflict("You already reported this; moderators will review it.")
+				return apperr.ConflictCode("already_reported", "You already reported this; moderators will review it.", nil)
 			}
 			return err
 		}

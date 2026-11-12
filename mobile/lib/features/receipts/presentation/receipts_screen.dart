@@ -4,30 +4,19 @@ import 'package:go_router/go_router.dart';
 import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/router/app_routes.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
-import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
-import 'package:montra_mobile/core/api/idempotency.dart';
-import 'package:montra_mobile/core/files/file_policy.dart';
-import 'package:montra_mobile/core/files/file_source.dart';
-import 'package:montra_mobile/core/files/file_widgets.dart';
-import 'package:montra_mobile/core/finance/finance_refresh.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
-import 'package:montra_mobile/core/widgets/banners.dart';
-import 'package:montra_mobile/core/widgets/dialogs.dart';
 import 'package:montra_mobile/core/widgets/error_messages.dart';
 import 'package:montra_mobile/core/widgets/money_text.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
 import 'package:montra_mobile/core/widgets/status_label.dart';
 import 'package:montra_mobile/features/receipts/application/receipts_providers.dart';
-import 'package:montra_mobile/features/receipts/data/receipts_api.dart';
 import 'package:montra_mobile/features/receipts/domain/receipt_display.dart';
-import 'package:montra_mobile/features/receipts/presentation/file_actions.dart';
 
 /// Receipt inbox (`GET /receipts`, page by page), filtered by status, with
-/// "Add receipt": a photo or a file is uploaded (`receipt` purpose), the
-/// receipt is created for manual entry with an Idempotency-Key, and its page
-/// opens. Nothing is read automatically. If creating it fails, the uploaded
-/// file and the key are kept so "Try again" cannot add it twice.
+/// "Add receipt", which opens the add-receipt screen: photos and files become
+/// pages of one receipt (in order) or separate receipts, created for manual
+/// entry. Nothing is read automatically.
 class ReceiptsScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
   const ReceiptsScreen({super.key});
@@ -37,102 +26,7 @@ class ReceiptsScreen extends ConsumerStatefulWidget {
 }
 
 class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
-  final IdempotentSubmission _createKey = IdempotentSubmission();
   String _filter = '';
-  bool _adding = false;
-
-  /// An uploaded page whose receipt could not be created yet.
-  FileDto? _pending;
-
-  /// Why creating the receipt for [_pending] failed.
-  Object? _pendingError;
-
-  Future<void> _add() async {
-    if (_adding) {
-      return;
-    }
-    final PickedFile? picked = await pickFileFor(
-      context,
-      ref,
-      purpose: UploadPurpose.receipt,
-    );
-    if (picked == null || !mounted) {
-      return;
-    }
-    setState(() => _adding = true);
-    try {
-      final FileDto? file = await uploadWithProgress(
-        context,
-        file: picked,
-        purpose: UploadPurpose.receipt,
-      );
-      if (file == null || !mounted) {
-        return;
-      }
-      _createKey.reset();
-      await _create(file);
-    } finally {
-      if (mounted) {
-        setState(() => _adding = false);
-      }
-    }
-  }
-
-  /// Creates the receipt for [file]; the same key is used until it
-  /// succeeds, so a retry after a lost answer returns the first receipt.
-  Future<void> _create(FileDto file) async {
-    final AppLocalizations l10n = context.l10n;
-    final GoRouter router = GoRouter.of(context);
-    final List<String> fileIds = <String>[file.id];
-    setState(() {
-      _pending = file;
-      _pendingError = null;
-    });
-    try {
-      final ReceiptDto receipt = await ref
-          .read(receiptsApiProvider)
-          .create(
-            fileIds,
-            key: _createKey.keyFor(<String, Object?>{'file_ids': fileIds}),
-          );
-      _createKey.reset();
-      ref.financeChanged();
-      if (!mounted) {
-        return;
-      }
-      setState(() => _pending = null);
-      showSnack(context, l10n.receiptAdded);
-      await router.push(AppRoutes.receiptDetail(receipt.id));
-    } on ApiException catch (error) {
-      if (error.code == ErrorObjectCode.idempotencyConflict) {
-        _createKey.reset();
-      }
-      if (mounted) {
-        setState(() => _pendingError = error);
-      }
-    }
-  }
-
-  Future<void> _retryPending() async {
-    final FileDto? file = _pending;
-    if (file == null || _adding) {
-      return;
-    }
-    setState(() => _adding = true);
-    try {
-      await _create(file);
-    } finally {
-      if (mounted) {
-        setState(() => _adding = false);
-      }
-    }
-  }
-
-  void _dropPending() => setState(() {
-    _pending = null;
-    _pendingError = null;
-    _createKey.reset();
-  });
 
   Future<void> _refresh() async {
     ref.invalidate(receiptsProvider(_filter));
@@ -149,11 +43,10 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
     final AsyncValue<ReceiptsListState> receipts = ref.watch(
       receiptsProvider(_filter),
     );
-    final Object? pendingError = _pendingError;
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.receiptsTitle),
-        bottom: _adding || (receipts.isLoading && receipts.hasValue)
+        bottom: receipts.isLoading && receipts.hasValue
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
                 child: LinearProgressIndicator(),
@@ -162,41 +55,13 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: null,
-        onPressed: _adding ? null : _add,
+        onPressed: () => context.push(AppRoutes.newReceipt),
         icon: const Icon(Icons.add_a_photo_outlined),
         label: Text(l10n.receiptAdd),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          if (_pending != null && pendingError != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                Insets.md,
-                Insets.sm,
-                Insets.md,
-                0,
-              ),
-              child: NoticeBanner(
-                tone: NoticeTone.error,
-                title: l10n.receiptAddFailedTitle,
-                message: describeError(l10n, pendingError),
-                requestId: requestIdOf(pendingError),
-                action: Wrap(
-                  spacing: Insets.sm,
-                  children: <Widget>[
-                    TextButton(
-                      onPressed: _adding ? null : _dropPending,
-                      child: Text(l10n.receiptAddForget),
-                    ),
-                    FilledButton(
-                      onPressed: _adding ? null : _retryPending,
-                      child: Text(l10n.actionRetry),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(

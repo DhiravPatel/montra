@@ -27,7 +27,11 @@ import 'package:montra_mobile/features/auth/presentation/widgets/resend_verifica
 /// screen, so it never navigates on success itself.
 class SignInScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
-  const SignInScreen({super.key});
+  const SignInScreen({this.next, super.key});
+
+  /// Where to go after signing in (a safe in-app path); the router opens it
+  /// once the session starts.
+  final String? next;
 
   /// Widget keys used by tests and UI automation.
   static const Key emailKey = Key('signIn.email');
@@ -320,7 +324,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen>
       children: <Widget>[
         Text(l10n.noAccountPrompt),
         TextButton(
-          onPressed: () => context.push(AppRoutes.signUp),
+          onPressed: () =>
+              context.push(AppRoutes.withNext(AppRoutes.signUp, widget.next)),
           child: Text(l10n.createAccountLink),
         ),
       ],

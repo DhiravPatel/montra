@@ -15,7 +15,8 @@ void main() {
   group('while restoring', () {
     test('everything waits on the splash screen', () {
       expect(go(const AuthRestoring(), '/'), AppRoutes.splash);
-      expect(go(const AuthRestoring(), '/profile'), AppRoutes.splash);
+      // A protected deep link opened at cold start is kept for later.
+      expect(go(const AuthRestoring(), '/profile'), '/splash?next=%2Fprofile');
       expect(go(const AuthRestoring(), '/splash'), isNull);
       expect(
         go(
@@ -28,28 +29,48 @@ void main() {
   });
 
   group('signed out', () {
-    test('protected routes go to the welcome screen', () {
-      expect(go(const SignedOut(), '/profile/security'), AppRoutes.welcome);
+    test('protected routes go to the welcome screen and are kept as next', () {
+      expect(
+        go(const SignedOut(), '/profile/security'),
+        '/welcome?next=%2Fprofile%2Fsecurity',
+      );
+      expect(
+        go(const SignedOut(), '/transactions?category_id=c1'),
+        '/welcome?next=%2Ftransactions%3Fcategory_id%3Dc1',
+      );
       expect(go(const SignedOut(), '/'), AppRoutes.welcome);
       expect(go(const SignedOut(), '/splash'), AppRoutes.welcome);
+      // A deep link that waited on the splash screen moves on with it.
+      expect(
+        go(const SignedOut(), '/splash?next=%2Fbudgets%2Fb1'),
+        '/welcome?next=%2Fbudgets%2Fb1',
+      );
     });
 
     test('an ended session goes to sign-in, which explains why', () {
       expect(
         go(const SignedOut(reason: SessionEndReason.expired), '/profile'),
-        AppRoutes.signIn,
+        '/sign-in?next=%2Fprofile',
       );
       expect(
         go(
           const SignedOut(reason: SessionEndReason.signedOutEverywhere),
           '/profile',
         ),
-        AppRoutes.signIn,
+        '/sign-in?next=%2Fprofile',
       );
+    });
+
+    test('a voluntary sign-out starts over without next', () {
       expect(
         go(const SignedOut(reason: SessionEndReason.signedOut), '/profile'),
         AppRoutes.welcome,
       );
+    });
+
+    test('the welcome and sign-in screens keep their next', () {
+      expect(go(const SignedOut(), '/welcome?next=%2Fprofile'), isNull);
+      expect(go(const SignedOut(), '/sign-in?next=%2Fprofile'), isNull);
     });
 
     test('signed-out screens are reachable', () {
@@ -80,6 +101,7 @@ void main() {
         user: UserDto.fromJson(userJson(onboardingCompleted: false)),
       );
       expect(go(fresh, '/sign-in'), AppRoutes.onboarding);
+      expect(go(fresh, '/onboarding?next=%2Fprofile'), isNull);
       expect(go(fresh, '/splash'), AppRoutes.onboarding);
       expect(go(fresh, '/'), AppRoutes.onboarding);
       expect(go(fresh, '/onboarding'), isNull);
@@ -118,7 +140,10 @@ void main() {
       final SignedIn fresh = SignedIn(
         user: UserDto.fromJson(userJson(onboardingCompleted: false)),
       );
-      expect(go(fresh, '/sign-in?next=%2Fgroups%2Fjoin'), AppRoutes.onboarding);
+      expect(
+        go(fresh, '/sign-in?next=%2Fgroups%2Fjoin'),
+        '/onboarding?next=%2Fgroups%2Fjoin',
+      );
     });
 
     test('next never leaves the app', () {
@@ -134,6 +159,30 @@ void main() {
         go(signedIn, '/sign-in?next=https%3A%2F%2Fevil.example'),
         AppRoutes.signedInHome,
       );
+    });
+
+    test('next is never an auth screen, so it cannot loop', () {
+      for (final String path in <String>[
+        '/sign-in',
+        '/welcome?next=%2Fprofile',
+        '/sign-up',
+        '/check-email',
+        '/forgot-password',
+        '/splash',
+        '/',
+        '/onboarding',
+        '/verify-email#token=t',
+        '/reset-password#token=t',
+      ]) {
+        expect(AppRoutes.safeNext(path), isNull, reason: path);
+      }
+      expect(AppRoutes.withNext(AppRoutes.signIn, '/sign-up'), '/sign-in');
+      expect(
+        AppRoutes.withNext(AppRoutes.signIn, '/budgets'),
+        '/sign-in?next=%2Fbudgets',
+      );
+      expect(go(signedIn, '/sign-in?next=%2Fsign-up'), AppRoutes.signedInHome);
+      expect(go(const SignedOut(), '/sign-in?next=%2F%2Fevil.example'), isNull);
     });
 
     test('the new tabs and screens stay put when signed in', () {
@@ -156,8 +205,51 @@ void main() {
         AppRoutes.integrations,
       ]) {
         expect(go(signedIn, path), isNull, reason: path);
-        expect(go(const SignedOut(), path), AppRoutes.welcome, reason: path);
+        expect(
+          go(const SignedOut(), path),
+          AppRoutes.withNext(AppRoutes.welcome, path),
+          reason: path,
+        );
       }
+    });
+  });
+
+  group('returning after sign-in', () {
+    test('a protected deep link opens after signing in', () {
+      // Signed out: the link waits on the welcome screen…
+      final String? welcome = go(const SignedOut(), '/budgets/b1?tab=2');
+      expect(welcome, '/welcome?next=%2Fbudgets%2Fb1%3Ftab%3D2');
+      // …goes along to sign-in…
+      final String signIn = AppRoutes.withNext(
+        AppRoutes.signIn,
+        AppRoutes.nextOf(Uri.parse(welcome!)),
+      );
+      expect(signIn, '/sign-in?next=%2Fbudgets%2Fb1%3Ftab%3D2');
+      // …and opens once the session starts.
+      expect(go(signedIn, signIn), '/budgets/b1?tab=2');
+    });
+
+    test('a cold-start deep link opens once the session is restored', () {
+      final String? splash = go(const AuthRestoring(), '/goals/g1');
+      expect(splash, '/splash?next=%2Fgoals%2Fg1');
+      expect(go(signedIn, splash!), '/goals/g1');
+      expect(go(const SignedOut(), splash), '/welcome?next=%2Fgoals%2Fg1');
+    });
+
+    test('a new account sees the setup first, then the link', () {
+      final SignedIn fresh = SignedIn(
+        user: UserDto.fromJson(userJson(onboardingCompleted: false)),
+      );
+      expect(
+        go(fresh, '/sign-in?next=%2Fbudgets%2Fb1'),
+        '/onboarding?next=%2Fbudgets%2Fb1',
+      );
+      // Finishing setup marks onboarding completed; the guard moves on.
+      expect(go(signedIn, '/onboarding?next=%2Fbudgets%2Fb1'), '/budgets/b1');
+      expect(
+        go(signedIn, '/onboarding?next=https%3A%2F%2Fevil.example'),
+        AppRoutes.home,
+      );
     });
   });
 

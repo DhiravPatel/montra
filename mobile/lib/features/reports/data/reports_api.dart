@@ -58,6 +58,14 @@ class ReportsApi {
         decodeEnvelopeListScheduleDto(json).data,
   );
 
+  /// `GET /reports/schedules/{id}`: one schedule (`NOT_FOUND` when it was
+  /// deleted).
+  Future<ScheduleDto> schedule(String id) => _client.send(
+    ApiEndpoints.getReportSchedule,
+    pathParameters: <String, String>{'id': id},
+    decode: (Map<String, Object?> json) => decodeEnvelopeScheduleDto(json).data,
+  );
+
   /// `POST /reports/schedules`: a weekly or monthly report.
   Future<ScheduleDto> createSchedule(ScheduleInput input) => _client.send(
     ApiEndpoints.createReportSchedule,

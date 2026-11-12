@@ -13,6 +13,7 @@ import { FormAlert } from '@/shared/forms/FormAlert';
 import { describeError } from '@/shared/i18n/describeError';
 import { useT } from '@/shared/i18n/I18nContext';
 import { privacyApi } from '../api';
+import { confirmWordMismatch, isDeletionAlreadyScheduled } from '../errors';
 import { privacyKeys } from '../keys';
 import type { Deletion } from '../types';
 
@@ -79,10 +80,22 @@ function DeletionForm({ graceDays, onScheduled, onCancel, onPendingChange }: Del
       onScheduled(deletion);
     } catch (error) {
       if (isReauthCancelled(error)) return;
-      if (hasErrorCode(error, 'CONFLICT')) {
+      const mismatch = confirmWordMismatch(error);
+      if (isDeletionAlreadyScheduled(error)) {
         // Already scheduled (perhaps from another device): show the current state.
         void queryClient.invalidateQueries({ queryKey: privacyKeys.deletion() });
         setFormError(t('privacySettings.deletion.alreadyScheduled'));
+      } else if (mismatch !== null) {
+        form.setError(
+          'confirm',
+          {
+            type: 'server',
+            message: t('privacySettings.deletion.confirmMismatch', {
+              word: mismatch || DELETE_WORD,
+            }),
+          },
+          { shouldFocus: true },
+        );
       } else if (hasErrorCode(error, 'VALIDATION_ERROR')) {
         const reason = error.details.some((detail) => detail.field === 'body.reason');
         if (reason) {

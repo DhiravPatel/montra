@@ -884,6 +884,22 @@ func (s *Service) resumeRule(ctx context.Context, tx pgx.Tx, id uuid.UUID) error
 // ruleActions maps the rule lifecycle actions to the status they set.
 var ruleActions = map[string]string{"pause": "paused", "resume": "active", "stop": "ended"}
 
+// checkMove refuses a user's lifecycle action that does not change the
+// rule (pausing a paused rule would bump its version for nothing);
+// resuming an ended rule keeps its own code (schedule_ended). Internal
+// cascades call setStatus directly and stay lenient.
+func checkMove(ctx context.Context, tx pgx.Tx, id uuid.UUID, action string) error {
+	var status string
+	if err := tx.QueryRow(ctx, `select status from recurring_rules where id = $1`, id).Scan(&status); err != nil {
+		return err
+	}
+	if to, ok := ruleActions[action]; ok && (status == to || (action == "pause" && status == "ended")) {
+		return apperr.Rule("invalid_status_transition", "A recurring rule cannot move from "+status+" to "+to+".",
+			map[string]string{"from": status, "to": to})
+	}
+	return nil
+}
+
 // SetRuleStatus pauses, resumes or stops a recurring rule; version, when
 // not 0, must match the rule's current version.
 func (s *Service) SetRuleStatus(ctx context.Context, id uuid.UUID, action string, version int32) (*RecurringRuleDTO, error) {
@@ -903,15 +919,8 @@ func (s *Service) SetRuleStatus(ctx context.Context, id uuid.UUID, action string
 		if version != 0 && version != current {
 			return apperr.VersionConflict()
 		}
-		// Only real moves are allowed (pausing a paused rule would bump its
-		// version for nothing); resuming an ended rule keeps its own code.
-		var status string
-		if err := tx.QueryRow(ctx, `select status from recurring_rules where id = $1`, id).Scan(&status); err != nil {
+		if err := checkMove(ctx, tx, id, action); err != nil {
 			return err
-		}
-		if to, ok := ruleActions[action]; ok && (status == to || (action == "stop" && status == "ended") || (action == "pause" && status == "ended")) {
-			return apperr.Rule("invalid_status_transition", "A recurring rule cannot move from "+status+" to "+to+".",
-				map[string]string{"from": status, "to": to})
 		}
 		if err := s.setStatus(ctx, tx, id, action); err != nil {
 			return err

@@ -92,6 +92,28 @@ void main() {
     expect(communityJoinLink(null, 'tok'), isNull);
   });
 
+  test("the server's share_url is used only when it is a join link with a "
+      'token', () {
+    const String token = 'qA4fseFCgSEWsyznVadmfMt4JrZF03An';
+    const String good = 'https://app.example.com/communities/join#token=$token';
+    expect(communityShareUrl(good), good);
+    expect(communityShareUrl(' $good '), good);
+    expect(communityShareUrl(null), isNull);
+    expect(communityShareUrl(''), isNull);
+    expect(
+      communityShareUrl('javascript:alert(1)//communities/join#token=$token'),
+      isNull,
+    );
+    expect(
+      communityShareUrl('https://app.example.com/groups/join#token=$token'),
+      isNull,
+    );
+    expect(
+      communityShareUrl('https://app.example.com/communities/join'),
+      isNull,
+    );
+  });
+
   test('only http(s) links with a host are opened', () {
     expect(safeLink('https://www.rbi.org.in/'), isNotNull);
     expect(safeLink('http://example.com'), isNotNull);

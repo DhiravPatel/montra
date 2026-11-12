@@ -126,7 +126,10 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
         () => _errors =
             error.code == ErrorObjectCode.conflict &&
                 error.details.every((Detail d) => d.code == null)
-            // A taken username: 409 on body.username without a code.
+            // Older servers answer a taken username with a code-less 409;
+            // current ones send `username_taken` (like `username_invalid`
+            // and `username_reserved`), localized by the field mapping
+            // below.
             ? ServerFormErrors(
                 fields: <String, String>{'username': l10n.usernameTaken},
               )

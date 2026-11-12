@@ -699,6 +699,30 @@ func (s *Service) List(ctx context.Context, all bool, kind, cursor string, limit
 	return out, next, database.MapError(err)
 }
 
+// Get reads one of the caller's insights in any status (404 for others').
+func (s *Service) Get(ctx context.Context, id uuid.UUID) (*InsightDTO, error) {
+	uid, err := identity.UserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var out InsightDTO
+	err = s.DB.WithUserReadTx(ctx, uid, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `select `+insightCols+` from `+insightFrom+` where i.user_id = $1 and i.id = $2`, uid, id)
+		if err != nil {
+			return err
+		}
+		out, err = pgx.CollectExactlyOneRow(rows, scanInsight)
+		if database.IsNoRows(err) {
+			return apperr.NotFound("insight")
+		}
+		return err
+	})
+	if err != nil {
+		return nil, database.MapError(err)
+	}
+	return &out, nil
+}
+
 func nullTime(t time.Time) *time.Time {
 	if t.IsZero() {
 		return nil

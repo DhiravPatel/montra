@@ -268,5 +268,31 @@ void main() {
         'http://localhost:8080/groups/join#token=$token',
       );
     });
+
+    test(
+      "the server's share_url is preferred when it is a group join link",
+      () {
+        const String good = 'https://app.example/groups/join#token=$token';
+        expect(InviteLinks.groupShareUrl(good), good);
+        expect(InviteLinks.groupShareUrl(null), isNull);
+        expect(
+          InviteLinks.groupShareUrl(
+            'ftp://app.example/groups/join#token=$token',
+          ),
+          isNull,
+        );
+        expect(
+          InviteLinks.groupShareUrl(
+            'https://app.example/communities/join#token=$token',
+          ),
+          isNull,
+        );
+        expect(
+          InviteLinks.groupShareUrl('https://app.example/groups/join'),
+          isNull,
+        );
+        expect(InviteLinks.groupShareUrl('/groups/join#token=$token'), isNull);
+      },
+    );
   });
 }

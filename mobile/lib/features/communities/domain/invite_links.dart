@@ -27,6 +27,20 @@ String? webOriginFrom(String value) {
 String? communityJoinLink(String? origin, String token) =>
     origin == null ? null : '$origin/communities/join#token=$token';
 
+/// The server's `share_url` for a new community invitation, when it is an
+/// `http(s)` link to `/communities/join` that carries a token; null
+/// otherwise (then [communityJoinLink] or the code is shared).
+String? communityShareUrl(String? shareUrl) {
+  final Uri? uri = Uri.tryParse(shareUrl?.trim() ?? '');
+  if (uri == null ||
+      !(uri.scheme == 'https' || uri.scheme == 'http') ||
+      uri.host.isEmpty ||
+      inviteTokenOfUri(uri) == null) {
+    return null;
+  }
+  return uri.toString();
+}
+
 final RegExp _tokenShape = RegExp(r'^[A-Za-z0-9_-]+$');
 
 /// Whether [token] has the shape of a community invitation token.

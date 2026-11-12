@@ -1,5 +1,5 @@
 import * as RadixDialog from '@radix-ui/react-dialog';
-import type { ReactNode, RefObject } from 'react';
+import { type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react';
 import { useT } from '@/shared/i18n/I18nContext';
 import { cx } from '@/shared/utils/cx';
 import { IconButton } from './IconButton';
@@ -31,6 +31,16 @@ export function Dialog({
   initialFocusRef,
 }: DialogProps) {
   const t = useT();
+  // Dialogs here are opened from state, not a Radix <Trigger>, so Radix has no
+  // trigger to return focus to and would leave it on <body>. Remember what had
+  // focus when the dialog opened (layout effects run before Radix moves focus
+  // into the dialog) and return focus there when it closes (WCAG 2.4.3).
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    if (open && document.activeElement instanceof HTMLElement) {
+      returnFocusRef.current = document.activeElement;
+    }
+  }, [open]);
   return (
     <RadixDialog.Root
       open={open}
@@ -55,6 +65,14 @@ export function Dialog({
                 }
               : undefined
           }
+          onCloseAutoFocus={(event) => {
+            const target = returnFocusRef.current;
+            returnFocusRef.current = null;
+            if (target?.isConnected && target !== document.body) {
+              event.preventDefault();
+              target.focus();
+            }
+          }}
           {...(description ? {} : { 'aria-describedby': undefined })}
         >
           <RadixDialog.Title className="pe-10 text-lg font-semibold">{title}</RadixDialog.Title>

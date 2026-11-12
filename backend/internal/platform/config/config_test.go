@@ -40,3 +40,20 @@ func TestEmailVerificationBypassIsDevelopmentOnly(t *testing.T) {
 		t.Fatalf("plain production config rejected: %v", err)
 	}
 }
+
+// The relaxed auth rate limit for end-to-end runs exists only in
+// development and test, within bounds.
+func TestDevAuthRateIsDevelopmentOnly(t *testing.T) {
+	if err := load(t, map[string]string{"APP_ENV": "development", "AUTH_COOKIE_SECURE": "false", "AUTH_DEV_RATE_PER_MINUTE": "600"}); err != nil {
+		t.Fatalf("development override refused: %v", err)
+	}
+	for _, env := range []string{"staging", "production"} {
+		err := load(t, map[string]string{"APP_ENV": env, "AUTH_DEV_RATE_PER_MINUTE": "600"})
+		if err == nil || !strings.Contains(err.Error(), "AUTH_DEV_RATE_PER_MINUTE") {
+			t.Fatalf("%s accepted the override: %v", env, err)
+		}
+	}
+	if err := load(t, map[string]string{"APP_ENV": "development", "AUTH_COOKIE_SECURE": "false", "AUTH_DEV_RATE_PER_MINUTE": "-1"}); err == nil {
+		t.Fatal("negative override accepted")
+	}
+}

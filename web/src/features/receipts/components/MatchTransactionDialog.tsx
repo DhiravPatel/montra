@@ -37,8 +37,20 @@ export function MatchTransactionDialog({
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const candidates = useMatchCandidates(receipt.id, open);
+  // Success and failure are handled here, not in mutate() options: the refetch
+  // after a link makes the receipt unmatchable, which unmounts this dialog, and
+  // per-call callbacks of an unmounted observer never run. These run first
+  // (before the refetch in onSettled), whether or not the dialog is still there.
   const match = useMutation({
     mutationFn: (transactionId: string) => receiptsApi.match(receipt.id, transactionId),
+    onSuccess: () => {
+      toast.show({ tone: 'success', title: t('receipts.match.done') });
+      setError(null);
+      onOpenChange(false);
+    },
+    onError: (failure) => {
+      setError(receiptErrorMessage(failure, 'match', t, formatLocale));
+    },
     onSettled: () => invalidateFinance(queryClient),
   });
   const date = reviewedValues(receipt)?.receipt_date;
@@ -86,15 +98,7 @@ export function MatchTransactionDialog({
       onConfirm={(transactionId) => {
         if (match.isPending) return;
         setError(null);
-        match.mutate(transactionId, {
-          onSuccess: () => {
-            toast.show({ tone: 'success', title: t('receipts.match.done') });
-            onOpenChange(false);
-          },
-          onError: (failure) => {
-            setError(receiptErrorMessage(failure, 'match', t, formatLocale));
-          },
-        });
+        match.mutate(transactionId);
       }}
     />
   );

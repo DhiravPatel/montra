@@ -15,6 +15,7 @@ import 'package:montra_mobile/features/budgets/presentation/budget_alerts_banner
 import 'package:montra_mobile/features/dashboard/application/dashboard_providers.dart';
 import 'package:montra_mobile/features/dashboard/domain/widget_info.dart';
 import 'package:montra_mobile/features/dashboard/presentation/dashboard_widgets.dart';
+import 'package:montra_mobile/features/dashboard/presentation/planning_cards.dart';
 import 'package:montra_mobile/features/notifications/presentation/notification_bell.dart';
 import 'package:montra_mobile/features/transactions/presentation/transactions_screen.dart';
 
@@ -39,6 +40,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Future<void> _refresh(DateRangeChoice range) async {
     ref
       ..invalidate(dashboardSummaryProvider(range))
+      ..invalidate(dashboardPlanningProvider)
       ..invalidate(dashboardLayoutProvider);
     try {
       await ref.read(dashboardSummaryProvider(range).future);
@@ -153,22 +155,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         : (currencies.isEmpty ? null : currencies.first);
     final bool firstUse =
         data.balances.isEmpty && data.coverage.transactionCount == 0;
-    final AsyncValue<List<WidgetDto>> layout = ref.watch(
+    final AsyncValue<List<DashboardWidget>> layout = ref.watch(
       dashboardLayoutProvider,
     );
-    final List<WidgetDtoKey> keys = <WidgetDtoKey>[
-      for (final WidgetDto w
-          in layout.value ??
-              <WidgetDto>[
-                for (int i = 0; i < defaultWidgetKeys.length; i++)
-                  WidgetDto(
-                    key: defaultWidgetKeys[i],
-                    position: i,
-                    settings: const <String, Object?>{},
-                    visible: true,
-                  ),
-              ])
-        if (w.visible && isKnownWidget(w.key)) w.key,
+    // On first use only the planning cards with something in them are
+    // shown (a new member of a group sees what they owe, for example).
+    final DashboardPlanning? planning = firstUse
+        ? ref.watch(dashboardPlanningProvider).value
+        : null;
+    final List<DashboardWidgetKind> kinds = <DashboardWidgetKind>[
+      for (final DashboardWidget w in layout.value ?? defaultLayout)
+        if (w.kind case final DashboardWidgetKind kind when w.visible)
+          if (!firstUse ||
+              (planning != null && planningHasContent(planning, kind)))
+            kind,
     ];
     final DashboardContext ctx = DashboardContext(
       summary: data,
@@ -249,11 +249,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: Insets.sm),
           ],
-          if (!firstUse)
-            for (final WidgetDtoKey key in keys) ...<Widget>[
-              DashboardWidgetCard(widgetKey: key, data: ctx),
-              const SizedBox(height: Insets.md),
-            ],
+          for (final DashboardWidgetKind kind in kinds) ...<Widget>[
+            DashboardWidgetCard(kind: kind, data: ctx),
+            const SizedBox(height: Insets.md),
+          ],
         ],
       ),
     );

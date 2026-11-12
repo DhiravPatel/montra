@@ -159,9 +159,9 @@ func NewServices(d Deps) (*Services, error) {
 	s.FX = &fx.Service{DB: d.DB, Cfg: d.Cfg.FX}
 	s.Reports = &reports.Service{DB: d.DB, Files: s.Files, Store: store, Cfg: d.Cfg}
 	s.Social = &social.Service{DB: d.DB}
-	s.Groups = &groups.Service{DB: d.DB, Finance: s.Finance, Recurring: s.Recurring}
+	s.Groups = &groups.Service{DB: d.DB, Finance: s.Finance, Recurring: s.Recurring, WebAppURL: d.Cfg.HTTP.WebAppURL}
 	s.Recurring.GroupPoster = s.Groups.PostDueRecurring
-	s.Communities = &communities.Service{DB: d.DB}
+	s.Communities = &communities.Service{DB: d.DB, WebAppURL: d.Cfg.HTTP.WebAppURL}
 	s.Moderation = &moderation.Service{DB: d.DB}
 	s.Challenges = &challenges.Service{DB: d.DB}
 	// AI is optional and off unless configured (ADR-012): every feature has
@@ -229,6 +229,7 @@ func RegisterRoutes(api huma.API, s *Services) {
 	s.Admin.Routes(api)
 	s.Support.Routes(api)
 	s.Analytics.PlanningRoutes(api, &analytics.Planning{Budgets: s.Budgets, Subs: s.Subs, Goals: s.Goals})
+	s.Analytics.PlanningCardRoutes(api, &analytics.PlanningCards{Budgets: s.Budgets, Goals: s.Goals, Recurring: s.Recurring, Groups: s.Groups})
 }
 
 // NewRouter builds the HTTP handler: global middleware, health, metrics and
@@ -263,7 +264,11 @@ func NewRouter(d Deps, s *Services) (http.Handler, huma.API) {
 		sub.Use(httpx.SingleQueryValues)
 		sub.Use(s.Auth.Authenticate)
 		api = httpx.NewAPI(sub, cfg.HTTP.EnableDocs)
-		limiter := ratelimit.New()
+		var overrides []ratelimit.Policy
+		if n := cfg.Auth.DevAuthRatePerMinute; n > 0 && cfg.IsDevelopmentLike() {
+			overrides = append(overrides, ratelimit.Policy{Name: ratelimit.Auth.Name, Every: time.Minute / time.Duration(n), Burst: n})
+		}
+		limiter := ratelimit.New(overrides...)
 		api.UseMiddleware(ratelimit.Middleware(api, limiter, rateSubject, func(ctx huma.Context, retry time.Duration) {
 			ctx.SetHeader("Retry-After", httpx.RetryAfter(retry))
 			e := apperr.RateLimited()

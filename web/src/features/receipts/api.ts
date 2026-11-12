@@ -1,9 +1,8 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/api/client';
-import { networkError, toApiError } from '@/shared/api/errors';
 import { apiData, apiEnvelope } from '@/shared/api/request';
+import { fileAccess, type FilePreview, loadFilePreview } from '@/shared/files/preview';
 import { receiptsKeys } from './keys';
-import { isAbortError } from './uploads';
 import type {
   FileAccess,
   Receipt,
@@ -109,9 +108,7 @@ export const receiptsApi = {
     apiData(api.POST('/receipts/{id}/restore', { params: { path: { id }, query: { version } } })),
   /** A short-lived signed link (authorization is checked on every call). */
   fileAccess: (fileId: string, signal?: AbortSignal): Promise<FileAccess> =>
-    apiData(
-      api.GET('/files/{fileId}/access', { params: { path: { fileId } }, ...signalOption(signal) }),
-    ),
+    fileAccess(fileId, signal),
   /** Deletes an uploaded page that never became part of a receipt. */
   deleteFile: (fileId: string) =>
     apiData(api.DELETE('/files/{fileId}', { params: { path: { fileId } } })),
@@ -143,55 +140,12 @@ export function useMatchCandidates(id: string, enabled: boolean) {
 }
 
 /** A page ready to show: images as a `data:` URL, other files (PDF) as `src: null`. */
-export interface PagePreview {
-  contentType: string;
-  src: string | null;
-}
-
-function readAsDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') resolve(reader.result);
-      else reject(new Error('Unexpected preview data'));
-    };
-    reader.onerror = () => {
-      reject(reader.error ?? new Error('Preview could not be read'));
-    };
-    reader.readAsDataURL(blob);
-  });
-}
-
-/**
- * Downloads an image page through its short-lived signed link and keeps it
- * as a `data:` URL: the app's Content-Security-Policy allows `data:` images
- * but not images from the API origin. Nothing is written to disk or storage.
- */
-async function loadPagePreview(fileId: string, signal?: AbortSignal): Promise<PagePreview> {
-  const access = await receiptsApi.fileAccess(fileId, signal);
-  const contentType = access.content_type;
-  if (!contentType.startsWith('image/')) return { contentType, src: null };
-  let response: Response;
-  try {
-    // The link is signed for this user and expires in minutes: no cookies or referrer needed.
-    response = await fetch(access.url, {
-      credentials: 'omit',
-      referrerPolicy: 'no-referrer',
-      ...signalOption(signal),
-    });
-  } catch (error) {
-    if (isAbortError(error)) throw error;
-    throw networkError(error);
-  }
-  if (!response.ok) throw toApiError(response, null);
-  const bytes = await response.arrayBuffer();
-  return { contentType, src: await readAsDataUrl(new Blob([bytes], { type: contentType })) };
-}
+export type PagePreview = FilePreview;
 
 export function usePagePreview(fileId: string, enabled = true) {
   return useQuery({
     queryKey: receiptsKeys.preview(fileId),
-    queryFn: ({ signal }) => loadPagePreview(fileId, signal),
+    queryFn: ({ signal }) => loadFilePreview(fileId, signal),
     enabled,
     staleTime: Number.POSITIVE_INFINITY,
     refetchOnWindowFocus: false,

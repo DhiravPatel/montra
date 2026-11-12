@@ -28787,6 +28787,1140 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This appeal was already decided. Reload to see the outcome.'**
   String get moderationErrorAppealDecided;
+
+  /// No description provided for @codeQueryTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least {min} characters of the username.'**
+  String codeQueryTooShort(String min);
+
+  /// No description provided for @codeUsernameInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 3 to 30 lowercase letters, digits, “_” or “.”.'**
+  String get codeUsernameInvalid;
+
+  /// No description provided for @codeUsernameReserved.
+  ///
+  /// In en, this message translates to:
+  /// **'This username is reserved. Choose another one.'**
+  String get codeUsernameReserved;
+
+  /// No description provided for @codeAvatarFileInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo can\'t be used yet. Upload it again as your profile photo and wait until the upload finishes.'**
+  String get codeAvatarFileInvalid;
+
+  /// No description provided for @codeUsernameOrUserId.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose who to invite: type a username or pick a friend, not both.'**
+  String get codeUsernameOrUserId;
+
+  /// No description provided for @codeConfirmWordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Type {word} exactly to confirm.'**
+  String codeConfirmWordMismatch(String word);
+
+  /// No description provided for @codeDeletionAlreadyScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is already scheduled for deletion. You can cancel it on the Privacy & data screen.'**
+  String get codeDeletionAlreadyScheduled;
+
+  /// No description provided for @codeNoDeletionScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no scheduled deletion to cancel.'**
+  String get codeNoDeletionScheduled;
+
+  /// No description provided for @codeDuplicateItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Each transaction or statement line can be chosen only once.'**
+  String get codeDuplicateItem;
+
+  /// No description provided for @codeTransactionAlreadyMatched.
+  ///
+  /// In en, this message translates to:
+  /// **'One of these transactions is already matched or reconciled. Reload to see where things stand.'**
+  String get codeTransactionAlreadyMatched;
+
+  /// No description provided for @codeSyncRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'A sync is already running. Wait for it to finish, then try again.'**
+  String get codeSyncRunning;
+
+  /// No description provided for @codeAlreadyReported.
+  ///
+  /// In en, this message translates to:
+  /// **'You already reported this; moderators will review it.'**
+  String get codeAlreadyReported;
+
+  /// No description provided for @widgetBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets'**
+  String get widgetBudgets;
+
+  /// No description provided for @widgetBudgetsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Your fullest budgets and how they\'re pacing'**
+  String get widgetBudgetsHelp;
+
+  /// No description provided for @widgetUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming up'**
+  String get widgetUpcoming;
+
+  /// No description provided for @widgetUpcomingHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue and upcoming bills, recurring payments, renewals and goal dates'**
+  String get widgetUpcomingHelp;
+
+  /// No description provided for @widgetGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get widgetGoals;
+
+  /// No description provided for @widgetGoalsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress on your nearest goals'**
+  String get widgetGoalsHelp;
+
+  /// No description provided for @widgetGroupBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Group balances'**
+  String get widgetGroupBalances;
+
+  /// No description provided for @widgetGroupBalancesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups where you\'re owed money or owe money'**
+  String get widgetGroupBalancesHelp;
+
+  /// No description provided for @dashPlanLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get dashPlanLoading;
+
+  /// No description provided for @dashPlanError.
+  ///
+  /// In en, this message translates to:
+  /// **'This card couldn\'t be loaded. {reason}'**
+  String dashPlanError(String reason);
+
+  /// No description provided for @dashPlanBudgetsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 active budget} other{{count} active budgets}}'**
+  String dashPlanBudgetsSummary(int count);
+
+  /// No description provided for @dashPlanBudgetsOver.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 is over budget} other{{count} are over budget}}'**
+  String dashPlanBudgetsOver(int count);
+
+  /// No description provided for @dashPlanBudgetsNoneOver.
+  ///
+  /// In en, this message translates to:
+  /// **'None are over budget'**
+  String get dashPlanBudgetsNoneOver;
+
+  /// No description provided for @dashPlanBudgetsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active budgets. A budget shows how much of a limit you\'ve spent.'**
+  String get dashPlanBudgetsEmpty;
+
+  /// No description provided for @dashPlanBudgetsCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a budget'**
+  String get dashPlanBudgetsCreate;
+
+  /// No description provided for @dashPlanBudgetsSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all budgets'**
+  String get dashPlanBudgetsSeeAll;
+
+  /// No description provided for @dashPlanBudgetPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'No figures for this period yet'**
+  String get dashPlanBudgetPaused;
+
+  /// No description provided for @dashPlanUpcomingSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item through {date}} other{{count} items through {date}}}'**
+  String dashPlanUpcomingSummary(int count, String date);
+
+  /// No description provided for @dashPlanUpcomingOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 is overdue} other{{count} are overdue}}'**
+  String dashPlanUpcomingOverdue(int count);
+
+  /// No description provided for @dashPlanUpcomingNoneOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is overdue'**
+  String get dashPlanUpcomingNoneOverdue;
+
+  /// No description provided for @dashPlanUpcomingEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is due in the next 14 days, and nothing is overdue.'**
+  String get dashPlanUpcomingEmpty;
+
+  /// No description provided for @dashPlanUpcomingAddBill.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bill'**
+  String get dashPlanUpcomingAddBill;
+
+  /// No description provided for @dashPlanUpcomingSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the calendar'**
+  String get dashPlanUpcomingSeeAll;
+
+  /// No description provided for @dashPlanUpcomingMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more in the calendar} other{{count} more in the calendar}}'**
+  String dashPlanUpcomingMore(int count);
+
+  /// No description provided for @dashPlanDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String dashPlanDueOn(String date);
+
+  /// No description provided for @dashPlanDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get dashPlanDueToday;
+
+  /// No description provided for @dashPlanWasDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Was due {date}'**
+  String dashPlanWasDue(String date);
+
+  /// No description provided for @dashPlanGoalsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 active goal} other{{count} active goals}}'**
+  String dashPlanGoalsSummary(int count);
+
+  /// No description provided for @dashPlanGoalsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active goals. Set one to save toward something.'**
+  String get dashPlanGoalsEmpty;
+
+  /// No description provided for @dashPlanGoalsCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a goal'**
+  String get dashPlanGoalsCreate;
+
+  /// No description provided for @dashPlanGoalsSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all goals'**
+  String get dashPlanGoalsSeeAll;
+
+  /// No description provided for @dashPlanGoalNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No target date'**
+  String get dashPlanGoalNoDate;
+
+  /// No description provided for @dashPlanGroupsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Open balance in 1 group} other{Open balances in {count} groups}}'**
+  String dashPlanGroupsSummary(int count);
+
+  /// No description provided for @dashPlanGroupsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re settled up in every group.'**
+  String get dashPlanGroupsEmpty;
+
+  /// No description provided for @dashPlanGroupsSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all groups'**
+  String get dashPlanGroupsSeeAll;
+
+  /// No description provided for @dashPlanGroupSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled up'**
+  String get dashPlanGroupSettled;
+
+  /// No description provided for @dashPlanShowingFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {shown} of {total}'**
+  String dashPlanShowingFirst(int shown, int total);
+
+  /// No description provided for @profileEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditTitle;
+
+  /// No description provided for @profileEditEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditEntry;
+
+  /// No description provided for @profileEditEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, photo, username, bio and who can see your profile'**
+  String get profileEditEntrySubtitle;
+
+  /// No description provided for @profileEditPhotoSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo'**
+  String get profileEditPhotoSection;
+
+  /// No description provided for @profileEditPhotoNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No photo yet. People see your initials instead.'**
+  String get profileEditPhotoNone;
+
+  /// No description provided for @profileEditPhotoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile photo'**
+  String get profileEditPhotoLabel;
+
+  /// No description provided for @profileEditPhotoInitials.
+  ///
+  /// In en, this message translates to:
+  /// **'Initials for {name}'**
+  String profileEditPhotoInitials(String name);
+
+  /// No description provided for @profileEditPhotoChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo'**
+  String get profileEditPhotoChoose;
+
+  /// No description provided for @profileEditPhotoChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get profileEditPhotoChange;
+
+  /// No description provided for @profileEditPhotoRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get profileEditPhotoRemove;
+
+  /// No description provided for @profileEditPhotoRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove your profile photo?'**
+  String get profileEditPhotoRemoveTitle;
+
+  /// No description provided for @profileEditPhotoRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'People will see your initials instead. You can add a photo again at any time.'**
+  String get profileEditPhotoRemoveBody;
+
+  /// No description provided for @profileEditPhotoSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo updated.'**
+  String get profileEditPhotoSaved;
+
+  /// No description provided for @profileEditPhotoRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo removed.'**
+  String get profileEditPhotoRemoved;
+
+  /// No description provided for @profileEditPhotoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo couldn\'t be shown right now.'**
+  String get profileEditPhotoUnavailable;
+
+  /// No description provided for @profileEditPhotoHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'JPG, PNG or WEBP, up to {size}. Your photo is shown where your profile is visible.'**
+  String profileEditPhotoHelp(String size);
+
+  /// No description provided for @profileEditDetailsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'About you'**
+  String get profileEditDetailsSection;
+
+  /// No description provided for @profileEditDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get profileEditDisplayName;
+
+  /// No description provided for @profileEditDisplayNameHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown to friends, groups and communities.'**
+  String get profileEditDisplayNameHelp;
+
+  /// No description provided for @profileEditBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get profileEditBio;
+
+  /// No description provided for @profileEditBioHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'A short line about you. Leave it empty to remove it.'**
+  String get profileEditBioHelp;
+
+  /// No description provided for @profileEditLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get profileEditLocation;
+
+  /// No description provided for @profileEditLocationHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'A city or region, never your address. Leave it empty to remove it.'**
+  String get profileEditLocationHelp;
+
+  /// No description provided for @profileEditInterests.
+  ///
+  /// In en, this message translates to:
+  /// **'Interests'**
+  String get profileEditInterests;
+
+  /// No description provided for @profileEditInterestsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {max} short topics, for example cooking or cricket.'**
+  String profileEditInterestsHelp(int max);
+
+  /// No description provided for @profileEditInterestAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add interest'**
+  String get profileEditInterestAdd;
+
+  /// No description provided for @profileEditInterestNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New interest'**
+  String get profileEditInterestNew;
+
+  /// No description provided for @profileEditInterestRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove interest {name}'**
+  String profileEditInterestRemove(String name);
+
+  /// No description provided for @profileEditInterestTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep each interest short (up to 40 letters in English, fewer in Hindi).'**
+  String get profileEditInterestTooLong;
+
+  /// No description provided for @profileEditInterestDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'You already added this interest.'**
+  String get profileEditInterestDuplicate;
+
+  /// No description provided for @profileEditInterestsFull.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add up to {max} interests.'**
+  String profileEditInterestsFull(int max);
+
+  /// No description provided for @profileEditInterestsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No interests added.'**
+  String get profileEditInterestsNone;
+
+  /// No description provided for @profileEditVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Who can see your profile'**
+  String get profileEditVisibility;
+
+  /// No description provided for @profileEditVisibilityPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you'**
+  String get profileEditVisibilityPrivate;
+
+  /// No description provided for @profileEditVisibilityPrivateHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Others see only your display name and photo where you take part.'**
+  String get profileEditVisibilityPrivateHelp;
+
+  /// No description provided for @profileEditVisibilityConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends and group members'**
+  String get profileEditVisibilityConnections;
+
+  /// No description provided for @profileEditVisibilityConnectionsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Your bio, location and interests are shown to people you\'re connected with.'**
+  String get profileEditVisibilityConnectionsHelp;
+
+  /// No description provided for @profileEditVisibilityPublic.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone on Montra'**
+  String get profileEditVisibilityPublic;
+
+  /// No description provided for @profileEditVisibilityPublicHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone signed in to Montra can see your profile details.'**
+  String get profileEditVisibilityPublicHelp;
+
+  /// No description provided for @profileEditUsernameHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'3 to 30 lowercase letters, digits, “_” or “.”. Leave it empty to remove it. Who can find you by it is set in Friends.'**
+  String get profileEditUsernameHelp;
+
+  /// No description provided for @profileEditSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved.'**
+  String get profileEditSaved;
+
+  /// No description provided for @profileEditFinanceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile never shows your accounts, amounts or transactions.'**
+  String get profileEditFinanceNote;
+
+  /// No description provided for @prefsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get prefsTitle;
+
+  /// No description provided for @prefsEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency, region, formats, defaults, theme and accessibility'**
+  String get prefsEntrySubtitle;
+
+  /// No description provided for @prefsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences saved.'**
+  String get prefsSaved;
+
+  /// No description provided for @prefsMoneySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Money'**
+  String get prefsMoneySection;
+
+  /// No description provided for @prefsBaseCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Base currency'**
+  String get prefsBaseCurrency;
+
+  /// No description provided for @prefsBaseCurrencyExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Your base currency is the default for new accounts, budgets, goals, bills and receipts, and comes first on Home. Changing it converts nothing: existing accounts, transactions, budgets and goals keep their own currency, and amounts in different currencies are never added together.'**
+  String get prefsBaseCurrencyExplain;
+
+  /// No description provided for @prefsBaseCurrencyChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'From now on new records default to {currency}. Nothing you already recorded changes.'**
+  String prefsBaseCurrencyChanged(String currency);
+
+  /// No description provided for @prefsDisplayCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Second currency to show'**
+  String get prefsDisplayCurrency;
+
+  /// No description provided for @prefsDisplayCurrencyHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. Where exchange rates are used, amounts can also be shown in this currency; your records keep their own currency.'**
+  String get prefsDisplayCurrencyHelp;
+
+  /// No description provided for @prefsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get prefsNone;
+
+  /// No description provided for @prefsDefaultAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Default account'**
+  String get prefsDefaultAccount;
+
+  /// No description provided for @prefsDefaultAccountHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Chosen first when you add an expense or income.'**
+  String get prefsDefaultAccountHelp;
+
+  /// No description provided for @prefsDefaultAccountMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'An account that is no longer active'**
+  String get prefsDefaultAccountMissing;
+
+  /// No description provided for @prefsDefaultRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Default period'**
+  String get prefsDefaultRange;
+
+  /// No description provided for @prefsDefaultRangeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The period Home opens with.'**
+  String get prefsDefaultRangeHelp;
+
+  /// No description provided for @prefsRegionSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Region and language'**
+  String get prefsRegionSection;
+
+  /// No description provided for @prefsCountryHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Two letters, for example IN. Leave it empty to remove it.'**
+  String get prefsCountryHelp;
+
+  /// No description provided for @prefsTimezoneHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Today\", budget periods and reminders follow this time zone. Changing it doesn\'t move anything you already recorded.'**
+  String get prefsTimezoneHelp;
+
+  /// No description provided for @prefsTimezoneSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search time zones'**
+  String get prefsTimezoneSearch;
+
+  /// No description provided for @prefsTimezoneUseTyped.
+  ///
+  /// In en, this message translates to:
+  /// **'Use “{zone}”'**
+  String prefsTimezoneUseTyped(String zone);
+
+  /// No description provided for @prefsTimezoneDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This device: {zone}'**
+  String prefsTimezoneDevice(String zone);
+
+  /// No description provided for @prefsLocale.
+  ///
+  /// In en, this message translates to:
+  /// **'Language and region'**
+  String get prefsLocale;
+
+  /// No description provided for @prefsLocaleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The app\'s language follows this setting.'**
+  String get prefsLocaleHelp;
+
+  /// No description provided for @prefsLocaleEnIn.
+  ///
+  /// In en, this message translates to:
+  /// **'English (India)'**
+  String get prefsLocaleEnIn;
+
+  /// No description provided for @prefsLocaleEnUs.
+  ///
+  /// In en, this message translates to:
+  /// **'English (United States)'**
+  String get prefsLocaleEnUs;
+
+  /// No description provided for @prefsLocaleEnGb.
+  ///
+  /// In en, this message translates to:
+  /// **'English (United Kingdom)'**
+  String get prefsLocaleEnGb;
+
+  /// No description provided for @prefsLocaleHiIn.
+  ///
+  /// In en, this message translates to:
+  /// **'हिन्दी (भारत)'**
+  String get prefsLocaleHiIn;
+
+  /// No description provided for @prefsFormatsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Formats'**
+  String get prefsFormatsSection;
+
+  /// No description provided for @prefsDateFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Date format'**
+  String get prefsDateFormat;
+
+  /// No description provided for @prefsDateFormatLocale.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the language'**
+  String get prefsDateFormatLocale;
+
+  /// No description provided for @prefsDateFormatDmy.
+  ///
+  /// In en, this message translates to:
+  /// **'Day, month, year (31/12/2026)'**
+  String get prefsDateFormatDmy;
+
+  /// No description provided for @prefsDateFormatMdy.
+  ///
+  /// In en, this message translates to:
+  /// **'Month, day, year (12/31/2026)'**
+  String get prefsDateFormatMdy;
+
+  /// No description provided for @prefsDateFormatYmd.
+  ///
+  /// In en, this message translates to:
+  /// **'Year, month, day (2026-12-31)'**
+  String get prefsDateFormatYmd;
+
+  /// No description provided for @prefsDateFormatHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Used in exports, reports and emails.'**
+  String get prefsDateFormatHelp;
+
+  /// No description provided for @prefsNumberFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Number format'**
+  String get prefsNumberFormat;
+
+  /// No description provided for @prefsNumberFormatLocale.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the language and region'**
+  String get prefsNumberFormatLocale;
+
+  /// No description provided for @prefsNumberFormatIndian.
+  ///
+  /// In en, this message translates to:
+  /// **'Lakh and crore ({example})'**
+  String prefsNumberFormatIndian(String example);
+
+  /// No description provided for @prefsNumberFormatInternational.
+  ///
+  /// In en, this message translates to:
+  /// **'Thousands and millions ({example})'**
+  String prefsNumberFormatInternational(String example);
+
+  /// No description provided for @prefsNumberFormatHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'How amounts are grouped in the app, for example {example}.'**
+  String prefsNumberFormatHelp(String example);
+
+  /// No description provided for @prefsWeekStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Week starts on'**
+  String get prefsWeekStart;
+
+  /// No description provided for @prefsWeekStartHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for weekly budgets, reports and weekly totals.'**
+  String get prefsWeekStartHelp;
+
+  /// No description provided for @prefsMonthStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Month starts on day'**
+  String get prefsMonthStart;
+
+  /// No description provided for @prefsMonthStartHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 25 if your salary arrives on the 25th. Days 1 to 28.'**
+  String get prefsMonthStartHelp;
+
+  /// No description provided for @prefsMonthStartDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day}'**
+  String prefsMonthStartDay(int day);
+
+  /// No description provided for @prefsAppearanceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get prefsAppearanceSection;
+
+  /// No description provided for @prefsThemeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to your account and used on this device.'**
+  String get prefsThemeHelp;
+
+  /// No description provided for @a11yTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility'**
+  String get a11yTitle;
+
+  /// No description provided for @a11yIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'These settings apply in the app as soon as you save, on top of your phone\'s own accessibility settings.'**
+  String get a11yIntro;
+
+  /// No description provided for @a11yReducedMotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce motion'**
+  String get a11yReducedMotion;
+
+  /// No description provided for @a11yReducedMotionHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Turns off screen transitions and other animations.'**
+  String get a11yReducedMotionHelp;
+
+  /// No description provided for @a11yHighContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast'**
+  String get a11yHighContrast;
+
+  /// No description provided for @a11yHighContrastHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Stronger colors and borders that are easier to tell apart.'**
+  String get a11yHighContrastHelp;
+
+  /// No description provided for @a11yTextSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get a11yTextSize;
+
+  /// No description provided for @a11yTextSizeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String a11yTextSizeValue(int percent);
+
+  /// No description provided for @a11yTextSizeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiplies your phone\'s text size, from 80% to 200%.'**
+  String get a11yTextSizeHelp;
+
+  /// No description provided for @a11yTextSizeSmaller.
+  ///
+  /// In en, this message translates to:
+  /// **'Smaller text'**
+  String get a11yTextSizeSmaller;
+
+  /// No description provided for @a11yTextSizeLarger.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger text'**
+  String get a11yTextSizeLarger;
+
+  /// No description provided for @a11yTextSizePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: ₹1,250.50 spent on groceries this week.'**
+  String get a11yTextSizePreview;
+
+  /// No description provided for @prefsUnsavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your changes?'**
+  String get prefsUnsavedTitle;
+
+  /// No description provided for @prefsUnsavedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed some settings but didn\'t save them.'**
+  String get prefsUnsavedBody;
+
+  /// No description provided for @prefsDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get prefsDiscard;
+
+  /// No description provided for @receiptPagesAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add receipt'**
+  String get receiptPagesAddTitle;
+
+  /// No description provided for @receiptPagesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Add each photo or PDF of the receipt, in order. A long receipt can have up to {max} pages. Nothing is read automatically: you enter the details next.'**
+  String receiptPagesIntro(int max);
+
+  /// No description provided for @receiptPagesNoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No pages yet'**
+  String get receiptPagesNoneTitle;
+
+  /// No description provided for @receiptPagesNoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo, or choose photos or files. Each one becomes a page.'**
+  String get receiptPagesNoneBody;
+
+  /// No description provided for @receiptPagesTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get receiptPagesTakePhoto;
+
+  /// No description provided for @receiptPagesChoosePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose photos'**
+  String get receiptPagesChoosePhotos;
+
+  /// No description provided for @receiptPagesChooseFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose files'**
+  String get receiptPagesChooseFiles;
+
+  /// No description provided for @receiptPagesPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {position} of {total}'**
+  String receiptPagesPage(int position, int total);
+
+  /// No description provided for @receiptPagesFile.
+  ///
+  /// In en, this message translates to:
+  /// **'File {position} of {total}'**
+  String receiptPagesFile(int position, int total);
+
+  /// No description provided for @receiptPagesMoveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {name} up'**
+  String receiptPagesMoveUp(String name);
+
+  /// No description provided for @receiptPagesMoveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {name} down'**
+  String receiptPagesMoveDown(String name);
+
+  /// No description provided for @receiptPagesRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}'**
+  String receiptPagesRemove(String name);
+
+  /// No description provided for @receiptPagesStateWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to upload'**
+  String get receiptPagesStateWaiting;
+
+  /// No description provided for @receiptPagesStateUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get receiptPagesStateUploaded;
+
+  /// No description provided for @receiptPagesStateCreating.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding the receipt…'**
+  String get receiptPagesStateCreating;
+
+  /// No description provided for @receiptPagesStateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not added: {reason}'**
+  String receiptPagesStateFailed(String reason);
+
+  /// No description provided for @receiptPagesStateDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get receiptPagesStateDone;
+
+  /// No description provided for @receiptPagesModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'These files are'**
+  String get receiptPagesModeTitle;
+
+  /// No description provided for @receiptPagesModePages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages of one receipt'**
+  String get receiptPagesModePages;
+
+  /// No description provided for @receiptPagesModePagesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'In the order shown above.'**
+  String get receiptPagesModePagesHelp;
+
+  /// No description provided for @receiptPagesModeSeparate.
+  ///
+  /// In en, this message translates to:
+  /// **'Separate receipts'**
+  String get receiptPagesModeSeparate;
+
+  /// No description provided for @receiptPagesModeSeparateHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Each file becomes its own receipt.'**
+  String get receiptPagesModeSeparateHelp;
+
+  /// No description provided for @receiptPagesNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get receiptPagesNotes;
+
+  /// No description provided for @receiptPagesNotesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For example who it was for. Kept with the receipt.'**
+  String get receiptPagesNotesHelp;
+
+  /// No description provided for @receiptPagesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add receipt} other{Add receipt with {count} pages}}'**
+  String receiptPagesSave(int count);
+
+  /// No description provided for @receiptPagesSaveSeparate.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1 receipt} other{Add {count} receipts}}'**
+  String receiptPagesSaveSeparate(int count);
+
+  /// No description provided for @receiptPagesStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop uploading'**
+  String get receiptPagesStop;
+
+  /// No description provided for @receiptPagesStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped. Nothing was added; uploaded pages are kept until you leave this screen.'**
+  String get receiptPagesStopped;
+
+  /// No description provided for @receiptPagesTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'A receipt can have up to {max} pages.'**
+  String receiptPagesTooMany(int max);
+
+  /// No description provided for @receiptPagesAlreadyAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is already in the list.'**
+  String receiptPagesAlreadyAdded(String name);
+
+  /// No description provided for @receiptPagesRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wasn\'t added: {reason}'**
+  String receiptPagesRefused(String name, String reason);
+
+  /// No description provided for @receiptPagesUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Some pages couldn\'t be uploaded. Try again to upload the rest; uploaded pages aren\'t sent twice.'**
+  String get receiptPagesUploadFailed;
+
+  /// No description provided for @receiptPagesSomeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 receipt wasn\'t added. Try again to add it.} other{{count} receipts weren\'t added. Try again to add them.}}'**
+  String receiptPagesSomeFailed(int count);
+
+  /// No description provided for @receiptPagesAddedMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 receipt added. Enter its details next.} other{{count} receipts added. Enter their details next.}}'**
+  String receiptPagesAddedMany(int count);
+
+  /// No description provided for @receiptPagesLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave without adding?'**
+  String get receiptPagesLeaveTitle;
+
+  /// No description provided for @receiptPagesLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The pages you chose won\'t be added, and uploaded ones are deleted.'**
+  String get receiptPagesLeaveBody;
+
+  /// No description provided for @receiptPagesLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get receiptPagesLeave;
 }
 
 class _AppLocalizationsDelegate

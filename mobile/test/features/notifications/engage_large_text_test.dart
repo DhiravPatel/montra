@@ -171,6 +171,15 @@ void main() {
         insight(id: 'ins-2', status: 'snoozed', severity: 'warning'),
       ], next: 'more'),
     );
+    when(() => insights.get('ins-1')).thenAnswer(
+      (_) async => insight(
+        feedback: <String, Object?>{
+          'feedback': 'not_helpful',
+          'note': 'A note',
+          'updated_at': '2026-11-12T07:00:00Z',
+        },
+      ),
+    );
     when(() => insights.mutes()).thenAnswer(
       (_) async => <InsightMuteDto>[
         insightMute(subtype: 'subscription_price_increase', scope: 'sub-1'),

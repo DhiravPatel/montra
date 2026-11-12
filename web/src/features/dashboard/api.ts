@@ -1,10 +1,21 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/api/client';
 import { commaSeparatedArrays } from '@/shared/api/query';
-import { apiData } from '@/shared/api/request';
+import { apiData, apiEnvelope } from '@/shared/api/request';
 import type { operations } from '@/shared/api/schema';
 import { financeKeys } from '@/shared/finance/keys';
-import type { DashboardSummary, Widget, WidgetsPatch } from '@/shared/finance/types';
+import type {
+  DashboardPlanning,
+  DashboardSummary,
+  Widget,
+  WidgetsPatch,
+} from '@/shared/finance/types';
+
+/** The planning cards' data and when the server produced it (`meta.timestamp`). */
+export interface PlanningResult {
+  planning: DashboardPlanning;
+  generatedAt: string;
+}
 
 export type DashboardQuery = NonNullable<operations['dashboard-summary']['parameters']['query']>;
 
@@ -22,6 +33,14 @@ export const dashboardApi = {
     apiData(api.GET('/dashboard/widgets', signal ? { signal } : {})),
   updateWidgets: (body: WidgetsPatch): Promise<Widget[]> =>
     apiData(api.PATCH('/dashboard/widgets', { body })),
+  /**
+   * Budgets (fullest first), upcoming items (overdue first), goals and group
+   * balances with their counts: one request for all four planning cards.
+   */
+  planning: async (signal?: AbortSignal): Promise<PlanningResult> => {
+    const envelope = await apiEnvelope(api.GET('/dashboard/planning', signal ? { signal } : {}));
+    return { planning: envelope.data, generatedAt: envelope.meta.timestamp };
+  },
 };
 
 export function useDashboardSummary(query: DashboardQuery, enabled: boolean) {
@@ -38,5 +57,14 @@ export function useWidgetLayout() {
     queryKey: financeKeys.widgets(),
     queryFn: ({ signal }) => dashboardApi.widgets(signal),
     staleTime: 5 * 60_000,
+  });
+}
+
+/** Shared by every planning card; fetched only while at least one of them is shown. */
+export function useDashboardPlanning(enabled: boolean) {
+  return useQuery({
+    queryKey: financeKeys.dashboardPlanning(),
+    queryFn: ({ signal }) => dashboardApi.planning(signal),
+    enabled,
   });
 }

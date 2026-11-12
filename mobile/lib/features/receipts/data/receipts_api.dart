@@ -140,6 +140,15 @@ class ReceiptsApi {
     decode: _decodeReceipt,
   );
 
+  /// `DELETE /files/{fileId}`: deletes an uploaded page that never became
+  /// part of a receipt (the user removed it or left before adding the
+  /// receipt), so it does not use storage.
+  Future<void> deleteUpload(String fileId) => _client.send(
+    ApiEndpoints.deleteFile,
+    pathParameters: <String, String>{'fileId': fileId},
+    decode: decodeEnvelopeEmpty,
+  );
+
   static ReceiptDto _decodeReceipt(Map<String, Object?> json) =>
       decodeEnvelopeReceiptDto(json).data;
 }

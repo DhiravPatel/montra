@@ -339,6 +339,44 @@ void main() {
       expect(find.text('Privacy settings saved.'), findsOneWidget);
     });
 
+    testWidgets('coded username answers are shown on the field', (
+      WidgetTester tester,
+    ) async {
+      final List<(ErrorObjectCode, int, String)> answers =
+          <(ErrorObjectCode, int, String)>[
+            (ErrorObjectCode.conflict, 409, 'username_taken'),
+            (ErrorObjectCode.validationError, 422, 'username_reserved'),
+            (ErrorObjectCode.validationError, 422, 'username_invalid'),
+          ];
+      int call = 0;
+      when(() => social.updateProfile(any())).thenAnswer((_) async {
+        final (ErrorObjectCode code, int status, String detail) =
+            answers[call++];
+        throw serverError(
+          code,
+          status: status,
+          details: <Detail>[
+            Detail(
+              message: 'English text',
+              field: 'body.username',
+              code: detail,
+            ),
+          ],
+        );
+      });
+      await pump(tester, '/friends/settings');
+      await tester.enterText(find.byType(TextFormField), 'montra.team');
+      for (final String text in <String>[
+        'That username is taken. Try another one.',
+        'This username is reserved. Choose another one.',
+        'Use 3 to 30 lowercase letters, digits, “_” or “.”.',
+      ]) {
+        await tapText(tester, 'Save');
+        expect(find.text(text), findsOneWidget);
+        expect(find.text('English text'), findsNothing);
+      }
+    });
+
     testWidgets('the username rules are checked first', (
       WidgetTester tester,
     ) async {

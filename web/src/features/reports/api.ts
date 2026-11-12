@@ -37,6 +37,11 @@ export const reportsApi = {
     apiData(api.GET('/reports/{id}/download', { params: { path: { id } } })),
   schedules: (signal?: AbortSignal): Promise<ReportSchedule[]> =>
     apiData(api.GET('/reports/schedules', signalOption(signal))),
+  /** One schedule, e.g. its latest version after a concurrent change. */
+  schedule: (id: string, signal?: AbortSignal): Promise<ReportSchedule> =>
+    apiData(
+      api.GET('/reports/schedules/{id}', { params: { path: { id } }, ...signalOption(signal) }),
+    ),
   createSchedule: (body: ScheduleInput): Promise<ReportSchedule> =>
     apiData(api.POST('/reports/schedules', { body })),
   /** Edits, pauses (`enabled: false`) or resumes a schedule; `version` detects a concurrent change. */

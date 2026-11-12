@@ -376,6 +376,25 @@ void main() {
       expect(find.textContaining('#token='), findsNothing);
     });
 
+    testWidgets("the server's share_url is shared when it sends one", (
+      WidgetTester tester,
+    ) async {
+      const String shareUrl = 'https://app.example/groups/join#token=$token';
+      when(
+        () => groups.createInvitation('grp-home', any()),
+      ).thenAnswer((_) async => invitation(token: token, shareUrl: shareUrl));
+      await pump(tester, '/groups/grp-home/settings');
+      await tapText(tester, 'Create an invitation link');
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Create an invitation link'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(shareUrl), findsOneWidget);
+      expect(find.textContaining('localhost:8080'), findsNothing);
+      await tapText(tester, 'Share');
+      expect(shared.single, 'Join Home on Montra: $shareUrl');
+    });
+
     testWidgets('admins add people from friends; join requests are approved', (
       WidgetTester tester,
     ) async {

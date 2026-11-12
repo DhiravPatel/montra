@@ -51,6 +51,33 @@ export function SchedulesCard() {
       }),
     onSettled: refresh,
   });
+  /**
+   * After a version conflict: read just the edited schedule again and put it
+   * in the list, so the form restarts from its latest version. When it was
+   * deleted meanwhile, close the form and refresh the list.
+   */
+  const reloadEditing = async (id: string) => {
+    try {
+      const latest = await queryClient.query({
+        queryKey: reportsKeys.schedule(id),
+        queryFn: ({ signal }) => reportsApi.schedule(id, signal),
+        staleTime: 0,
+      });
+      queryClient.setQueryData<ReportSchedule[]>(reportsKeys.schedules(), (list) =>
+        list?.map((item) => (item.id === id ? latest : item)),
+      );
+      setConflict(true);
+    } catch (error) {
+      if (hasErrorCode(error, 'NOT_FOUND')) {
+        setEditingId(null);
+        setConflict(false);
+        toast.show({ tone: 'info', title: t('reports.schedule.gone') });
+      } else {
+        setConflict(true);
+      }
+      void refresh();
+    }
+  };
   const editing = editingId ? schedules.data?.find((item) => item.id === editingId) : undefined;
 
   const runToggle = (schedule: ReportSchedule) => {
@@ -249,8 +276,7 @@ export function SchedulesCard() {
           schedule={editing}
           conflict={conflict}
           onConflict={() => {
-            setConflict(true);
-            void refresh();
+            void reloadEditing(editing.id);
           }}
           onOpenChange={(open) => {
             if (!open) {

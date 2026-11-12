@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart' show AsyncNotifierProviderFamily;
+import 'package:flutter_riverpod/misc.dart'
+    show AsyncNotifierProviderFamily, FutureProviderFamily;
+import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
 import 'package:montra_mobile/features/reports/data/reports_api.dart';
@@ -160,4 +162,25 @@ final FutureProvider<List<ScheduleDto>> reportSchedulesProvider =
     FutureProvider.autoDispose<List<ScheduleDto>>((Ref ref) {
       ref.watch(currentUserIdProvider);
       return ref.read(reportsApiProvider).schedules();
+    });
+
+/// One schedule (`GET /reports/schedules/{id}`) for its edit screen; a
+/// deleted (or unknown) schedule reads as `null`.
+final FutureProviderFamily<ScheduleDto?, String> reportScheduleProvider =
+    FutureProvider.autoDispose.family<ScheduleDto?, String>((
+      Ref ref,
+      String id,
+    ) async {
+      ref.watch(currentUserIdProvider);
+      try {
+        return await ref.read(reportsApiProvider).schedule(id);
+      } on ApiException catch (error) {
+        // Unknown, someone else's, or not an ID at all (a mistyped link
+        // answers 422 on `path.id`).
+        if (error.code == ErrorObjectCode.notFound ||
+            error.details.any((Detail d) => d.field == 'path.id')) {
+          return null;
+        }
+        rethrow;
+      }
     });

@@ -45,16 +45,31 @@ type entry struct {
 
 // Limiter holds buckets keyed by policy+subject.
 type Limiter struct {
-	mu      sync.Mutex
-	buckets map[string]*entry
-	now     func() time.Time
+	mu        sync.Mutex
+	buckets   map[string]*entry
+	now       func() time.Time
+	overrides map[string]Policy
 }
 
 // New creates a limiter and starts janitor cleanup of idle buckets.
-func New() *Limiter {
-	l := &Limiter{buckets: map[string]*entry{}, now: time.Now}
+// overrides replace named policies for this limiter only (configuration
+// allows them in development and test, e.g. for end-to-end runs).
+func New(overrides ...Policy) *Limiter {
+	l := &Limiter{buckets: map[string]*entry{}, now: time.Now, overrides: map[string]Policy{}}
+	for _, p := range overrides {
+		l.overrides[p.Name] = p
+	}
 	go l.janitor()
 	return l
+}
+
+// policy resolves a policy name, applying this limiter's overrides.
+func (l *Limiter) policy(name string) (Policy, bool) {
+	if p, ok := l.overrides[name]; ok {
+		return p, true
+	}
+	p, ok := byName[name]
+	return p, ok
 }
 
 func (l *Limiter) janitor() {
@@ -104,7 +119,7 @@ func Middleware(api huma.API, l *Limiter, subject SubjectFunc, onDenied func(ctx
 		p := Default
 		if op := ctx.Operation(); op != nil && op.Metadata != nil {
 			if name, ok := op.Metadata["rate_policy"].(string); ok {
-				if pp, ok := byName[name]; ok {
+				if pp, ok := l.policy(name); ok {
 					p = pp
 				}
 			}

@@ -530,9 +530,18 @@ describe('ReportsPage — schedules', () => {
 
   it('pauses, resumes and edits a schedule with its version, and reloads it after a conflict', async () => {
     const patches: { id: string; body: Record<string, unknown> }[] = [];
+    const reads: string[] = [];
+    let listReads = 0;
     let schedule = makeSchedule();
     server.use(
-      http.get(`${API}/reports/schedules`, () => HttpResponse.json(envelope([schedule]))),
+      http.get(`${API}/reports/schedules`, () => {
+        listReads += 1;
+        return HttpResponse.json(envelope([schedule]));
+      }),
+      http.get(`${API}/reports/schedules/:id`, ({ params }) => {
+        reads.push(String(params.id));
+        return HttpResponse.json(envelope(schedule));
+      }),
       ...reportsBackend(),
       http.patch(`${API}/reports/schedules/:id`, async ({ params, request }) => {
         const body = (await request.json()) as Record<string, unknown>;
@@ -578,12 +587,16 @@ describe('ReportsPage — schedules', () => {
     await user.clear(title);
     await user.type(title, 'Month in review');
     await user.click(within(dialog).getByLabelText('CSV'));
+    const listReadsBefore = listReads;
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
     // The conflict: the latest schedule is loaded and the form starts again from it.
     expect(await within(dialog).findByText('This was changed somewhere else')).toBeInTheDocument();
     await waitFor(() => {
       expect(within(dialog).getByLabelText('Every week')).toBeChecked();
     });
+    // Only that schedule is read again (GET /reports/schedules/{id}), not the whole list.
+    expect(reads).toEqual([SCHEDULE_MONTHLY]);
+    expect(listReads).toBe(listReadsBefore);
     expect(patches[2]).toEqual({
       id: SCHEDULE_MONTHLY,
       body: {
@@ -607,6 +620,37 @@ describe('ReportsPage — schedules', () => {
       version: 9,
     });
     expect(await within(card).findByText('Week in review')).toBeInTheDocument();
+  });
+
+  it('closes the form when the schedule was deleted while it was being edited', async () => {
+    let schedules = [makeSchedule()];
+    const reads: string[] = [];
+    server.use(
+      http.get(`${API}/reports/schedules`, () => HttpResponse.json(envelope(schedules))),
+      ...reportsBackend(),
+      http.patch(`${API}/reports/schedules/:id`, () => {
+        // Deleted on another device meanwhile; the stale version conflicts first.
+        schedules = [];
+        return HttpResponse.json(errorBody({ code: 'VERSION_CONFLICT' }), { status: 409 });
+      }),
+      http.get(`${API}/reports/schedules/:id`, ({ params }) => {
+        reads.push(String(params.id));
+        return HttpResponse.json(errorBody({ code: 'NOT_FOUND' }), { status: 404 });
+      }),
+    );
+    const user = await openPage();
+    const card = screen.getByRole('region', { name: 'Scheduled reports' });
+    await user.click(
+      await within(card).findByRole('button', { name: 'Edit schedule Monthly summary (monthly)' }),
+    );
+    const dialog = await screen.findByRole('dialog', { name: 'Edit scheduled report' });
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('This schedule was already deleted')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Edit scheduled report' })).toBeNull();
+    });
+    expect(reads).toEqual([SCHEDULE_MONTHLY]);
+    expect(await within(card).findByText('No scheduled reports')).toBeInTheDocument();
   });
 
   it('shows an empty state for schedules', async () => {

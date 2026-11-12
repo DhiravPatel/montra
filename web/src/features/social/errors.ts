@@ -1,5 +1,5 @@
-import { hasErrorCode } from '@/shared/api/errors';
-import { domainRuleCode, errorDetailCode } from '@/shared/finance/domainErrors';
+import { hasErrorCode, isApiError } from '@/shared/api/errors';
+import { detailCount, domainRuleCode, errorDetailCode } from '@/shared/finance/domainErrors';
 import { describeError } from '@/shared/i18n/describeError';
 import type { Translate } from '@/shared/i18n/types';
 
@@ -43,7 +43,49 @@ export function personActionError(error: unknown, t: Translate): string {
   return describeError(error, t);
 }
 
+export type UsernameProblem = 'taken' | 'reserved' | 'invalid';
+
+/**
+ * Why PATCH /me refused a username: 409 `username_taken` (someone else has
+ * it; an uncoded 409 means the same on older servers), 422
+ * `username_reserved` (kept for Montra and staff) or `username_invalid`
+ * (not 3-30 of a-z 0-9 _ .). Null for any other failure.
+ */
+export function usernameProblem(error: unknown): UsernameProblem | null {
+  if (!isApiError(error)) return null;
+  const code = error.details.find((item) => item.code?.startsWith('username_'))?.code;
+  if (code === 'username_taken' || (error.code === 'CONFLICT' && !code)) return 'taken';
+  if (code === 'username_reserved') return 'reserved';
+  if (code === 'username_invalid') return 'invalid';
+  return null;
+}
+
 /** True when a username change failed because someone else has it. */
 export function isUsernameTaken(error: unknown): boolean {
-  return hasErrorCode(error, 'CONFLICT');
+  return usernameProblem(error) === 'taken';
+}
+
+/** A username refusal in the interface language (null when it was not about the username). */
+export function usernameErrorMessage(error: unknown, t: Translate): string | null {
+  switch (usernameProblem(error)) {
+    case 'taken':
+      return t('social.username.taken');
+    case 'reserved':
+      return t('social.username.reserved');
+    case 'invalid':
+      return t('social.username.invalid');
+    case null:
+      return null;
+  }
+}
+
+/**
+ * The shortest search GET /users/search accepts, when it refused the text
+ * as too short (`query_too_short` {min} on query.q); null otherwise.
+ */
+export function queryTooShortMin(error: unknown): number | null {
+  if (!isApiError(error) || error.code !== 'VALIDATION_ERROR') return null;
+  const detail = error.details.find((item) => item.code === 'query_too_short');
+  if (!detail) return null;
+  return detailCount(detail.params, 'min') ?? 3;
 }

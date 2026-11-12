@@ -69,6 +69,34 @@ class FakeFileSource implements FileSource {
     }
     return next as PickedFile?;
   }
+
+  /// Every [pickMany] request: where from, for what and the limit.
+  final List<(FileOrigin, UploadPurpose, int)> manyRequests =
+      <(FileOrigin, UploadPurpose, int)>[];
+
+  /// Answers with the next queued item: a list of files as they are, a
+  /// single file as a list of one, null (cancelled) as an empty list.
+  @override
+  Future<List<PickedFile>> pickMany(
+    FileOrigin origin,
+    UploadPurpose purpose, {
+    required int limit,
+  }) async {
+    manyRequests.add((origin, purpose, limit));
+    if (_results.isEmpty) {
+      return const <PickedFile>[];
+    }
+    final Object? next = _results.removeAt(0);
+    if (next is Exception) {
+      throw next;
+    }
+    if (next is List<PickedFile>) {
+      return next.take(limit).toList();
+    }
+    return next == null
+        ? const <PickedFile>[]
+        : <PickedFile>[next as PickedFile];
+  }
 }
 
 /// Records shared and saved files.

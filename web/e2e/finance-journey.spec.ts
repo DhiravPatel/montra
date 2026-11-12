@@ -1,5 +1,7 @@
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './support/test';
 import { waitForEmailLink } from './support/devMailbox';
+import { signInWithForm, submitHonouringRateLimit } from './support/session';
 
 /**
  * Money journey against the local Go API: onboarding with a first account,
@@ -14,10 +16,8 @@ const email = `e2e.${Date.now()}.money@example.com`;
 const password = 'quiet-harbor-71-e2e';
 
 async function signIn(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  // Waits out the API's sign-in rate limit when all projects run back to back.
+  await signInWithForm(page, { email, password });
 }
 
 test('set up, record money and see it everywhere', async ({ page }) => {
@@ -31,7 +31,12 @@ test('set up, record money and see it everywhere', async ({ page }) => {
   await page.getByLabel('Main currency').selectOption('INR');
   await page.getByLabel(/I agree to the/).check();
   await page.getByLabel(/18 years of age or older/).check();
-  await page.getByRole('button', { name: 'Create account' }).click();
+  await submitHonouringRateLimit(
+    page,
+    page.getByRole('button', { name: 'Create account' }),
+    '/api/v1/auth/register',
+    () => page.getByLabel('New password').fill(password),
+  );
   await expect(page.getByRole('heading', { level: 1, name: 'Check your email' })).toBeVisible();
   // Local APIs may run with AUTH_DEV_AUTO_VERIFY_EMAIL=true (no email is sent then).
   const link = await waitForEmailLink(email, '/verify-email', 8_000).catch(() => null);

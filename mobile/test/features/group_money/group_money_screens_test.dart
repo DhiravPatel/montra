@@ -433,6 +433,35 @@ void main() {
       ).called(1);
     });
 
+    testWidgets('pausing a rule paused elsewhere says so in words', (
+      WidgetTester tester,
+    ) async {
+      when(() => api.recurringAction(any(), any(), any())).thenThrow(
+        serverError(
+          ErrorObjectCode.domainRuleViolation,
+          details: const <Detail>[
+            Detail(
+              code: 'invalid_status_transition',
+              message: 'English text',
+              params: <String, String>{'from': 'paused', 'to': 'paused'},
+            ),
+          ],
+        ),
+      );
+      await pump(tester, '/groups/$gid/recurring/rule-1');
+      await tester.tap(find.byTooltip('More options'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pause').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining("This can't change from paused to paused."),
+        findsOneWidget,
+      );
+      expect(find.text('English text'), findsNothing);
+      // The rule is read again to show where it stands now.
+      verify(() => api.recurringRule(gid, 'rule-1')).called(2);
+    });
+
     testWidgets('a former participant is named when adding fails', (
       WidgetTester tester,
     ) async {

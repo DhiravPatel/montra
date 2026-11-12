@@ -20,6 +20,7 @@ import 'package:montra_mobile/features/reports/data/reports_api.dart';
 import 'package:montra_mobile/features/settings/data/limits_api.dart';
 import 'package:montra_mobile/features/settings/data/preferences_api.dart';
 
+import '../helpers/dashboard_fakes.dart';
 import '../helpers/finance_fakes.dart';
 import '../helpers/imports_fakes.dart';
 import '../helpers/insights_fakes.dart';
@@ -132,6 +133,8 @@ void main() {
     when(() => prefs.preferences()).thenAnswer((_) async => preferences());
     when(() => dashboard.summary(any())).thenAnswer((_) async => summary());
     when(() => dashboard.widgets()).thenAnswer((_) async => widgetLayout());
+    when(() => dashboard.planning())
+        .thenAnswer((_) async => dashboardPlanning(empty: true));
   });
 
   List<Override> overrides() => <Override>[

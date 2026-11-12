@@ -17,7 +17,8 @@ import type { MessageKey, Translate } from '@/shared/i18n/types';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { useT } from '@/shared/i18n/I18nContext';
 import { cx } from '@/shared/utils/cx';
-import { useDashboardSummary, useWidgetLayout } from '../api';
+import { useDashboardPlanning, useDashboardSummary, useWidgetLayout } from '../api';
+import type { PlanningWidgetProps } from '../components/PlanningWidgetCard';
 import { DashboardFilters } from '../components/DashboardFilters';
 import { WidgetSettingsDialog } from '../components/WidgetSettingsDialog';
 import {
@@ -31,20 +32,27 @@ import {
 import {
   DEFAULT_WIDGET_ORDER,
   isKnownWidget,
-  type KnownWidgetKey,
+  isPlanningWidget,
+  type PlanningWidgetKey,
+  type SummaryWidgetKey,
   widgetLabels,
 } from '../registry';
 import { BalancesWidget } from '../widgets/BalancesWidget';
+import { BudgetsWidget } from '../widgets/BudgetsWidget';
 import { CashFlowTrendWidget } from '../widgets/CashFlowTrendWidget';
 import { CashFlowWidget } from '../widgets/CashFlowWidget';
 import { CategoryBreakdownWidget } from '../widgets/CategoryBreakdownWidget';
 import { DataCoverageWidget } from '../widgets/DataCoverageWidget';
+import { GoalsWidget } from '../widgets/GoalsWidget';
+import { GroupBalancesWidget } from '../widgets/GroupBalancesWidget';
 import { IncomeVsExpenseWidget } from '../widgets/IncomeVsExpenseWidget';
 import { RecentTransactionsWidget } from '../widgets/RecentTransactionsWidget';
 import { TopMerchantsWidget } from '../widgets/TopMerchantsWidget';
 import type { WidgetProps } from '../widgets/types';
+import { UpcomingWidget } from '../widgets/UpcomingWidget';
 
-const widgetComponents: Readonly<Record<KnownWidgetKey, (props: WidgetProps) => JSX.Element>> = {
+/** Widgets computed from the summary (period and filters). */
+const summaryComponents: Readonly<Record<SummaryWidgetKey, (props: WidgetProps) => JSX.Element>> = {
   balances: BalancesWidget,
   cash_flow: CashFlowWidget,
   income_vs_expense: IncomeVsExpenseWidget,
@@ -53,6 +61,16 @@ const widgetComponents: Readonly<Record<KnownWidgetKey, (props: WidgetProps) => 
   top_merchants: TopMerchantsWidget,
   recent_transactions: RecentTransactionsWidget,
   data_coverage: DataCoverageWidget,
+};
+
+/** Widgets drawn from the one planning request (not tied to the period). */
+const planningComponents: Readonly<
+  Record<PlanningWidgetKey, (props: PlanningWidgetProps) => JSX.Element>
+> = {
+  budgets: BudgetsWidget,
+  upcoming: UpcomingWidget,
+  goals: GoalsWidget,
+  group_balances: GroupBalancesWidget,
 };
 
 const fallbackLayout: Widget[] = DEFAULT_WIDGET_ORDER.map((key, position) => ({
@@ -127,6 +145,8 @@ export function DashboardPage() {
   const widgets = (layout.data ?? (layout.isError ? fallbackLayout : []))
     .filter((widget) => widget.visible && isKnownWidget(widget.key))
     .sort((a, b) => a.position - b.position);
+  // One request for every planning card, and only while one of them is shown.
+  const planning = useDashboardPlanning(widgets.some((widget) => isPlanningWidget(widget.key)));
 
   let content;
   if (!rangeReady) {
@@ -196,15 +216,13 @@ export function DashboardPage() {
         ) : null}
         {widgets.map((widget) => {
           if (!isKnownWidget(widget.key)) return null;
-          const Component = widgetComponents[widget.key];
-          return (
-            <Component
-              key={widget.key}
-              summary={data}
-              title={t(widgetLabels[widget.key].title)}
-              drill={drill}
-            />
-          );
+          const title = t(widgetLabels[widget.key].title);
+          if (isPlanningWidget(widget.key)) {
+            const Planning = planningComponents[widget.key];
+            return <Planning key={widget.key} title={title} planning={planning} />;
+          }
+          const Component = summaryComponents[widget.key];
+          return <Component key={widget.key} summary={data} title={title} drill={drill} />;
         })}
         <Card title={t('dashboard.notes.title')}>
           <Disclosure summary={t('dashboard.notes.show')}>

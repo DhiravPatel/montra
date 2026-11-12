@@ -151,7 +151,10 @@ export function IncomeVsExpenseWidget({ summary, title, drill }: WidgetProps) {
           {totals.map((total) => (
             <section
               key={total.currency}
-              aria-label={t('dashboard.inCurrency', { currency: total.currency })}
+              aria-label={t('dashboard.widgetInCurrency', {
+                widget: title,
+                currency: total.currency,
+              })}
             >
               {totals.length > 1 ? <CurrencyHeading currency={total.currency} /> : null}
               {chart(total)}

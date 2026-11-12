@@ -261,6 +261,8 @@ String detailMessage(AppLocalizations l10n, Detail detail) {
       l10n.errorRuleSumsDiffer(p['statement']!, p['ledger']!, currency ?? ''),
     'report_too_large' => l10n.errorRuleReportTooLarge,
     'balance_already_matches' => l10n.errorRuleBalanceAlreadyMatches,
+    'duplicate_item' => l10n.codeDuplicateItem,
+    'transaction_already_matched' => l10n.codeTransactionAlreadyMatched,
     _ => featureDetailMessage(l10n, detail) ?? detail.message,
   };
 }

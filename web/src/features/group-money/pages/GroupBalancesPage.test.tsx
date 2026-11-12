@@ -145,7 +145,7 @@ describe('GroupBalancesPage', () => {
     const suggestions = screen.getByRole('region', { name: 'Suggested payments' });
     await user.click(
       await within(suggestions).findByRole('button', {
-        name: 'Record a payment from Ravi Kumar to you',
+        name: 'Record this payment: Ravi Kumar to you',
       }),
     );
     const dialog = await screen.findByRole('dialog', { name: 'Record a payment' });
@@ -188,7 +188,7 @@ describe('GroupBalancesPage', () => {
     const suggestions = await screen.findByRole('region', { name: 'Suggested payments' });
     await user.click(
       await within(suggestions).findByRole('button', {
-        name: 'Record a payment from Ravi Kumar to you',
+        name: 'Record this payment: Ravi Kumar to you',
       }),
     );
     const dialog = await screen.findByRole('dialog', { name: 'Record a payment' });
@@ -296,9 +296,7 @@ describe('GroupBalancesPage', () => {
     await findPageHeading('Balances');
     await screen.findByText('You’re owed ₹500.00');
     expect(screen.queryByRole('button', { name: 'Record a payment' })).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /^Record a payment from/ }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Record this payment/ })).not.toBeInTheDocument();
     expect(screen.getByText('This group is archived')).toBeInTheDocument();
   });
 });

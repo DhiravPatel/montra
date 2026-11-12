@@ -17533,4 +17533,765 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get moderationErrorAppealDecided =>
       'इस अपील पर पहले ही फ़ैसला हो चुका है। नतीजा देखने के लिए फिर से लोड करें।';
+
+  @override
+  String codeQueryTooShort(String min) {
+    return 'यूज़रनेम के कम से कम $min अक्षर लिखें।';
+  }
+
+  @override
+  String get codeUsernameInvalid =>
+      '3 से 30 छोटे अक्षर, अंक, “_” या “.” इस्तेमाल करें।';
+
+  @override
+  String get codeUsernameReserved => 'यह यूज़रनेम आरक्षित है। कोई दूसरा चुनें।';
+
+  @override
+  String get codeAvatarFileInvalid =>
+      'यह फ़ोटो अभी इस्तेमाल नहीं हो सकती। इसे प्रोफ़ाइल फ़ोटो के रूप में फिर से अपलोड करें और अपलोड पूरा होने तक रुकें।';
+
+  @override
+  String get codeUsernameOrUserId =>
+      'किसे आमंत्रित करना है चुनें: यूज़रनेम लिखें या कोई दोस्त चुनें, दोनों नहीं।';
+
+  @override
+  String codeConfirmWordMismatch(String word) {
+    return 'पुष्टि के लिए ठीक-ठीक $word लिखें।';
+  }
+
+  @override
+  String get codeDeletionAlreadyScheduled =>
+      'आपका खाता पहले से हटाने के लिए तय है। आप इसे निजता और डेटा स्क्रीन पर रद्द कर सकते हैं।';
+
+  @override
+  String get codeNoDeletionScheduled =>
+      'रद्द करने के लिए कोई तय की गई खाता-हटाने की प्रक्रिया नहीं है।';
+
+  @override
+  String get codeDuplicateItem =>
+      'हर लेन-देन या स्टेटमेंट की पंक्ति सिर्फ़ एक बार चुनी जा सकती है।';
+
+  @override
+  String get codeTransactionAlreadyMatched =>
+      'इनमें से कोई लेन-देन पहले ही मिलाया जा चुका है। ताज़ा स्थिति देखने के लिए फिर से लोड करें।';
+
+  @override
+  String get codeSyncRunning =>
+      'एक सिंक पहले से चल रहा है। उसके पूरा होने तक रुकें, फिर से कोशिश करें।';
+
+  @override
+  String get codeAlreadyReported =>
+      'आप इसकी रिपोर्ट पहले ही कर चुके हैं; मॉडरेटर इसकी समीक्षा करेंगे।';
+
+  @override
+  String get widgetBudgets => 'बजट';
+
+  @override
+  String get widgetBudgetsHelp => 'सबसे ज़्यादा भरे बजट और उनकी रफ़्तार';
+
+  @override
+  String get widgetUpcoming => 'आने वाले भुगतान';
+
+  @override
+  String get widgetUpcomingHelp =>
+      'बकाया और आने वाले बिल, आवर्ती भुगतान, नवीनीकरण और लक्ष्य की तारीखें';
+
+  @override
+  String get widgetGoals => 'लक्ष्य';
+
+  @override
+  String get widgetGoalsHelp => 'सबसे नज़दीकी लक्ष्यों की प्रगति';
+
+  @override
+  String get widgetGroupBalances => 'समूह के हिसाब';
+
+  @override
+  String get widgetGroupBalancesHelp =>
+      'वे समूह जिनमें आपको पैसे मिलने हैं या आपको देने हैं';
+
+  @override
+  String get dashPlanLoading => 'लोड हो रहा है…';
+
+  @override
+  String dashPlanError(String reason) {
+    return 'यह कार्ड लोड नहीं हो सका। $reason';
+  }
+
+  @override
+  String dashPlanBudgetsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count चालू बजट',
+      one: '1 चालू बजट',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashPlanBudgetsOver(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बजट से ज़्यादा खर्च हुआ',
+      one: '1 बजट से ज़्यादा खर्च हुआ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanBudgetsNoneOver => 'कोई भी बजट पार नहीं हुआ';
+
+  @override
+  String get dashPlanBudgetsEmpty =>
+      'कोई चालू बजट नहीं है। बजट दिखाता है कि आपने सीमा में से कितना खर्च किया।';
+
+  @override
+  String get dashPlanBudgetsCreate => 'बजट बनाएँ';
+
+  @override
+  String get dashPlanBudgetsSeeAll => 'सभी बजट देखें';
+
+  @override
+  String get dashPlanBudgetPaused => 'इस अवधि के आँकड़े अभी नहीं हैं';
+
+  @override
+  String dashPlanUpcomingSummary(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$date तक $count भुगतान',
+      one: '$date तक 1 भुगतान',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashPlanUpcomingOverdue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count का समय निकल गया',
+      one: '1 का समय निकल गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanUpcomingNoneOverdue => 'किसी का समय नहीं निकला';
+
+  @override
+  String get dashPlanUpcomingEmpty =>
+      'अगले 14 दिनों में कुछ देय नहीं है, और कुछ भी बकाया नहीं है।';
+
+  @override
+  String get dashPlanUpcomingAddBill => 'बिल जोड़ें';
+
+  @override
+  String get dashPlanUpcomingSeeAll => 'कैलेंडर खोलें';
+
+  @override
+  String dashPlanUpcomingMore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'कैलेंडर में $count और',
+      one: 'कैलेंडर में 1 और',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashPlanDueOn(String date) {
+    return 'देय तिथि $date';
+  }
+
+  @override
+  String get dashPlanDueToday => 'आज देय';
+
+  @override
+  String dashPlanWasDue(String date) {
+    return '$date को देय था';
+  }
+
+  @override
+  String dashPlanGoalsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count चालू लक्ष्य',
+      one: '1 चालू लक्ष्य',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanGoalsEmpty =>
+      'कोई चालू लक्ष्य नहीं है। किसी चीज़ के लिए बचत करने को लक्ष्य बनाएँ।';
+
+  @override
+  String get dashPlanGoalsCreate => 'लक्ष्य बनाएँ';
+
+  @override
+  String get dashPlanGoalsSeeAll => 'सभी लक्ष्य देखें';
+
+  @override
+  String get dashPlanGoalNoDate => 'कोई लक्ष्य तिथि नहीं';
+
+  @override
+  String dashPlanGroupsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count समूहों में हिसाब बाकी',
+      one: '1 समूह में हिसाब बाकी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanGroupsEmpty => 'हर समूह में आपका हिसाब बराबर है।';
+
+  @override
+  String get dashPlanGroupsSeeAll => 'सभी समूह देखें';
+
+  @override
+  String get dashPlanGroupSettled => 'हिसाब बराबर';
+
+  @override
+  String dashPlanShowingFirst(int shown, int total) {
+    return '$total में से $shown दिखाए गए';
+  }
+
+  @override
+  String get profileEditTitle => 'प्रोफ़ाइल बदलें';
+
+  @override
+  String get profileEditEntry => 'प्रोफ़ाइल बदलें';
+
+  @override
+  String get profileEditEntrySubtitle =>
+      'नाम, फ़ोटो, यूज़रनेम, परिचय और आपकी प्रोफ़ाइल कौन देख सकता है';
+
+  @override
+  String get profileEditPhotoSection => 'प्रोफ़ाइल फ़ोटो';
+
+  @override
+  String get profileEditPhotoNone =>
+      'अभी कोई फ़ोटो नहीं है। लोग इसकी जगह आपके नाम के पहले अक्षर देखते हैं।';
+
+  @override
+  String get profileEditPhotoLabel => 'आपकी प्रोफ़ाइल फ़ोटो';
+
+  @override
+  String profileEditPhotoInitials(String name) {
+    return '$name के नाम के पहले अक्षर';
+  }
+
+  @override
+  String get profileEditPhotoChoose => 'फ़ोटो चुनें';
+
+  @override
+  String get profileEditPhotoChange => 'फ़ोटो बदलें';
+
+  @override
+  String get profileEditPhotoRemove => 'फ़ोटो हटाएँ';
+
+  @override
+  String get profileEditPhotoRemoveTitle => 'प्रोफ़ाइल फ़ोटो हटाएँ?';
+
+  @override
+  String get profileEditPhotoRemoveBody =>
+      'लोग इसकी जगह आपके नाम के पहले अक्षर देखेंगे। आप कभी भी फिर से फ़ोटो जोड़ सकते हैं।';
+
+  @override
+  String get profileEditPhotoSaved => 'प्रोफ़ाइल फ़ोटो बदल गई।';
+
+  @override
+  String get profileEditPhotoRemoved => 'प्रोफ़ाइल फ़ोटो हटा दी गई।';
+
+  @override
+  String get profileEditPhotoUnavailable => 'फ़ोटो अभी दिखाई नहीं जा सकी।';
+
+  @override
+  String profileEditPhotoHelp(String size) {
+    return 'JPG, PNG या WEBP, $size तक। आपकी फ़ोटो वहाँ दिखती है जहाँ आपकी प्रोफ़ाइल दिखती है।';
+  }
+
+  @override
+  String get profileEditDetailsSection => 'आपके बारे में';
+
+  @override
+  String get profileEditDisplayName => 'दिखने वाला नाम';
+
+  @override
+  String get profileEditDisplayNameHelp =>
+      'दोस्तों, समूहों और समुदायों को दिखता है।';
+
+  @override
+  String get profileEditBio => 'परिचय';
+
+  @override
+  String get profileEditBioHelp =>
+      'अपने बारे में एक छोटी पंक्ति। हटाने के लिए खाली छोड़ दें।';
+
+  @override
+  String get profileEditLocation => 'स्थान';
+
+  @override
+  String get profileEditLocationHelp =>
+      'कोई शहर या क्षेत्र, अपना पता कभी नहीं। हटाने के लिए खाली छोड़ दें।';
+
+  @override
+  String get profileEditInterests => 'रुचियाँ';
+
+  @override
+  String profileEditInterestsHelp(int max) {
+    return '$max तक छोटे विषय, जैसे खाना बनाना या क्रिकेट।';
+  }
+
+  @override
+  String get profileEditInterestAdd => 'रुचि जोड़ें';
+
+  @override
+  String get profileEditInterestNew => 'नई रुचि';
+
+  @override
+  String profileEditInterestRemove(String name) {
+    return 'रुचि $name हटाएँ';
+  }
+
+  @override
+  String get profileEditInterestTooLong =>
+      'हर रुचि छोटी रखें (अंग्रेज़ी में 40 अक्षर तक, हिंदी में इससे कम)।';
+
+  @override
+  String get profileEditInterestDuplicate =>
+      'यह रुचि आप पहले ही जोड़ चुके हैं।';
+
+  @override
+  String profileEditInterestsFull(int max) {
+    return 'आप $max तक रुचियाँ जोड़ सकते हैं।';
+  }
+
+  @override
+  String get profileEditInterestsNone => 'कोई रुचि नहीं जोड़ी गई।';
+
+  @override
+  String get profileEditVisibility => 'आपकी प्रोफ़ाइल कौन देख सकता है';
+
+  @override
+  String get profileEditVisibilityPrivate => 'केवल आप';
+
+  @override
+  String get profileEditVisibilityPrivateHelp =>
+      'दूसरे लोग केवल आपका नाम और फ़ोटो देखते हैं, जहाँ आप शामिल होते हैं।';
+
+  @override
+  String get profileEditVisibilityConnections => 'दोस्त और समूह के सदस्य';
+
+  @override
+  String get profileEditVisibilityConnectionsHelp =>
+      'आपका परिचय, स्थान और रुचियाँ उन लोगों को दिखती हैं जिनसे आप जुड़े हैं।';
+
+  @override
+  String get profileEditVisibilityPublic => 'Montra पर सभी';
+
+  @override
+  String get profileEditVisibilityPublicHelp =>
+      'Montra में साइन इन किया कोई भी व्यक्ति आपकी प्रोफ़ाइल देख सकता है।';
+
+  @override
+  String get profileEditUsernameHelp =>
+      '3 से 30 छोटे अक्षर, अंक, “_” या “.”। हटाने के लिए खाली छोड़ दें। इससे आपको कौन ढूँढ सकता है, यह दोस्त में तय होता है।';
+
+  @override
+  String get profileEditSaved => 'प्रोफ़ाइल सहेजी गई।';
+
+  @override
+  String get profileEditFinanceNote =>
+      'आपकी प्रोफ़ाइल में आपके खाते, राशियाँ या लेन-देन कभी नहीं दिखते।';
+
+  @override
+  String get prefsTitle => 'प्राथमिकताएँ';
+
+  @override
+  String get prefsEntrySubtitle =>
+      'मुद्रा, क्षेत्र, प्रारूप, डिफ़ॉल्ट, थीम और सुलभता';
+
+  @override
+  String get prefsSaved => 'प्राथमिकताएँ सहेजी गईं।';
+
+  @override
+  String get prefsMoneySection => 'पैसा';
+
+  @override
+  String get prefsBaseCurrency => 'मुख्य मुद्रा';
+
+  @override
+  String get prefsBaseCurrencyExplain =>
+      'आपकी मुख्य मुद्रा नए खातों, बजट, लक्ष्यों, बिलों और रसीदों के लिए डिफ़ॉल्ट होती है, और होम पर पहले दिखती है। इसे बदलने से कुछ भी बदला (कन्वर्ट) नहीं होता: मौजूदा खाते, लेन-देन, बजट और लक्ष्य अपनी मुद्रा में रहते हैं, और अलग-अलग मुद्राओं की राशियाँ कभी जोड़ी नहीं जातीं।';
+
+  @override
+  String prefsBaseCurrencyChanged(String currency) {
+    return 'अब से नए रिकॉर्ड डिफ़ॉल्ट रूप से $currency में होंगे। जो आपने पहले दर्ज किया है, वह नहीं बदलेगा।';
+  }
+
+  @override
+  String get prefsDisplayCurrency => 'दिखाने के लिए दूसरी मुद्रा';
+
+  @override
+  String get prefsDisplayCurrencyHelp =>
+      'वैकल्पिक। जहाँ विनिमय दरें इस्तेमाल होती हैं, वहाँ राशियाँ इस मुद्रा में भी दिख सकती हैं; आपके रिकॉर्ड अपनी मुद्रा में रहते हैं।';
+
+  @override
+  String get prefsNone => 'कोई नहीं';
+
+  @override
+  String get prefsDefaultAccount => 'डिफ़ॉल्ट खाता';
+
+  @override
+  String get prefsDefaultAccountHelp =>
+      'खर्च या आय जोड़ते समय सबसे पहले यही चुना जाता है।';
+
+  @override
+  String get prefsDefaultAccountMissing => 'ऐसा खाता जो अब सक्रिय नहीं है';
+
+  @override
+  String get prefsDefaultRange => 'डिफ़ॉल्ट अवधि';
+
+  @override
+  String get prefsDefaultRangeHelp => 'होम इसी अवधि के साथ खुलता है।';
+
+  @override
+  String get prefsRegionSection => 'क्षेत्र और भाषा';
+
+  @override
+  String get prefsCountryHelp =>
+      'दो अक्षर, जैसे IN। हटाने के लिए खाली छोड़ दें।';
+
+  @override
+  String get prefsTimezoneHelp =>
+      '\"आज\", बजट की अवधियाँ और रिमाइंडर इसी समय क्षेत्र के अनुसार चलते हैं। इसे बदलने से पहले दर्ज की गई चीज़ें नहीं खिसकतीं।';
+
+  @override
+  String get prefsTimezoneSearch => 'समय क्षेत्र खोजें';
+
+  @override
+  String prefsTimezoneUseTyped(String zone) {
+    return '“$zone” इस्तेमाल करें';
+  }
+
+  @override
+  String prefsTimezoneDevice(String zone) {
+    return 'यह डिवाइस: $zone';
+  }
+
+  @override
+  String get prefsLocale => 'भाषा और क्षेत्र';
+
+  @override
+  String get prefsLocaleHelp => 'ऐप की भाषा इसी सेटिंग के अनुसार होती है।';
+
+  @override
+  String get prefsLocaleEnIn => 'अंग्रेज़ी (भारत)';
+
+  @override
+  String get prefsLocaleEnUs => 'अंग्रेज़ी (अमेरिका)';
+
+  @override
+  String get prefsLocaleEnGb => 'अंग्रेज़ी (ब्रिटेन)';
+
+  @override
+  String get prefsLocaleHiIn => 'हिन्दी (भारत)';
+
+  @override
+  String get prefsFormatsSection => 'प्रारूप';
+
+  @override
+  String get prefsDateFormat => 'तारीख़ का प्रारूप';
+
+  @override
+  String get prefsDateFormatLocale => 'भाषा के अनुसार';
+
+  @override
+  String get prefsDateFormatDmy => 'दिन, महीना, वर्ष (31/12/2026)';
+
+  @override
+  String get prefsDateFormatMdy => 'महीना, दिन, वर्ष (12/31/2026)';
+
+  @override
+  String get prefsDateFormatYmd => 'वर्ष, महीना, दिन (2026-12-31)';
+
+  @override
+  String get prefsDateFormatHelp =>
+      'निर्यात, रिपोर्ट और ईमेल में इस्तेमाल होता है।';
+
+  @override
+  String get prefsNumberFormat => 'संख्या का प्रारूप';
+
+  @override
+  String get prefsNumberFormatLocale => 'भाषा और क्षेत्र के अनुसार';
+
+  @override
+  String prefsNumberFormatIndian(String example) {
+    return 'लाख और करोड़ ($example)';
+  }
+
+  @override
+  String prefsNumberFormatInternational(String example) {
+    return 'हज़ार और मिलियन ($example)';
+  }
+
+  @override
+  String prefsNumberFormatHelp(String example) {
+    return 'ऐप में राशियाँ कैसे समूहित होती हैं, जैसे $example।';
+  }
+
+  @override
+  String get prefsWeekStart => 'सप्ताह किस दिन शुरू हो';
+
+  @override
+  String get prefsWeekStartHelp =>
+      'साप्ताहिक बजट, रिपोर्ट और साप्ताहिक योग में इस्तेमाल होता है।';
+
+  @override
+  String get prefsMonthStart => 'महीना किस तारीख़ से शुरू हो';
+
+  @override
+  String get prefsMonthStartHelp =>
+      'जैसे 25, अगर आपका वेतन 25 तारीख़ को आता है। 1 से 28 तक।';
+
+  @override
+  String prefsMonthStartDay(int day) {
+    return '$day तारीख़';
+  }
+
+  @override
+  String get prefsAppearanceSection => 'थीम';
+
+  @override
+  String get prefsThemeHelp =>
+      'आपके खाते में सहेजी जाती है और इस डिवाइस पर इस्तेमाल होती है।';
+
+  @override
+  String get a11yTitle => 'सुलभता';
+
+  @override
+  String get a11yIntro =>
+      'सहेजते ही ये सेटिंग ऐप में लागू हो जाती हैं, आपके फ़ोन की अपनी सुलभता सेटिंग के साथ।';
+
+  @override
+  String get a11yReducedMotion => 'हलचल कम करें';
+
+  @override
+  String get a11yReducedMotionHelp =>
+      'स्क्रीन बदलने के प्रभाव और दूसरे एनिमेशन बंद करता है।';
+
+  @override
+  String get a11yHighContrast => 'उच्च कंट्रास्ट';
+
+  @override
+  String get a11yHighContrastHelp =>
+      'ज़्यादा गहरे रंग और किनारे, जिन्हें पहचानना आसान है।';
+
+  @override
+  String get a11yTextSize => 'टेक्स्ट का आकार';
+
+  @override
+  String a11yTextSizeValue(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get a11yTextSizeHelp =>
+      'आपके फ़ोन के टेक्स्ट आकार को 80% से 200% तक बढ़ाता या घटाता है।';
+
+  @override
+  String get a11yTextSizeSmaller => 'छोटा टेक्स्ट';
+
+  @override
+  String get a11yTextSizeLarger => 'बड़ा टेक्स्ट';
+
+  @override
+  String get a11yTextSizePreview =>
+      'झलक: इस हफ़्ते किराने पर ₹1,250.50 खर्च हुए।';
+
+  @override
+  String get prefsUnsavedTitle => 'बदलाव छोड़ दें?';
+
+  @override
+  String get prefsUnsavedBody => 'आपने कुछ सेटिंग बदलीं, पर उन्हें सहेजा नहीं।';
+
+  @override
+  String get prefsDiscard => 'छोड़ दें';
+
+  @override
+  String get receiptPagesAddTitle => 'रसीद जोड़ें';
+
+  @override
+  String receiptPagesIntro(int max) {
+    return 'रसीद की हर फ़ोटो या PDF क्रम से जोड़ें। लंबी रसीद में $max तक पेज हो सकते हैं। कुछ भी अपने-आप नहीं पढ़ा जाता: विवरण आप आगे खुद भरते हैं।';
+  }
+
+  @override
+  String get receiptPagesNoneTitle => 'अभी कोई पेज नहीं';
+
+  @override
+  String get receiptPagesNoneBody =>
+      'फ़ोटो लें, या फ़ोटो या फ़ाइलें चुनें। हर एक एक पेज बनता है।';
+
+  @override
+  String get receiptPagesTakePhoto => 'फ़ोटो लें';
+
+  @override
+  String get receiptPagesChoosePhotos => 'फ़ोटो चुनें';
+
+  @override
+  String get receiptPagesChooseFiles => 'फ़ाइलें चुनें';
+
+  @override
+  String receiptPagesPage(int position, int total) {
+    return '$total में से पेज $position';
+  }
+
+  @override
+  String receiptPagesFile(int position, int total) {
+    return '$total में से फ़ाइल $position';
+  }
+
+  @override
+  String receiptPagesMoveUp(String name) {
+    return '$name को ऊपर ले जाएँ';
+  }
+
+  @override
+  String receiptPagesMoveDown(String name) {
+    return '$name को नीचे ले जाएँ';
+  }
+
+  @override
+  String receiptPagesRemove(String name) {
+    return '$name हटाएँ';
+  }
+
+  @override
+  String get receiptPagesStateWaiting => 'अपलोड के लिए तैयार';
+
+  @override
+  String get receiptPagesStateUploaded => 'अपलोड हो गया';
+
+  @override
+  String get receiptPagesStateCreating => 'रसीद जोड़ी जा रही है…';
+
+  @override
+  String receiptPagesStateFailed(String reason) {
+    return 'नहीं जुड़ा: $reason';
+  }
+
+  @override
+  String get receiptPagesStateDone => 'जुड़ गया';
+
+  @override
+  String get receiptPagesModeTitle => 'ये फ़ाइलें हैं';
+
+  @override
+  String get receiptPagesModePages => 'एक ही रसीद के पेज';
+
+  @override
+  String get receiptPagesModePagesHelp => 'ऊपर दिखाए गए क्रम में।';
+
+  @override
+  String get receiptPagesModeSeparate => 'अलग-अलग रसीदें';
+
+  @override
+  String get receiptPagesModeSeparateHelp => 'हर फ़ाइल अपनी अलग रसीद बनती है।';
+
+  @override
+  String get receiptPagesNotes => 'नोट';
+
+  @override
+  String get receiptPagesNotesHelp =>
+      'जैसे किसके लिए थी। रसीद के साथ रखा जाता है।';
+
+  @override
+  String receiptPagesSave(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count पेज वाली रसीद जोड़ें',
+      one: 'रसीद जोड़ें',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receiptPagesSaveSeparate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count रसीदें जोड़ें',
+      one: '1 रसीद जोड़ें',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get receiptPagesStop => 'अपलोड रोकें';
+
+  @override
+  String get receiptPagesStopped =>
+      'रोक दिया गया। कुछ नहीं जुड़ा; अपलोड हुए पेज इस स्क्रीन से निकलने तक रखे जाते हैं।';
+
+  @override
+  String receiptPagesTooMany(int max) {
+    return 'एक रसीद में $max तक पेज हो सकते हैं।';
+  }
+
+  @override
+  String receiptPagesAlreadyAdded(String name) {
+    return '$name पहले से सूची में है।';
+  }
+
+  @override
+  String receiptPagesRefused(String name, String reason) {
+    return '$name नहीं जोड़ी गई: $reason';
+  }
+
+  @override
+  String get receiptPagesUploadFailed =>
+      'कुछ पेज अपलोड नहीं हो सके। बाकी अपलोड करने के लिए फिर से कोशिश करें; अपलोड हुए पेज दोबारा नहीं भेजे जाते।';
+
+  @override
+  String receiptPagesSomeFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count रसीदें नहीं जुड़ीं। इन्हें जोड़ने के लिए फिर से कोशिश करें।',
+      one: '1 रसीद नहीं जुड़ी। इसे जोड़ने के लिए फिर से कोशिश करें।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receiptPagesAddedMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count रसीदें जुड़ गईं। आगे इनका विवरण भरें।',
+      one: '1 रसीद जुड़ गई। आगे इसका विवरण भरें।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get receiptPagesLeaveTitle => 'बिना जोड़े निकलें?';
+
+  @override
+  String get receiptPagesLeaveBody =>
+      'आपके चुने पेज नहीं जोड़े जाएँगे, और अपलोड हुए पेज मिटा दिए जाएँगे।';
+
+  @override
+  String get receiptPagesLeave => 'निकलें';
 }

@@ -51,6 +51,9 @@ export const insightsApi = {
       nextCursor: more && envelope.meta.next_cursor ? envelope.meta.next_cursor : null,
     };
   },
+  /** One of your insights in any status (for links from notifications). */
+  get: (id: string, signal?: AbortSignal): Promise<Insight> =>
+    apiData(api.GET('/insights/{id}', { ...path(id), ...signalOption(signal) })),
   /** Dismiss, snooze, mark expected or resolved, mute or reopen; returns the updated insight. */
   act: (id: string, body: InsightActionInput): Promise<Insight> =>
     apiData(api.POST('/insights/{id}/actions', { ...path(id), body })),
@@ -79,6 +82,15 @@ export function useInsights(query: InsightListQuery) {
     queryFn: ({ pageParam, signal }) => insightsApi.list(query, pageParam, signal),
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+}
+
+/** One insight by ID (any status); disabled without an ID. */
+export function useInsight(id: string | undefined) {
+  return useQuery({
+    queryKey: insightsKeys.detail(id ?? ''),
+    queryFn: ({ signal }) => insightsApi.get(id ?? '', signal),
+    enabled: Boolean(id),
   });
 }
 

@@ -3,6 +3,7 @@ import { useAuth } from '@/shared/auth/AuthContext';
 import { ErrorState, LoadingState } from '@/shared/components/states';
 import { paths } from '@/shared/config/paths';
 import { useT } from '@/shared/i18n/I18nContext';
+import { AccountDisplayPreferences } from '../providers/AccountDisplayPreferences';
 
 /** Signed-in pages whose links carry a one-time token in the URL fragment. */
 const FRAGMENT_TOKEN_PATHS: ReadonlySet<string> = new Set([paths.groupJoin, paths.communityJoin]);
@@ -59,5 +60,10 @@ export function RequireAuth() {
     );
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <AccountDisplayPreferences />
+      <Outlet />
+    </>
+  );
 }

@@ -26,6 +26,8 @@ export const financeKeys = {
     ['finance', 'payment-methods', { includeArchived }] as const,
   dashboard: (query: object) => ['finance', 'dashboard', query] as const,
   widgets: () => ['finance', 'dashboard', 'widgets'] as const,
+  /** Budgets, upcoming items, goals and group balances for the dashboard cards (one request). */
+  dashboardPlanning: () => ['finance', 'dashboard', 'planning'] as const,
 
   // Round 2: organizing.
   categoryRules: () => ['finance', 'category-rules'] as const,

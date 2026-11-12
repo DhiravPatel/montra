@@ -14,6 +14,7 @@ String? groupDetailMessage(AppLocalizations l10n, Detail detail) {
     'balance_open' => l10n.groupCodeBalanceOpen,
     'balances_open' => l10n.groupCodeBalancesOpen,
     'currency_locked' => l10n.groupCodeCurrencyLocked,
+    'username_or_user_id' => l10n.codeUsernameOrUserId,
     _ => null,
   };
 }

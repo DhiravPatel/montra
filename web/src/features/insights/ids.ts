@@ -9,3 +9,4 @@ export function insightThanksId(id: string): string {
 
 export const INSIGHTS_LIST_HEADING_ID = 'insights-list-heading';
 export const MUTED_TYPES_HEADING_ID = 'insights-muted-heading';
+export const LINKED_INSIGHT_HEADING_ID = 'insights-linked-heading';

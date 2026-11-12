@@ -16,13 +16,14 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { TextField } from '@/shared/components/TextField';
 import { useToast } from '@/shared/components/toast/ToastContext';
 import { groupJoinLink } from '@/shared/config/paths';
+import { usableShareUrl } from '@/shared/utils/shareUrl';
 import { useFriends } from '@/shared/finance/sharing';
 import { FormAlert } from '@/shared/forms/FormAlert';
 import { formatDateTime, parseTimestamp } from '@/shared/formatting/dates';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { canInvite, isGroupAdmin } from '../../access';
 import { groupsApi, useGroupInvitations } from '../../api';
-import { groupErrorMessage, shouldReloadGroup } from '../../errors';
+import { groupErrorMessage, isUsernameOrUserIdError, shouldReloadGroup } from '../../errors';
 import { groupsKeys } from '../../keys';
 import { actionFor, memberName, personName } from '../../people';
 import { invitationStatusIcon, invitationStatusLabel, invitationStatusTone } from '../../labels';
@@ -41,12 +42,21 @@ const MAX_USES = ['', '1', '5', '10', '25', '50'] as const;
 const USERNAME = /^@?[a-z0-9_.]{3,30}$/;
 
 /**
- * The one-time link, built from the token in the create response. It lives
- * only in this component's memory: never stored, logged or put in a URL.
+ * The one-time link from the create response: the API's `share_url`, or
+ * built from the token when there is none. It lives only in this
+ * component's memory: never stored, logged or put in a URL.
  */
-function NewLink({ token, onDone }: { token: string; onDone: () => void }) {
+function NewLink({
+  token,
+  shareUrl,
+  onDone,
+}: {
+  token: string;
+  shareUrl: string | null;
+  onDone: () => void;
+}) {
   const { t } = useI18n();
-  const link = groupJoinLink(window.location.origin, token);
+  const link = shareUrl ?? groupJoinLink(window.location.origin, token);
   return (
     <Alert tone="success" live="polite" title={t('groups.invite.linkReady')}>
       <p>{t('groups.invite.linkOnce')}</p>
@@ -133,7 +143,7 @@ function CreateInvitationForm({ group, reload }: { group: GroupDetail; reload: (
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [friendError, setFriendError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [created, setCreated] = useState<{ token: string; shareUrl: string | null } | null>(null);
   const create = useMutation({
     // The response may carry the one-time token: keep no copy in the mutation cache.
     ...sensitiveMutation,
@@ -170,7 +180,7 @@ function CreateInvitationForm({ group, reload }: { group: GroupDetail; reload: (
     create.mutate(body, {
       onSuccess: (invitation) => {
         if (invitation.kind === 'link' && invitation.token) {
-          setToken(invitation.token);
+          setCreated({ token: invitation.token, shareUrl: usableShareUrl(invitation.share_url) });
           toast.show({ tone: 'success', title: t('groups.invite.linkCreated') });
         } else {
           setUsername('');
@@ -187,6 +197,12 @@ function CreateInvitationForm({ group, reload }: { group: GroupDetail; reload: (
           setFriendError(t('groups.invite.friendNotFound'));
           return;
         }
+        if (isUsernameOrUserIdError(error)) {
+          if (kind === 'friend') setFriendError(t('groups.invite.usernameOrUserId'));
+          else if (kind === 'username') setUsernameError(t('groups.invite.usernameOrUserId'));
+          else setFormError(t('groups.invite.usernameOrUserId'));
+          return;
+        }
         setFormError(
           groupErrorMessage(error, t, { codes: { CONFLICT: 'groups.invite.alreadyMember' } }),
         );
@@ -195,12 +211,13 @@ function CreateInvitationForm({ group, reload }: { group: GroupDetail; reload: (
     });
   };
 
-  if (token) {
+  if (created) {
     return (
       <NewLink
-        token={token}
+        token={created.token}
+        shareUrl={created.shareUrl}
         onDone={() => {
-          setToken(null);
+          setCreated(null);
         }}
       />
     );

@@ -273,7 +273,16 @@ function MembersCard({ balances, people }: { balances: GroupBalances; people: Pe
         <p className="text-sm text-fg-muted">{t('groupMoney.balances.noMembers')}</p>
       ) : (
         groups.map(([currency, rows]) => (
-          <div key={currency} className="overflow-x-auto">
+          // The table scrolls sideways on narrow screens, so keyboard users must
+          // be able to focus the scroll area (axe scrollable-region-focusable).
+          <div
+            key={currency}
+            role="region"
+            aria-label={t('groupMoney.balances.membersIn', { currency })}
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region needs focus to scroll by keyboard (WCAG 2.1.1)
+            tabIndex={0}
+            className="overflow-x-auto"
+          >
             <table className="w-full min-w-max border-collapse text-sm">
               <caption className="sr-only">
                 {t('groupMoney.balances.membersIn', { currency })}

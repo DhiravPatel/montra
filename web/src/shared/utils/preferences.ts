@@ -1,11 +1,12 @@
 /**
- * Per-device UI preferences (theme, interface language) persisted in
+ * Per-device UI preferences (theme, interface language, and a copy of the
+ * account's display settings for the first paint) persisted in
  * localStorage. This is the only module allowed to touch browser storage.
  *
  * Never store tokens, personal details, or financial data here: the key
  * union below is deliberately closed.
  */
-type PreferenceKey = 'theme' | 'lang';
+type PreferenceKey = 'theme' | 'lang' | 'display';
 
 const PREFIX = 'montra.';
 

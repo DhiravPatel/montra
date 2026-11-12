@@ -9,7 +9,11 @@ import 'package:montra_mobile/core/widgets/layout.dart';
 /// product is free, private by default and works without linking a bank.
 class WelcomeScreen extends StatelessWidget {
   /// Creates the screen.
-  const WelcomeScreen({super.key});
+  const WelcomeScreen({this.next, super.key});
+
+  /// Where to go after signing in (a safe in-app path), kept on the way to
+  /// sign-in or sign-up.
+  final String? next;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +69,8 @@ class WelcomeScreen extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                   ),
-                  onPressed: () => context.push(AppRoutes.signUp),
+                  onPressed: () =>
+                      context.push(AppRoutes.withNext(AppRoutes.signUp, next)),
                   child: Text(l10n.welcomeCreateAccount),
                 ),
                 const SizedBox(height: Insets.sm + Insets.xs),
@@ -73,7 +78,8 @@ class WelcomeScreen extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                   ),
-                  onPressed: () => context.push(AppRoutes.signIn),
+                  onPressed: () =>
+                      context.push(AppRoutes.withNext(AppRoutes.signIn, next)),
                   child: Text(l10n.welcomeSignIn),
                 ),
                 const SizedBox(height: Insets.sm),

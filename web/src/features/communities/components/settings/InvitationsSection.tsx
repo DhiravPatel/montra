@@ -17,6 +17,7 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { TextField } from '@/shared/components/TextField';
 import { useToast } from '@/shared/components/toast/ToastContext';
 import { communityJoinLink } from '@/shared/config/paths';
+import { usableShareUrl } from '@/shared/utils/shareUrl';
 import { FormAlert } from '@/shared/forms/FormAlert';
 import { formatDateTime, parseTimestamp } from '@/shared/formatting/dates';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -39,22 +40,25 @@ const EXPIRY_DAYS = [1, 3, 7, 14, 30] as const;
 const USERNAME = /^@?[a-z0-9_.]{3,30}$/u;
 
 /**
- * The one-time link, built from the token in the create response. It lives
+ * The one-time link from the create response: the API's `share_url`, or
+ * built from the token when there is none. It lives
  * only in this component's memory: never stored, logged or put in a URL of
  * this app (only in the link people copy).
  */
 function NewLink({
   token,
+  shareUrl,
   expiresAt,
   onDone,
 }: {
   token: string;
+  shareUrl: string | null;
   expiresAt: string;
   onDone: () => void;
 }) {
   const { t, formatLocale } = useI18n();
   const user = useCurrentUser();
-  const link = communityJoinLink(window.location.origin, token);
+  const link = shareUrl ?? communityJoinLink(window.location.origin, token);
   const expires = parseTimestamp(expiresAt);
   return (
     <Alert tone="success" live="polite" title={t('communities.settings.invite.linkReady')}>
@@ -95,7 +99,11 @@ function InviteForm({ community }: { community: Community }) {
   const [username, setUsername] = useState('');
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [created, setCreated] = useState<{ token: string; expiresAt: string } | null>(null);
+  const [created, setCreated] = useState<{
+    token: string;
+    shareUrl: string | null;
+    expiresAt: string;
+  } | null>(null);
   const create = useMutation({
     // The response may carry the one-time token: keep no copy in the mutation cache.
     ...sensitiveMutation,
@@ -124,7 +132,11 @@ function InviteForm({ community }: { community: Community }) {
     create.mutate(body, {
       onSuccess: (invitation) => {
         if (invitation.token) {
-          setCreated({ token: invitation.token, expiresAt: invitation.expires_at });
+          setCreated({
+            token: invitation.token,
+            shareUrl: usableShareUrl(invitation.share_url),
+            expiresAt: invitation.expires_at,
+          });
           toast.show({ tone: 'success', title: t('communities.settings.invite.linkCreated') });
         } else {
           setUsername('');
@@ -152,6 +164,7 @@ function InviteForm({ community }: { community: Community }) {
     return (
       <NewLink
         token={created.token}
+        shareUrl={created.shareUrl}
         expiresAt={created.expiresAt}
         onDone={() => {
           setCreated(null);

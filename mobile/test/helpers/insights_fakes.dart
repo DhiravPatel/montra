@@ -421,7 +421,7 @@ Map<String, Object?> reportJson({
   String status = 'completed',
   int? rows = 22,
   String? errorCode,
-  String? expiresAt = '2026-11-12T09:49:59Z',
+  String? expiresAt = '2036-11-12T09:49:59Z',
   Map<String, Object?> filters = const <String, Object?>{'range': 'this_month'},
 }) => <String, Object?>{
   'id': id,
@@ -446,7 +446,7 @@ ReportDto report({
   String format = 'csv',
   String status = 'completed',
   String? errorCode,
-  String? expiresAt = '2026-11-12T09:49:59Z',
+  String? expiresAt = '2036-11-12T09:49:59Z',
 }) => ReportDto.fromJson(
   reportJson(
     id: id,

@@ -1,5 +1,12 @@
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './support/test';
 import { waitForEmailLink } from './support/devMailbox';
+import {
+  honourRateLimit,
+  navigateTo,
+  signInWithForm,
+  submitHonouringRateLimit,
+} from './support/session';
 import { totp, waitForNextTotpStep } from './support/totp';
 
 /**
@@ -14,10 +21,8 @@ const password = 'quiet-harbor-71-e2e';
 let totpSecret = '';
 
 async function signIn(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  // Waits out the API's sign-in rate limit when all projects run back to back.
+  await signInWithForm(page, { email, password });
 }
 
 test('sign up, verify the email link and sign in', async ({ page }) => {
@@ -28,15 +33,22 @@ test('sign up, verify the email link and sign in', async ({ page }) => {
   await page.getByLabel('Main currency').selectOption('INR');
   await page.getByLabel(/I agree to the/).check();
   await page.getByLabel(/18 years of age or older/).check();
-  await page.getByRole('button', { name: 'Create account' }).click();
+  await submitHonouringRateLimit(
+    page,
+    page.getByRole('button', { name: 'Create account' }),
+    '/api/v1/auth/register',
+    () => page.getByLabel('New password').fill(password),
+  );
   await expect(page.getByRole('heading', { level: 1, name: 'Check your email' })).toBeVisible();
 
   // A local API may skip verification (AUTH_DEV_AUTO_VERIFY_EMAIL, development
   // only): then sign-in already works and no email is sent. Probe once.
-  const probe = await page.request.post('/api/v1/auth/login', {
-    data: { email, password },
-    headers: { 'X-Montra-Client': 'android' },
-  });
+  const probe = await honourRateLimit(() =>
+    page.request.post('/api/v1/auth/login', {
+      data: { email, password },
+      headers: { 'X-Montra-Client': 'android' },
+    }),
+  );
   if (probe.status() === 403) {
     const body = (await probe.json()) as { error?: { code?: string } };
     expect(body.error?.code).toBe('EMAIL_NOT_VERIFIED');
@@ -77,11 +89,14 @@ test('an expired access token is refreshed transparently', async ({ page }) => {
     (cookie) => cookie.name === 'montra_rt',
   )?.value;
 
-  // Simulate the 15-minute access token expiring.
-  await page.context().clearCookies({ name: 'montra_at' });
+  // Simulate the 15-minute access token expiring. Let Home finish loading
+  // first, and listen before clearing: a request still in flight would
+  // otherwise trigger the refresh before the listener exists.
+  await page.waitForLoadState('networkidle');
   const refresh = page.waitForResponse((response) =>
     response.url().endsWith('/api/v1/auth/refresh'),
   );
+  await page.context().clearCookies({ name: 'montra_at' });
   await page.goto('/settings/security');
   expect((await refresh).status()).toBe(200);
 
@@ -131,20 +146,28 @@ test('set up two-step verification, sign in with a code, then turn it off', asyn
   await waitForNextTotpStep();
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await submitHonouringRateLimit(
+    page,
+    page.getByRole('button', { name: 'Sign in' }),
+    '/api/v1/auth/login',
+    () => page.getByLabel('Password', { exact: true }).fill(password),
+  );
   await expect(
     page.getByRole('heading', { level: 1, name: 'Two-step verification' }),
   ).toBeVisible();
   await page.getByLabel('Verification code').fill(totp(totpSecret));
-  await page.getByRole('button', { name: 'Verify' }).click();
+  await submitHonouringRateLimit(
+    page,
+    page.getByRole('button', { name: 'Verify' }),
+    '/api/v1/auth/mfa/verify',
+    () => page.getByLabel('Verification code').fill(totp(totpSecret)),
+  );
   await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
 
   // Turn it off. Navigate in-app so this tab remembers the fresh sign-in;
   // the sign-in code cannot be reused, so wait for a new one.
-  await page
-    .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: 'Security' })
-    .click();
+  // Sidebar on desktop and tablet; on phones Security sits in the tab bar's "More" menu.
+  await navigateTo(page, 'Security');
   await expect(page.getByRole('heading', { level: 1, name: 'Security' })).toBeVisible();
   await waitForNextTotpStep();
   await page.getByRole('button', { name: 'Turn off' }).click();

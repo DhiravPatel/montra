@@ -14,6 +14,7 @@ import 'package:montra_mobile/core/widgets/layout.dart';
 import 'package:montra_mobile/core/widgets/status_label.dart';
 import 'package:montra_mobile/core/widgets/submit_button.dart';
 import 'package:montra_mobile/features/settings/data/limits_api.dart';
+import 'package:montra_mobile/features/settings/presentation/edit_profile_screen.dart';
 
 /// Profile tab: who is signed in, accounts, payment methods, the Home
 /// layout, security settings, appearance and sign-out.
@@ -39,12 +40,25 @@ class ProfileScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Semantics(
-                        header: true,
-                        child: Text(
-                          l10n.profileSignedInAs(user.displayName),
-                          style: theme.textTheme.titleLarge,
-                        ),
+                      Row(
+                        children: <Widget>[
+                          ProfileAvatar(
+                            fileId: user.avatarFileId?.isEmpty ?? true
+                                ? null
+                                : user.avatarFileId,
+                            name: user.displayName,
+                          ),
+                          const SizedBox(width: Insets.md),
+                          Expanded(
+                            child: Semantics(
+                              header: true,
+                              child: Text(
+                                l10n.profileSignedInAs(user.displayName),
+                                style: theme.textTheme.titleLarge,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: Insets.xs),
                       Text(user.email, style: theme.textTheme.bodyMedium),
@@ -56,6 +70,15 @@ class ProfileScreen extends ConsumerWidget {
                         tone: user.emailVerified
                             ? StatusTone.positive
                             : StatusTone.caution,
+                      ),
+                      const SizedBox(height: Insets.sm),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.push(AppRoutes.editProfile),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: Text(l10n.profileEditEntry),
+                        ),
                       ),
                     ],
                   ),
@@ -79,6 +102,13 @@ class ProfileScreen extends ConsumerWidget {
                   subtitle: Text(l10n.profilePaymentMethodsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push(AppRoutes.paymentMethods),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.tune),
+                  title: Text(l10n.prefsTitle),
+                  subtitle: Text(l10n.prefsEntrySubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(AppRoutes.preferences),
                 ),
                 ListTile(
                   leading: const Icon(Icons.dashboard_customize_outlined),

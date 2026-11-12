@@ -248,6 +248,28 @@ describe('GroupSettingsPage: owner', () => {
     expect(document.body.innerHTML).not.toContain(LINK_TOKEN);
   });
 
+  it('shows the join link the API sends with a new invitation link', async () => {
+    const shareUrl = `https://app.montra.example/groups/join#token=${LINK_TOKEN}`;
+    const state = serveSettings();
+    server.use(
+      http.post(`${API}/groups/:id/invitations`, () => {
+        state.invitations = [makeLinkInvitation({ use_count: 0 })];
+        return HttpResponse.json(
+          envelope(makeLinkInvitation({ use_count: 0, token: LINK_TOKEN, share_url: shareUrl })),
+          { status: 201 },
+        );
+      }),
+    );
+    const { user } = await openSettings();
+    const invitations = region('Invitations');
+    await user.click(
+      await within(invitations).findByRole('button', { name: 'Create invitation link' }),
+    );
+    expect(await within(invitations).findByLabelText('Invitation link')).toHaveValue(shareUrl);
+    await user.click(within(invitations).getByRole('button', { name: 'Copy link' }));
+    await expect(navigator.clipboard.readText()).resolves.toBe(shareUrl);
+  });
+
   it('invites by exact username and explains unknown usernames', async () => {
     const bodies: unknown[] = [];
     serveSettings();
@@ -283,6 +305,41 @@ describe('GroupSettingsPage: owner', () => {
       { kind: 'username', expires_in_days: 7, username: 'nobody' },
       { kind: 'username', expires_in_days: 7, username: 'ravi' },
     ]);
+  });
+
+  it('explains an invitation that names nobody or two people (username_or_user_id)', async () => {
+    const bodies: unknown[] = [];
+    serveSettings();
+    server.use(
+      http.post(`${API}/groups/:id/invitations`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json(
+          errorBody({
+            code: 'VALIDATION_ERROR',
+            details: [
+              {
+                field: 'body.username',
+                message: 'Choose who to invite: a username, or one of your friends (user_id).',
+                code: 'username_or_user_id',
+              },
+            ],
+          }),
+          { status: 422 },
+        );
+      }),
+    );
+    const { user } = await openSettings();
+    const invitations = region('Invitations');
+    await user.click(await within(invitations).findByRole('radio', { name: 'By username' }));
+    const field = within(invitations).getByLabelText('Username');
+    await user.type(field, 'ravi');
+    await user.click(within(invitations).getByRole('button', { name: 'Send invitation' }));
+    await waitFor(() => {
+      expect(field).toHaveAccessibleDescription(
+        /Choose one person to invite: a username or one of your friends\./,
+      );
+    });
+    expect(bodies).toEqual([{ kind: 'username', expires_in_days: 7, username: 'ravi' }]);
   });
 
   it('cancels an invitation after confirming', async () => {

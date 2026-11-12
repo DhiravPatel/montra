@@ -31,6 +31,8 @@ import (
 type Service struct {
 	DB  *database.DB
 	Now func() time.Time
+	// WebAppURL is the web app origin used to build invitation share links.
+	WebAppURL string
 }
 
 func (s *Service) now() time.Time {
@@ -46,6 +48,8 @@ const (
 	EventPostCreated    = "community.post_created"
 	EventMemberPending  = "community.member_pending"
 	EventMemberDecided  = "community.member_decided"
+	// EventInvitationCreated: an invitation addressed to a person.
+	EventInvitationCreated = "community.invitation_created"
 )
 
 // CommunityDTO is a community as seen by the caller.

@@ -371,6 +371,60 @@ describe('TransactionDetailPage', () => {
     expect(restored).toBe(transfer.id);
   });
 
+  describe('linked to a group record', () => {
+    const GROUP = 'a9a9a9a9-0000-4000-8000-000000000001';
+    const EXPENSE = 'a9a9a9a9-0000-4000-8000-000000000002';
+    const SETTLEMENT = 'a9a9a9a9-0000-4000-8000-000000000003';
+
+    async function groupNote(transaction: ReturnType<typeof makeTransaction>) {
+      server.use(...handlers(transaction));
+      const view = renderRoute(`/transactions/${TX_GROCERIES}`, { user: signedIn() });
+      const note = (await screen.findByText('Part of a group record')).parentElement;
+      if (!(note instanceof HTMLElement)) throw new Error('no group note');
+      return { note, view };
+    }
+
+    it('links a group expense share to the expense in its group', async () => {
+      const { note } = await groupNote(
+        makeTransaction({ type: 'group_expense', group_id: GROUP, group_expense_id: EXPENSE }),
+      );
+      expect(within(note).getByRole('link', { name: 'Open the group expense' })).toHaveAttribute(
+        'href',
+        `/groups/${GROUP}/expenses/${EXPENSE}`,
+      );
+    });
+
+    it('links a settlement to the settlement in its group', async () => {
+      const { note } = await groupNote(
+        makeTransaction({ type: 'settlement', group_id: GROUP, settlement_id: SETTLEMENT }),
+      );
+      expect(within(note).getByRole('link', { name: 'Open the settlement' })).toHaveAttribute(
+        'href',
+        `/groups/${GROUP}/settlements/${SETTLEMENT}`,
+      );
+    });
+
+    it('links to the group when only the group is known', async () => {
+      const { note } = await groupNote(makeTransaction({ type: 'expense', group_id: GROUP }));
+      expect(within(note).getByRole('link', { name: 'Open the group' })).toHaveAttribute(
+        'href',
+        `/groups/${GROUP}`,
+      );
+    });
+
+    it('offers no link once the group is no longer visible', async () => {
+      const { note } = await groupNote(
+        makeTransaction({ type: 'group_expense', group_expense_id: EXPENSE }),
+      );
+      expect(within(note).queryByRole('link')).toBeNull();
+      expect(
+        within(note).getByText(
+          'The group isn’t visible to you any more, so it can’t be opened from here.',
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
   it('shows a not-found state', async () => {
     server.use(
       http.get(`${API}/transactions/:id`, () =>

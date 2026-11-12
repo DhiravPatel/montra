@@ -76,7 +76,18 @@ const rowStatusView: Readonly<Record<ImportRowStatus, StatusView>> = {
   failed: { label: 'imports.rowStatus.failed', tone: 'danger', icon: 'x-circle' },
 };
 
+/**
+ * The row's transaction was removed when the import was undone (the server
+ * keeps `transaction_id` on the row, but that transaction is voided).
+ */
+export function isRemovedByUndo(row: Pick<ImportRow, 'error_code'>): boolean {
+  return row.error_code === 'rolled_back';
+}
+
 export function rowStatusViewFor(row: Pick<ImportRow, 'status' | 'error_code'>): StatusView {
+  if (isRemovedByUndo(row)) {
+    return { label: 'imports.rowStatus.removed', tone: 'neutral', icon: 'undo' };
+  }
   if (row.status === 'duplicate' && row.error_code === 'already_imported') {
     return { label: 'imports.rowStatus.alreadyImported', tone: 'neutral', icon: 'copy' };
   }

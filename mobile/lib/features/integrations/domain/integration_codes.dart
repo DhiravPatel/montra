@@ -8,5 +8,6 @@ String? integrationDetailMessage(AppLocalizations l10n, Detail detail) =>
       'consent_expired' => l10n.integrationConsentExpired,
       'reconnect_required' => l10n.integrationReconnectRequired,
       'linked_not_reversible' => l10n.integrationLinkedNotReversible,
+      'sync_running' => l10n.codeSyncRunning,
       _ => null,
     };

@@ -14,7 +14,7 @@ import { describeError } from '@/shared/i18n/describeError';
 import { useT } from '@/shared/i18n/I18nContext';
 import { useSocialActions } from '../actions/SocialActionsContext';
 import { socialApi } from '../api';
-import { isSendStateNotice, sendRequestError } from '../errors';
+import { isSendStateNotice, queryTooShortMin, sendRequestError } from '../errors';
 import { invalidateSocial, useFriendRequests, useFriendsList } from '../hooks';
 import { socialKeys } from '../keys';
 import {
@@ -263,6 +263,14 @@ export function FindPeoplePanel({ onShowRequests }: { onShowRequests: () => void
           : t('social.find.notFoundTitle', { username: next }),
       );
     } catch (error) {
+      const min = queryTooShortMin(error);
+      if (min !== null) {
+        // The API wants a longer username (query_too_short {min}): explain it at the field.
+        setOutcome(null);
+        setFieldError(t('social.find.tooShort', { count: min }));
+        inputRef.current?.focus();
+        return;
+      }
       setSearchError(error);
       announce(describeError(error, t), 'assertive');
     } finally {

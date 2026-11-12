@@ -368,7 +368,7 @@ func (s *Service) Confirm(ctx context.Context, in ReconMatchInput) (*ReconMatchD
 		var txs []*txInfo
 		for _, id := range in.TransactionIDs {
 			if seen[id] {
-				return apperr.FieldError("body.transaction_ids", "Each transaction can appear once.")
+				return apperr.FieldCode("body.transaction_ids", "duplicate_item", "Each transaction can appear once.", nil)
 			}
 			seen[id] = true
 			t, err := loadTx(ctx, tx, uid, in.AccountID, id)
@@ -376,7 +376,7 @@ func (s *Service) Confirm(ctx context.Context, in ReconMatchInput) (*ReconMatchD
 				return err
 			}
 			if t.state != "unreconciled" && in.Kind == "statement_to_ledger" {
-				return apperr.Conflict("A transaction is already matched or reconciled.")
+				return apperr.ConflictCode("transaction_already_matched", "A transaction is already matched or reconciled.", nil)
 			}
 			txs = append(txs, t)
 		}
@@ -410,7 +410,7 @@ func (s *Service) Confirm(ctx context.Context, in ReconMatchInput) (*ReconMatchD
 			rowSeen := map[uuid.UUID]bool{}
 			for _, rid := range in.StatementRowIDs {
 				if rowSeen[rid] {
-					return apperr.FieldError("body.statement_row_ids", "Each statement row can appear once.")
+					return apperr.FieldCode("body.statement_row_ids", "duplicate_item", "Each statement row can appear once.", nil)
 				}
 				rowSeen[rid] = true
 				var amt int64

@@ -15,6 +15,7 @@ import { describeError } from '@/shared/i18n/describeError';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { supportedLanguages } from '@/shared/i18n/languages';
 import { countryOptions, regionOf } from '../countries';
+import { monthStartOptions, timeZones, weekdayOptions } from '../regionOptions';
 import { StepActions } from './StepActions';
 import type { StepProps } from './types';
 import { usePreferencePatch } from './usePreferencePatch';
@@ -26,28 +27,6 @@ interface RegionValues {
   locale: string;
   weekStart: string;
   monthStartDay: string;
-}
-
-function supportedTimeZones(): string[] {
-  try {
-    return Intl.supportedValuesOf('timeZone');
-  } catch {
-    return [];
-  }
-}
-
-function timeZones(current: string): string[] {
-  return [...new Set([current, ...supportedTimeZones(), 'UTC'].filter(Boolean))].sort();
-}
-
-/** Monday..Sunday names in the interface language, keyed 0 = Sunday like the API. */
-function weekdayOptions(locale: string) {
-  const format = new Intl.DateTimeFormat(locale, { weekday: 'long', timeZone: 'UTC' });
-  // 2026-11-01 was a Sunday.
-  return Array.from({ length: 7 }, (_, day) => ({
-    value: String(day),
-    label: format.format(new Date(Date.UTC(2026, 10, 1 + day))),
-  }));
 }
 
 /** Country, main currency, time zone, formats and week/month starts (spec §20B.2). */
@@ -211,10 +190,7 @@ function RegionForm({ preferences, onNext, onBack, advancing }: StepProps) {
         />
         <Select
           label={t('onboarding.region.monthStart')}
-          options={Array.from({ length: 28 }, (_, index) => ({
-            value: String(index + 1),
-            label: String(index + 1),
-          }))}
+          options={monthStartOptions()}
           help={t('onboarding.region.monthStartHelp')}
           error={errors.monthStartDay?.message}
           {...form.register('monthStartDay')}

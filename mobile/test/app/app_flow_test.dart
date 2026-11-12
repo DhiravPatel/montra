@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:montra_mobile/app/app.dart';
 import 'package:montra_mobile/app/router/app_router.dart';
+import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/connectivity.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
@@ -13,11 +14,13 @@ import 'package:montra_mobile/core/auth/auth_controller.dart';
 import 'package:montra_mobile/core/auth/credential_store.dart';
 import 'package:montra_mobile/core/auth/session_tokens.dart';
 import 'package:montra_mobile/core/config/app_config.dart';
+import 'package:montra_mobile/core/settings/app_preferences.dart';
 import 'package:montra_mobile/core/storage/secure_store.dart';
 import 'package:montra_mobile/features/dashboard/data/dashboard_api.dart';
 import 'package:montra_mobile/features/labels/data/labels_api.dart';
 import 'package:montra_mobile/features/settings/data/preferences_api.dart';
 
+import '../helpers/dashboard_fakes.dart';
 import '../helpers/fakes.dart';
 import '../helpers/finance_fakes.dart';
 
@@ -42,6 +45,8 @@ void main() {
     labels = MockLabelsApi();
     when(() => dashboard.summary(any())).thenAnswer((_) async => summary());
     when(() => dashboard.widgets()).thenAnswer((_) async => widgetLayout());
+    when(() => dashboard.planning())
+        .thenAnswer((_) async => dashboardPlanning(empty: true));
     when(() => preferencesApi.preferences())
         .thenAnswer((_) async => preferences());
     when(() => preferencesApi.onboarding()).thenAnswer(
@@ -226,5 +231,125 @@ void main() {
     router.go('/nowhere');
     await tester.pumpAndSettle();
     expect(find.text('Page not found'), findsOneWidget);
+  });
+
+  testWidgets('a signed-out link to a protected screen opens after sign-in', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await boot(tester);
+    final GoRouter router = container.read(routerProvider);
+    router.go('/profile/security');
+    await tester.pumpAndSettle();
+    expect(find.text('Free for everyone'), findsOneWidget);
+    expect(router.state.uri.toString(), '/welcome?next=%2Fprofile%2Fsecurity');
+
+    await tester.ensureVisible(find.text('I already have an account'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I already have an account'));
+    await tester.pumpAndSettle();
+    expect(find.text('Forgot password?'), findsOneWidget);
+    expect(router.state.uri.toString(), '/sign-in?next=%2Fprofile%2Fsecurity');
+
+    // The session starts (as after a successful sign-in): the screen the
+    // link pointed at opens instead of Home.
+    secure.values[CredentialStore.refreshTokenKey] = 'refresh-1';
+    refresh = (String token) async =>
+        AuthResult.fromJson(authResultJson(access: 'a2', refresh: 'r2'));
+    when(
+      () => api.currentSession(),
+    ).thenAnswer((Invocation _) async => AuthResult.fromJson(authResultJson()));
+    await container.read(authControllerProvider.notifier).restore();
+    await tester.pumpAndSettle();
+    expect(router.state.uri.toString(), '/profile/security');
+  });
+
+  group("the account's preferences apply app wide", () {
+    void signedInWith(Map<String, Object?> changes) {
+      secure.values[CredentialStore.refreshTokenKey] = 'refresh-1';
+      refresh = (String token) async =>
+          AuthResult.fromJson(authResultJson(access: 'a2', refresh: 'r2'));
+      when(() => api.currentSession()).thenAnswer(
+        (Invocation _) async => AuthResult.fromJson(authResultJson()),
+      );
+      when(() => preferencesApi.preferences()).thenAnswer(
+        (_) async => PreferencesDto.fromJson(<String, Object?>{
+          ...preferences().toJson(),
+          ...changes,
+        }),
+      );
+    }
+
+    testWidgets('reduced motion, high contrast and text size take effect on '
+        'top of the device settings', (WidgetTester tester) async {
+      signedInWith(<String, Object?>{
+        'reduced_motion': true,
+        'high_contrast': true,
+        'text_scale_percent': 150,
+      });
+      tester.platformDispatcher.textScaleFactorTestValue = 1.2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final ProviderContainer container = await boot(tester);
+
+      expect(
+        container.read(accessibilitySettingsProvider),
+        const AccessibilitySettings(
+          reducedMotion: true,
+          highContrast: true,
+          textScalePercent: 150,
+        ),
+      );
+      final BuildContext home = tester.element(find.byType(NavigationBar));
+      final MediaQueryData media = MediaQuery.of(home);
+      expect(media.disableAnimations, isTrue);
+      expect(media.highContrast, isTrue);
+      expect(media.textScaler.scale(10), closeTo(10 * 1.2 * 1.5, 0.001));
+      expect(
+        Theme.of(home).colorScheme.primary,
+        AppTheme.light(highContrast: true).colorScheme.primary,
+      );
+      expect(
+        Theme.of(home).colorScheme.primary,
+        isNot(AppTheme.light().colorScheme.primary),
+      );
+
+      // With reduced motion a new screen is shown without a transition:
+      // its first frame already has it fully in place.
+      await tester.tap(find.byTooltip('Customize Home'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Customize Home'), findsWidgets);
+      final Offset start = tester.getTopLeft(find.text('Customize Home').last);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(find.text('Customize Home').last), start);
+    });
+
+    testWidgets('without them the device settings are kept', (
+      WidgetTester tester,
+    ) async {
+      signedInWith(const <String, Object?>{});
+      final ProviderContainer container = await boot(tester);
+      expect(
+        container.read(accessibilitySettingsProvider),
+        const AccessibilitySettings(),
+      );
+      final MediaQueryData media = MediaQuery.of(
+        tester.element(find.byType(NavigationBar)),
+      );
+      expect(media.disableAnimations, isFalse);
+      expect(media.highContrast, isFalse);
+      expect(media.textScaler.scale(10), 10);
+    });
+
+    testWidgets('a Hindi account locale shows the app in Hindi', (
+      WidgetTester tester,
+    ) async {
+      signedInWith(<String, Object?>{'locale': 'hi-IN'});
+      await boot(tester);
+      expect(
+        Localizations.localeOf(tester.element(find.byType(NavigationBar))),
+        const Locale('hi'),
+      );
+      expect(find.text('प्रोफ़ाइल'), findsOneWidget);
+    });
   });
 }

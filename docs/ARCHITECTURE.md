@@ -160,6 +160,7 @@ through a definer helper). Outbox events drive per-change jobs
 `social.notify_friend_request`, `groups.notify_activity`,
 `groups.join_requested`, `groups.sync_expense`, `groups.sync_settlement`,
 `communities.notify_comment`, `communities.notify_membership`,
+`communities.notify_mentions`, `communities.notify_invitation`,
 `moderation.reported` (moderator notice + auto-hide), `moderation.actioned`,
 `challenges.notify_completed`).
 Group activity fans out to members by notification level (ADR-039); edits

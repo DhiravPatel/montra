@@ -395,6 +395,7 @@ const (
 	JobNotifyComment  = "communities.notify_comment"
 	JobNotifyMembers  = "communities.notify_membership"
 	JobNotifyMentions = "communities.notify_mentions"
+	JobNotifyInvite   = "communities.notify_invitation"
 )
 
 // RegisterJobs registers community notification jobs.
@@ -418,6 +419,15 @@ func (s *Service) RegisterJobs(reg *jobs.Registry) {
 		}
 		return s.DB.WithSystemTx(ctx, func(tx pgx.Tx) error { return notifyMentions(ctx, tx, p.Kind, p.ID) })
 	}, jobs.WithTimeout(time.Minute), jobs.WithConcurrency(4))
+	reg.Register(JobNotifyInvite, func(ctx context.Context, j jobs.Job) error {
+		var p struct {
+			InvitationID uuid.UUID `json:"invitation_id"`
+		}
+		if err := j.Decode(&p); err != nil {
+			return jobs.Permanent(err)
+		}
+		return s.DB.WithSystemTx(ctx, func(tx pgx.Tx) error { return notifyInvitation(ctx, tx, p.InvitationID) })
+	}, jobs.WithTimeout(time.Minute), jobs.WithConcurrency(2))
 	reg.Register(JobNotifyMembers, func(ctx context.Context, j jobs.Job) error {
 		var p struct {
 			CommunityID uuid.UUID `json:"community_id"`
@@ -453,6 +463,13 @@ func OutboxRoutes(relay *outbox.Relay) {
 				DedupeKey: "communities.notify_mentions:" + kind + ":" + e.AggregateID.String()}}
 		}
 	}
+	relay.On(EventInvitationCreated, func(e outbox.Stored) []jobs.Spec {
+		if e.AggregateID == nil {
+			return nil
+		}
+		return []jobs.Spec{{Type: JobNotifyInvite, Payload: map[string]any{"invitation_id": *e.AggregateID},
+			DedupeKey: "communities.notify_invitation:" + e.AggregateID.String()}}
+	})
 	relay.On(EventPostCreated, mentions("post"))
 	relay.On(EventCommentCreated, mentions("comment"))
 	for _, ev := range []string{EventMemberPending, EventMemberDecided} {
@@ -553,4 +570,35 @@ func notifyMembership(ctx context.Context, tx pgx.Tx, commID, user uuid.UUID, ki
 		}
 	}
 	return nil
+}
+
+// notifyInvitation tells the invitee about an invitation addressed to them
+// while it is still open, unless they blocked or muted the inviter.
+func notifyInvitation(ctx context.Context, tx pgx.Tx, invID uuid.UUID) error {
+	var invitee, inviter *uuid.UUID
+	var commID uuid.UUID
+	var name string
+	var open bool
+	err := tx.QueryRow(ctx, `select i.invitee_user_id, i.created_by, i.community_id, c.name,
+		i.used_at is null and i.revoked_at is null and i.declined_at is null and i.expires_at > now()
+		from community_invitations i join communities c on c.id = i.community_id where i.id = $1`, invID).
+		Scan(&invitee, &inviter, &commID, &name, &open)
+	if database.IsNoRows(err) || (err == nil && (invitee == nil || !open)) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if inviter != nil {
+		var quiet bool
+		if err := tx.QueryRow(ctx, `select montra.is_blocked_between($1, $2)
+			or exists (select 1 from user_mutes where muter_id = $1 and muted_id = $2)`, *invitee, *inviter).Scan(&quiet); err != nil || quiet {
+			return err
+		}
+	}
+	id := invID
+	_, _, err = notifications.Create(ctx, tx, notifications.Notification{UserID: *invitee, Category: "community", EventType: "community_invitation",
+		Title: "You're invited to join " + name, Body: "Accept or decline in Communities.", DeepLink: "/communities",
+		EntityType: "community_invitation", EntityID: &id, DedupeKey: "community_invitation:" + invID.String()})
+	return err
 }

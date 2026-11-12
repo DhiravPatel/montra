@@ -790,6 +790,14 @@ export const routes: RouteObject[] = [
                 }),
               },
               {
+                path: 'settings/profile',
+                lazy: async () => ({
+                  Component: (await import('@/features/settings/pages/ProfileSettingsPage'))
+                    .ProfileSettingsPage,
+                }),
+              },
+              { path: 'settings', element: <LegacyRedirect to={() => '/settings/profile'} /> },
+              {
                 path: 'settings/security',
                 lazy: async () => ({
                   Component: (await import('@/features/settings/pages/SecuritySettingsPage'))

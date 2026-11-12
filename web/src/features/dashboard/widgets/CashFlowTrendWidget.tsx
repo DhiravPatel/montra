@@ -57,7 +57,10 @@ export function CashFlowTrendWidget({ summary, title, drill }: WidgetProps) {
             const label = (bucket: string) => formatLocalDate(bucket, formatLocale, 'medium');
             const exponent = exponentFor(currencies.data, currency);
             return (
-              <section key={currency} aria-label={t('dashboard.inCurrency', { currency })}>
+              <section
+                key={currency}
+                aria-label={t('dashboard.widgetInCurrency', { widget: title, currency })}
+              >
                 {groups.length > 1 ? <CurrencyHeading currency={currency} /> : null}
                 <ChartFrame
                   label={t('dashboard.trend.chartLabel', { currency })}

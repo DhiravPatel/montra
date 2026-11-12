@@ -163,6 +163,7 @@ void main() {
       ApiEndpoints.recentSearches,
       ApiEndpoints.clearRecentSearches,
       ApiEndpoints.listInsights,
+      ApiEndpoints.getInsight,
       ApiEndpoints.actOnInsight,
       ApiEndpoints.insightFeedback,
       ApiEndpoints.listInsightMutes,
@@ -334,6 +335,15 @@ void main() {
   });
 
   group('insights', () {
+    test('one insight is read by its ID', () async {
+      final InsightDto one = await InsightsApi(client).get('ins-1');
+      expect(one.id, 'ins-1');
+      final RequestOptions sent = adapter.requests.single;
+      expect(sent.method, 'GET');
+      expect(sent.uri.path, '/api/v1/insights/ins-1');
+      expect(sent.uri.queryParameters, isEmpty);
+    });
+
     test('list, actions, feedback, mutes and unmute', () async {
       final InsightsApi api = InsightsApi(client);
       final CursorPage<InsightDto> p = await api.list(

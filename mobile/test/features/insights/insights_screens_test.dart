@@ -28,6 +28,10 @@ void main() {
     ).thenAnswer((_) async => insightPage(items, next: next));
   }
 
+  /// The detail screen reads one insight (`GET /insights/{id}`).
+  void stubGet(InsightDto item) =>
+      when(() => api.get(item.id)).thenAnswer((_) async => item);
+
   List<Override> overrides() => <Override>[
     insightsApiProvider.overrideWithValue(api),
   ];
@@ -98,7 +102,7 @@ void main() {
   group('insight detail', () {
     testWidgets('shows why, the amounts and the record; acts and keeps '
         'feedback', (WidgetTester tester) async {
-      stubList(<InsightDto>[insight()]);
+      stubGet(insight());
       when(() => api.act('ins-1', ActionInputAction.expected))
           .thenAnswer((_) async => insight(status: 'expected'));
       when(
@@ -154,7 +158,7 @@ void main() {
     testWidgets('mute asks first; snooze offers days', (
       WidgetTester tester,
     ) async {
-      stubList(<InsightDto>[insight()]);
+      stubGet(insight());
       when(() => api.act('ins-1', ActionInputAction.mute))
           .thenAnswer((_) async => insight(status: 'muted'));
       when(() => api.act('ins-1', ActionInputAction.snooze, snoozeDays: 7))
@@ -176,12 +180,58 @@ void main() {
       expect(find.text('Snoozed for 7 days.'), findsOneWidget);
     });
 
-    testWidgets('an insight that is not in the list is explained', (
+    testWidgets('an unknown insight is explained without listing them all', (
       WidgetTester tester,
     ) async {
-      stubList(<InsightDto>[insight(id: 'other')]);
+      when(() => api.get('ins-404')).thenThrow(
+        const ApiException(
+          kind: ApiErrorKind.server,
+          code: ErrorObjectCode.notFound,
+          statusCode: 404,
+        ),
+      );
       await pump(tester, '/insights/ins-404');
       expect(find.text("This insight isn't available"), findsOneWidget);
+      verifyNever(
+        () => api.list(
+          all: any(named: 'all'),
+          kind: any(named: 'kind'),
+          cursor: any(named: 'cursor'),
+          limit: any(named: 'limit'),
+        ),
+      );
+    });
+
+    testWidgets('a malformed link reads as not available', (
+      WidgetTester tester,
+    ) async {
+      when(() => api.get('not-an-id')).thenThrow(
+        const ApiException(
+          kind: ApiErrorKind.server,
+          code: ErrorObjectCode.validationError,
+          statusCode: 422,
+          details: <Detail>[
+            Detail(field: 'path.id', message: 'invalid UUID length: 9'),
+          ],
+        ),
+      );
+      await pump(tester, '/insights/not-an-id');
+      expect(find.text("This insight isn't available"), findsOneWidget);
+    });
+
+    testWidgets('a failed read offers a retry', (WidgetTester tester) async {
+      int calls = 0;
+      when(() => api.get('ins-1')).thenAnswer((_) async {
+        if (calls++ == 0) {
+          throw const ApiException(kind: ApiErrorKind.network);
+        }
+        return insight();
+      });
+      await pump(tester, '/insights/ins-1');
+      expect(find.text("You're offline"), findsOneWidget);
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(find.text('Unusually large Groceries expense'), findsOneWidget);
     });
   });
 

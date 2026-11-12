@@ -49,8 +49,15 @@ export type CategorySlice = Schemas['CategorySlice'];
 export type MerchantSlice = Schemas['MerchantSlice'];
 export type Coverage = Schemas['Coverage'];
 export type ReportWindow = Schemas['Window'];
-export type Widget = Schemas['WidgetDTO'];
+/**
+ * A dashboard widget's layout. `key` is a plain string: the contract's
+ * WidgetDTO enum predates budgets, upcoming, goals and group_balances,
+ * and the API may add widgets this client does not know yet.
+ */
+export type Widget = Omit<Schemas['WidgetDTO'], 'key'> & { key: string };
 export type WidgetsPatch = Schemas['WidgetsPatch'];
+export type DashboardPlanning = Schemas['DashboardPlanning'];
+export type PlanningGroupBalance = Schemas['GroupBalance'];
 export type AccountsReport = Schemas['AccountsReport'];
 
 export type Preferences = Schemas['PreferencesDTO'];

@@ -434,7 +434,7 @@ func (s *Service) RequestDeletion(ctx context.Context, confirm, reason string) (
 		return nil, err
 	}
 	if confirm != "DELETE" {
-		return nil, apperr.FieldError("body.confirm", `Type DELETE to confirm.`)
+		return nil, apperr.FieldCode("body.confirm", "confirm_word_mismatch", `Type DELETE to confirm.`, map[string]string{"word": "DELETE"})
 	}
 	when := time.Now().Add(s.Cfg.Product.Retention.DeletionGrace)
 	err = s.DB.WithUserTx(ctx, uid, func(tx pgx.Tx) error {
@@ -442,7 +442,7 @@ func (s *Service) RequestDeletion(ctx context.Context, confirm, reason string) (
 		err := tx.QueryRow(ctx, `insert into account_deletion_requests (user_id, reason, scheduled_for, exceptions)
 			values ($1, nullif($2,''), $3, $4) returning id`, uid, strings.TrimSpace(reason), when, mustJSON(retained)).Scan(&id)
 		if database.IsUniqueViolation(err, "deletion_one_open") {
-			return apperr.Conflict("A deletion request is already scheduled.")
+			return apperr.ConflictCode("deletion_already_scheduled", "A deletion request is already scheduled.", nil)
 		}
 		if err != nil {
 			return err
@@ -474,7 +474,7 @@ func (s *Service) CancelDeletion(ctx context.Context) (*DeletionDTO, error) {
 			return err
 		}
 		if tag.RowsAffected() == 0 {
-			return apperr.Conflict("There is no scheduled deletion to cancel.")
+			return apperr.ConflictCode("no_deletion_scheduled", "There is no scheduled deletion to cancel.", nil)
 		}
 		return audit.Security(ctx, tx, s.IPSalt, audit.SecurityEvent{UserID: &uid, Type: "account_deletion_cancelled"})
 	})

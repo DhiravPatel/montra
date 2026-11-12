@@ -3,6 +3,7 @@ import type {
   Account,
   AccountsReport,
   Category,
+  DashboardPlanning,
   Group,
   GroupDetail,
   Merchant,
@@ -13,7 +14,12 @@ import type {
   Widget,
 } from '@/shared/finance/types';
 import { makeSession } from '../fixtures';
-import { defaultWidgets, makeAccountsReport, makePreferences } from '../financeFixtures';
+import {
+  defaultWidgets,
+  emptyPlanning,
+  makeAccountsReport,
+  makePreferences,
+} from '../financeFixtures';
 
 interface TestBackend {
   user: User | null;
@@ -25,6 +31,8 @@ interface TestBackend {
   paymentMethods: PaymentMethod[];
   preferences: Preferences;
   widgets: Widget[];
+  /** GET /dashboard/planning (the dashboard's planning cards). */
+  planning: DashboardPlanning;
   accountTotals: AccountsReport;
   onboarding: { completed_steps: string[]; skipped_steps: string[]; completed_at?: string };
   /** GET /connections (any connection state; pickers keep friends). */
@@ -45,6 +53,7 @@ function initialState(): TestBackend {
     paymentMethods: [],
     preferences: makePreferences(),
     widgets: defaultWidgets(),
+    planning: emptyPlanning(),
     accountTotals: makeAccountsReport(),
     onboarding: { completed_steps: [], skipped_steps: [] },
     people: [],

@@ -225,6 +225,12 @@ void main() {
       await api.deleteSchedule('sch-1');
       expect(last().method, 'DELETE');
       expect(last().uri.path, '/api/v1/reports/schedules/sch-1');
+
+      answer = schedule().toJson();
+      final ScheduleDto one = await api.schedule('sch-1');
+      expect(one.id, 'sch-1');
+      expect(last().method, 'GET');
+      expect(last().uri.path, '/api/v1/reports/schedules/sch-1');
     });
 
     test('a report is deleted; a schedule is edited, paused and resumed '

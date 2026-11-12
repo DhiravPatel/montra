@@ -14,8 +14,11 @@ transaction attachments, statement imports, reconciliation, analytics,
 reports and exchange rates; rounds 4–5 added friends, groups and shared
 money, communities, challenges, moderation, notifications, search,
 insights, connected services, help & support, privacy & data and the
-fair-use limits. Nothing in the app shows sample or placeholder data, and
-no AI feature is built.
+fair-use limits. Round 6 added the Home planning cards, profile editing
+with a photo, preferences with accessibility settings that apply app wide,
+multi-page receipts and returning to a protected screen after sign-in.
+Nothing in the app shows sample or placeholder data, and no AI feature is
+built.
 
 > **Owner action:** the application ID / bundle ID is `app.montra.mobile`.
 > Confirm the final identifier before the first store upload — it cannot be
@@ -490,6 +493,93 @@ Rules these screens add:
   `converted_too_small`, `consent_version_outdated`, `appeal_pending`,
   `appeal_already_decided`.
 
+## Planning cards, profile, preferences and receipts (round 6)
+
+**Home planning cards.** `GET /dashboard/planning` feeds four widgets with
+one request (`dashboardPlanningProvider`, re-read after finance, budget and
+goal writes): *Budgets* (fullest first, "2 active budgets · 1 is over
+budget", spent of limit, a bar and the pace in words), *Coming up* (overdue
+items first, "Was due …" / "Due today" / "Due …", the occurrence status in
+words, "N more in the calendar"), *Goals* (saved of target, target date)
+and *Group balances* ("You are owed …" / "You owe …" with an icon). Each
+card has its own loading, empty (with the next step: create a budget, add
+a bill, create a goal) and error state (with Try again, which re-reads once
+for all four), opens its full screen ("See all", rows open the budget,
+calendar source, goal or the group's balances) and says when it lists only
+the first items. `dashboard_widgets.dart` and the layout screen know all
+twelve widgets (`DashboardWidgetKind`); the layout is kept as wire keys
+(`DashboardWidget`), so hide, reorder and reset keep working and a widget
+from a newer server is skipped on Home but saved back unchanged. Hidden
+planning widgets are not requested. On first use (no accounts or
+transactions) only planning cards with something in them are shown.
+
+**Profile → Edit profile** (`/profile/edit`, `PATCH /me`): photo, display
+name, username, bio, location, interests (up to 10, each up to 40 bytes, as
+the server keeps them) and who can see the profile. Only changed fields are
+sent; an emptied bio, location or username is sent as `""` and no
+interests as `[]`. The photo is picked (camera, photo library or files),
+uploaded with purpose `avatar` through the `core/files` upload dialog, then
+set with `PATCH /me {avatar_file_id}`; *Remove photo* asks first and sends
+`""`. It is shown through `GET /files/{id}/access` (initials otherwise, also
+on Profile). `username_invalid`, `username_reserved`, `username_taken` and
+`avatar_file_invalid` are shown on their field.
+
+**Profile → Preferences** (`/profile/preferences`, `PATCH /me/preferences`):
+base and second currency, default account (or `clear_default_account`),
+default period, language and region, time zone (this device's, a
+searchable list of common zones, or any typed IANA zone), country, date
+and number format (with examples), week start, month start day, theme,
+and accessibility: reduce motion, high contrast and text size (80–200 %,
+slider with − / + buttons and a preview). Only changed preferences are
+sent; leaving with unsaved changes asks first. The screen explains the base
+currency (it is the default for new accounts, budgets, goals, bills and
+receipts and comes first on Home; changing it converts nothing, as in
+`backend/internal/users/users.go`, which only stores the new code).
+
+Saved preferences apply at once (`core/settings/app_preferences.dart`;
+`MontraApp` loads them when a user is signed in):
+
+* `reduced_motion`, `high_contrast` and `text_scale_percent` are added to
+  the device's settings in `MediaQuery` (either one asking for reduced
+  motion or high contrast turns it on; the text size multiplies the
+  device's, keeping nonlinear scaling). Reduced motion removes page
+  transitions (`ReducedMotionPageTransitionsBuilder`) and theme
+  animations; high contrast uses `AppTheme.light/dark(highContrast: true)`
+  (Material's highest contrast level, 2 px card borders, darker status
+  colors), also for the system setting.
+* `locale` sets the app language when it is English or Hindi.
+* `number_format` `indian` / `international` sets the amount grouping
+  (`numberLocaleOf`); `locale` keeps the language-and-region rule.
+* The theme is saved to the account and applied on this device.
+* Base currency, time zone and locale are mirrored in the signed-in
+  summary, so new forms default to the new currency at once.
+
+**Multi-page receipts.** *Add receipt* opens `/receipts/new` (mirrors the
+web's add-receipt dialog): *Take a photo*, *Choose photos* or *Choose
+files* (several at once; `FileSource.pickMany`, up to 20) add pages, each
+with its position, name, size and state in words (ready, uploading with the
+step and percentage, uploaded, adding, added, or why it failed), move up /
+down and remove buttons. Several files are *pages of one receipt* (one
+`POST /receipts` with `file_ids` in the order shown) or *separate
+receipts*; an optional note is sent too. Pages upload one at a time; trying
+again uploads only what is missing and reuses the Idempotency-Key of the
+same request, so nothing is added twice. *Stop uploading* creates nothing.
+Pages that never became part of a receipt are deleted
+(`DELETE /files/{id}`) when removed or when leaving (which asks first);
+after a lost answer they are kept, since the receipt may exist.
+
+**Also adopted:** `GET /insights/{id}` (the detail no longer searches five
+pages of the list; 404 or a malformed ID reads as "not available"),
+`GET /reports/schedules/{id}` for the edit screen, `TransactionDTO.group_id`
+(a group-linked transaction opens that expense or settlement in its group),
+`share_url` on new group and community invitation links (preferred when it
+is an http(s) join link with a token; otherwise the `WEB_APP_URL` / API
+origin fallback), and localized `query_too_short`, `username_or_user_id`,
+`confirm_word_mismatch`, `deletion_already_scheduled`,
+`no_deletion_scheduled`, `duplicate_item`, `transaction_already_matched`,
+`sync_running`, `already_reported` and `invalid_status_transition` for
+shared recurring expenses (which also reloads the rule).
+
 ## Sessions and security (ADR-002, mobile variant)
 
 * Every request sends `X-Montra-Client: android|ios` and
@@ -542,10 +632,18 @@ Rules these screens add:
 
 Emailed links use the web portal's URLs, so one link works for both clients:
 `/verify-email#token=…` and `/reset-password#token=…`. They open in any auth
-state (signed in or out, during session restore). Invitation links
-(`/groups/join#token=…`, `/communities/join#token=…`) need an account: a
-signed-out user signs in first and then lands on the link. The App Links
-filters (release and debug) list all four paths.
+state (signed in or out, during session restore). Every other screen needs
+an account: a signed-out link to it goes to Welcome (or straight to sign-in
+for invitation links and after an involuntary sign-out) with the link kept
+as `next`, which Welcome, sign-in, sign-up and check-email pass along;
+after sign-in the app opens it, after the (skippable) onboarding first when
+that is still due. A cold start on a link while the session is restored
+keeps it the same way (`/splash?next=`). `next` is only ever an in-app path:
+external URLs, relative paths and auth screens (welcome, sign-in, sign-up,
+splash, onboarding, emailed-link screens) are refused, so it cannot leave
+the app or loop. A voluntary sign-out starts over without `next`. The App
+Links filters (release and debug) list all four emailed and invitation
+paths.
 
 **Android App Links.** `android/app/src/main/AndroidManifest.xml` declares a
 verified intent filter for `https://${montraLinkHost}/verify-email` and
@@ -581,8 +679,19 @@ contain links the app can claim. Pasting a link always works as a fallback.
   banner, field-associated error text.
 * Status is never conveyed by color alone (icon + text in `StatusLabel`,
   `NoticeBanner`, password checklist).
-* "Reduce motion" removes Android page transitions; iOS keeps the
-  user-driven back-swipe.
+* "Reduce motion" (the system setting or the account's preference) removes
+  Android page transitions and theme animations; iOS keeps the
+  user-driven back-swipe. The account's high contrast and text size apply
+  on top of the system's (see round 6).
+* `test/features/a11y_guidelines_test.dart` runs Flutter's
+  `meetsGuideline` checks (Android 48×48 and iOS 44×44 tap targets,
+  labelled tap targets, text contrast in the light theme) on Welcome,
+  sign-in, sign-up, Home with every widget, Transactions, Insights,
+  Together, Profile, Edit profile, Preferences and Add receipt, laid out in
+  one tall window so nothing is half-clipped by scrolling.
+  `test/app/accessibility_settings_test.dart` and `app_flow_test.dart`
+  check that the account's reduced motion, high contrast, text size and
+  language take effect.
 * Strings come from ARB files (`lib/app/l10n/arb`). `en` and `hi` are both
   complete (`build/l10n_untranslated.json` is empty). Server messages are
   English; the app prefers localized text keyed by error code. Starter
@@ -699,14 +808,29 @@ to transition-less pages without the iOS back-swipe).
 * The mobile app has no CAPTCHA (Turnstile) widget yet; `docs/API.md` keeps
   CAPTCHA disabled until the clients ship it. If it were enabled,
   sign-up/sign-in/forgot-password would show the `body.captcha_token` error.
+* Round 6 was run on the Android emulator (Pixel 10 Pro, debug build,
+  `--dart-define=API_BASE_URL=http://10.0.2.2:8080`) with a throwaway
+  user (the saved-password prompt declined): sign-in, the four planning
+  cards with live data (an over-budget budget, a scheduled bill, a goal,
+  "You are owed ₹1,000.00" opening the group's balances), Preferences
+  (reduce motion, high contrast and 130 % text saved and applied across
+  the app at once), Edit profile (a camera photo uploaded as the avatar
+  and shown through its signed link) and a two-page receipt from two
+  camera photos, reordered and added, opening with both pages. Signed-out
+  deep links to other screens cannot be sent to the app on Android (the
+  App Links filters cover only the emailed and invitation paths), so
+  `next` is covered by widget tests.
+* The date format and week start preferences are saved for the server's
+  exports, reports and weekly budgets; dates inside the app still follow
+  the app language.
 * Before store submission: privacy manifest (`PrivacyInfo.xcprivacy`), App
   Privacy / Data safety forms, store listing, and an accessibility review on
   real devices with TalkBack/VoiceOver.
 
 ## Contract notes
 
-Checked against `contracts/openapi/montra.v1.json` (328 paths, 417
-operations, 586 schemas) and the local API. The app calls 386 of the
+Checked against `contracts/openapi/montra.v1.json` (330 paths, 420
+operations, 589 schemas) and the local API. The app calls 389 of the
 operations, all listed in `ApiEndpoints.all` and checked by the contract
 test. Not called: `/ai/*` (no AI), receipt processing, staff tools
 (support queue, platform moderation, admin usage: web-only), push
@@ -726,6 +850,24 @@ session timestamps; client/CSRF request headers and `X-Request-ID` /
 `Retry-After` response headers are declared as components; error statuses are
 declared per operation; ADR-005 names `tool/gen_api.dart` as the Dart
 generator.
+
+**Found in round 6:**
+
+1. `WidgetDTO.key` listed only the first eight widgets while the server
+   sends twelve; fixed in the contract during the round. The app keeps
+   wire keys anyway, so a newer widget is skipped and saved back.
+2. `ProfilePatch.interests` items have no `maxLength`, but the server
+   silently drops items longer than 40 *bytes* (fewer Hindi letters) and
+   still answers 200. The app refuses them before sending; a coded error
+   (or `maxLength`) would be clearer.
+3. `GET /insights/{id}` and `GET /reports/schedules/{id}` answer a
+   malformed ID with 422 on `path.id` without a code instead of 404; the
+   app reads it as "not available".
+4. `PreferencesDTO.default_date_range` is a free string while the PATCH
+   member is an enum, and `PreferencesDTO.text_scale_percent` has no
+   80–200 bounds (the app clamps).
+5. A blank `display_name` answers `body.display_name` without a code
+   (other profile fields now have codes).
 
 **Still worth a look:**
 

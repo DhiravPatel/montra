@@ -16,6 +16,7 @@ import { describeError } from '@/shared/i18n/describeError';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import type { MessageKey, Translate } from '@/shared/i18n/types';
 import { privacyApi } from '../api';
+import { isNothingScheduled } from '../errors';
 import { useDeletion } from '../hooks';
 import { privacyKeys } from '../keys';
 import type { Deletion } from '../types';
@@ -159,7 +160,7 @@ export function DeletionCard({ graceDays }: DeletionCardProps) {
         });
       },
       onError: (error) => {
-        if (hasErrorCode(error, 'CONFLICT')) {
+        if (isNothingScheduled(error)) {
           // Nothing scheduled any more: show the current state.
           void deletion.refetch();
           setCancelError(t('privacySettings.deletion.nothingToCancel'));

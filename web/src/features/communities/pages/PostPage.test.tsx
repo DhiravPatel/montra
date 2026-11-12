@@ -281,7 +281,19 @@ describe('PostPage', () => {
         calls += 1;
         return calls === 1
           ? HttpResponse.json(envelope({}), { status: 201 })
-          : HttpResponse.json(errorBody({ code: 'CONFLICT' }), { status: 409 });
+          : HttpResponse.json(
+              errorBody({
+                code: 'CONFLICT',
+                message: 'You already reported this; moderators will review it.',
+                details: [
+                  {
+                    message: 'You already reported this; moderators will review it.',
+                    code: 'already_reported',
+                  },
+                ],
+              }),
+              { status: 409 },
+            );
       }),
     );
     const { user } = await openPost();

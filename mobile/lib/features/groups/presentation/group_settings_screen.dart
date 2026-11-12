@@ -272,7 +272,10 @@ class _Settings extends ConsumerWidget {
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) => _ShareLinkDialog(
-        link: InviteLinks.groupJoinLink(config, token).toString(),
+        // The server's join link when it sent one; otherwise built here.
+        link:
+            InviteLinks.groupShareUrl(created?.shareUrl) ??
+            InviteLinks.groupJoinLink(config, token).toString(),
         groupName: group.name,
       ),
     );

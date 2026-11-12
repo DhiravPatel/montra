@@ -7,6 +7,8 @@ import 'package:montra_mobile/core/widgets/error_messages.dart';
 import 'package:montra_mobile/features/accounts/domain/account_types.dart';
 import 'package:montra_mobile/features/accounts/presentation/account_widgets.dart';
 import 'package:montra_mobile/features/dashboard/application/dashboard_providers.dart';
+import 'package:montra_mobile/features/dashboard/data/dashboard_api.dart';
+import 'package:montra_mobile/features/dashboard/domain/widget_info.dart';
 import 'package:montra_mobile/features/dashboard/presentation/dashboard_widgets.dart';
 import 'package:montra_mobile/features/labels/application/labels_providers.dart';
 import 'package:montra_mobile/features/labels/domain/label_display.dart';
@@ -156,34 +158,83 @@ void main() {
   });
 
   group('dashboard', () {
+    test('the widget kinds match the contract, in its default order', () {
+      expect(
+        <String>[
+          for (final DashboardWidgetKind k in DashboardWidgetKind.values) k.key,
+        ],
+        <String>[
+          for (final WidgetDtoKey k in WidgetDtoKey.values)
+            if (k != WidgetDtoKey.unrecognized) k.json,
+        ],
+      );
+    });
+
     test('layout sorts by position and keeps ties stable', () {
-      final List<WidgetDto> sorted = DashboardLayoutController.sortLayout(
-        <WidgetDto>[
-          const WidgetDto(
-            key: WidgetDtoKey.cashFlow,
+      final List<DashboardWidget> sorted = DashboardLayoutController.sortLayout(
+        <DashboardWidget>[
+          const DashboardWidget(key: 'cash_flow', position: 2, visible: true),
+          const DashboardWidget(key: 'balances', position: 0, visible: true),
+          const DashboardWidget(
+            key: 'top_merchants',
             position: 2,
-            settings: null,
-            visible: true,
-          ),
-          const WidgetDto(
-            key: WidgetDtoKey.balances,
-            position: 0,
-            settings: null,
-            visible: true,
-          ),
-          const WidgetDto(
-            key: WidgetDtoKey.topMerchants,
-            position: 2,
-            settings: null,
             visible: false,
           ),
         ],
       );
-      expect(sorted.map((WidgetDto w) => w.key).toList(), <WidgetDtoKey>[
-        WidgetDtoKey.balances,
-        WidgetDtoKey.cashFlow,
-        WidgetDtoKey.topMerchants,
+      expect(sorted.map((DashboardWidget w) => w.key).toList(), <String>[
+        'balances',
+        'cash_flow',
+        'top_merchants',
       ]);
+    });
+
+    test('the layout keeps every wire key, including planning widgets and '
+        'widgets from a newer server', () {
+      final List<DashboardWidget> layout = DashboardApi.decodeLayout(
+        <String, Object?>{
+          'data': <Object?>[
+            for (final (int i, String key) in <String>[
+              'balances',
+              'budgets',
+              'upcoming',
+              'goals',
+              'group_balances',
+              'net_worth_forecast',
+            ].indexed)
+              <String, Object?>{
+                'key': key,
+                'position': i,
+                'visible': i != 2,
+                'settings': <String, Object?>{},
+              },
+          ],
+        },
+      );
+      expect(layout.map((DashboardWidget w) => w.kind).toList(), <Object?>[
+        DashboardWidgetKind.balances,
+        DashboardWidgetKind.budgets,
+        DashboardWidgetKind.upcoming,
+        DashboardWidgetKind.goals,
+        DashboardWidgetKind.groupBalances,
+        null,
+      ]);
+      expect(layout.last.key, 'net_worth_forecast');
+      expect(layout[2].visible, isFalse);
+      expect(
+        () => DashboardApi.decodeLayout(<String, Object?>{
+          'data': <Object?>[
+            <String, Object?>{'key': 1, 'position': 0, 'visible': true},
+          ],
+        }),
+        throwsFormatException,
+      );
+      expect(
+        DashboardWidgetKind.values.where(
+          (DashboardWidgetKind k) => k.isPlanning,
+        ),
+        hasLength(4),
+      );
     });
 
     test('currencies list the base currency first and are never mixed', () {

@@ -10679,5 +10679,489 @@
       }
     }
   },
-  "moderationErrorAppealDecided": "This appeal was already decided. Reload to see the outcome."
+  "moderationErrorAppealDecided": "This appeal was already decided. Reload to see the outcome.",
+  "codeQueryTooShort": "Type at least {min} characters of the username.",
+  "@codeQueryTooShort": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "codeUsernameInvalid": "Use 3 to 30 lowercase letters, digits, “_” or “.”.",
+  "codeUsernameReserved": "This username is reserved. Choose another one.",
+  "codeAvatarFileInvalid": "This photo can't be used yet. Upload it again as your profile photo and wait until the upload finishes.",
+  "codeUsernameOrUserId": "Choose who to invite: type a username or pick a friend, not both.",
+  "codeConfirmWordMismatch": "Type {word} exactly to confirm.",
+  "@codeConfirmWordMismatch": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "codeDeletionAlreadyScheduled": "Your account is already scheduled for deletion. You can cancel it on the Privacy & data screen.",
+  "codeNoDeletionScheduled": "There is no scheduled deletion to cancel.",
+  "codeDuplicateItem": "Each transaction or statement line can be chosen only once.",
+  "codeTransactionAlreadyMatched": "One of these transactions is already matched or reconciled. Reload to see where things stand.",
+  "codeSyncRunning": "A sync is already running. Wait for it to finish, then try again.",
+  "codeAlreadyReported": "You already reported this; moderators will review it.",
+  "widgetBudgets": "Budgets",
+  "widgetBudgetsHelp": "Your fullest budgets and how they're pacing",
+  "widgetUpcoming": "Coming up",
+  "widgetUpcomingHelp": "Overdue and upcoming bills, recurring payments, renewals and goal dates",
+  "widgetGoals": "Goals",
+  "widgetGoalsHelp": "Progress on your nearest goals",
+  "widgetGroupBalances": "Group balances",
+  "widgetGroupBalancesHelp": "Groups where you're owed money or owe money",
+  "dashPlanLoading": "Loading…",
+  "dashPlanError": "This card couldn't be loaded. {reason}",
+  "@dashPlanError": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPlanBudgetsSummary": "{count, plural, =1{1 active budget} other{{count} active budgets}}",
+  "@dashPlanBudgetsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPlanBudgetsOver": "{count, plural, =1{1 is over budget} other{{count} are over budget}}",
+  "@dashPlanBudgetsOver": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPlanBudgetsNoneOver": "None are over budget",
+  "dashPlanBudgetsEmpty": "No active budgets. A budget shows how much of a limit you've spent.",
+  "dashPlanBudgetsCreate": "Create a budget",
+  "dashPlanBudgetsSeeAll": "See all budgets",
+  "dashPlanBudgetPaused": "No figures for this period yet",
+  "dashPlanUpcomingSummary": "{count, plural, =1{1 item through {date}} other{{count} items through {date}}}",
+  "@dashPlanUpcomingSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPlanUpcomingOverdue": "{count, plural, =1{1 is overdue} other{{count} are overdue}}",
+  "@dashPlanUpcomingOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPlanUpcomingNoneOverdue": "Nothing is overdue",
+  "dashPlanUpcomingEmpty": "Nothing is due in the next 14 days, and nothing is overdue.",
+  "dashPlanUpcomingAddBill": "Add a bill",
+  "dashPlanUpcomingSeeAll": "Open the calendar",
+  "dashPlanUpcomingMore": "{count, plural, =1{1 more in the calendar} other{{count} more in the calendar}}",
+  "@dashPlanUpcomingMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPlanDueOn": "Due {date}",
+  "@dashPlanDueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPlanDueToday": "Due today",
+  "dashPlanWasDue": "Was due {date}",
+  "@dashPlanWasDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dashPlanGoalsSummary": "{count, plural, =1{1 active goal} other{{count} active goals}}",
+  "@dashPlanGoalsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPlanGoalsEmpty": "No active goals. Set one to save toward something.",
+  "dashPlanGoalsCreate": "Create a goal",
+  "dashPlanGoalsSeeAll": "See all goals",
+  "dashPlanGoalNoDate": "No target date",
+  "dashPlanGroupsSummary": "{count, plural, =1{Open balance in 1 group} other{Open balances in {count} groups}}",
+  "@dashPlanGroupsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPlanGroupsEmpty": "You're settled up in every group.",
+  "dashPlanGroupsSeeAll": "See all groups",
+  "dashPlanGroupSettled": "Settled up",
+  "dashPlanShowingFirst": "Showing {shown} of {total}",
+  "@dashPlanShowingFirst": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileEditTitle": "Edit profile",
+  "profileEditEntry": "Edit profile",
+  "profileEditEntrySubtitle": "Name, photo, username, bio and who can see your profile",
+  "profileEditPhotoSection": "Profile photo",
+  "profileEditPhotoNone": "No photo yet. People see your initials instead.",
+  "profileEditPhotoLabel": "Your profile photo",
+  "profileEditPhotoInitials": "Initials for {name}",
+  "@profileEditPhotoInitials": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditPhotoChoose": "Choose a photo",
+  "profileEditPhotoChange": "Change photo",
+  "profileEditPhotoRemove": "Remove photo",
+  "profileEditPhotoRemoveTitle": "Remove your profile photo?",
+  "profileEditPhotoRemoveBody": "People will see your initials instead. You can add a photo again at any time.",
+  "profileEditPhotoSaved": "Profile photo updated.",
+  "profileEditPhotoRemoved": "Profile photo removed.",
+  "profileEditPhotoUnavailable": "The photo couldn't be shown right now.",
+  "profileEditPhotoHelp": "JPG, PNG or WEBP, up to {size}. Your photo is shown where your profile is visible.",
+  "@profileEditPhotoHelp": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditDetailsSection": "About you",
+  "profileEditDisplayName": "Display name",
+  "profileEditDisplayNameHelp": "Shown to friends, groups and communities.",
+  "profileEditBio": "Bio",
+  "profileEditBioHelp": "A short line about you. Leave it empty to remove it.",
+  "profileEditLocation": "Location",
+  "profileEditLocationHelp": "A city or region, never your address. Leave it empty to remove it.",
+  "profileEditInterests": "Interests",
+  "profileEditInterestsHelp": "Up to {max} short topics, for example cooking or cricket.",
+  "@profileEditInterestsHelp": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "profileEditInterestAdd": "Add interest",
+  "profileEditInterestNew": "New interest",
+  "profileEditInterestRemove": "Remove interest {name}",
+  "@profileEditInterestRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditInterestTooLong": "Keep each interest short (up to 40 letters in English, fewer in Hindi).",
+  "profileEditInterestDuplicate": "You already added this interest.",
+  "profileEditInterestsFull": "You can add up to {max} interests.",
+  "@profileEditInterestsFull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "profileEditInterestsNone": "No interests added.",
+  "profileEditVisibility": "Who can see your profile",
+  "profileEditVisibilityPrivate": "Only you",
+  "profileEditVisibilityPrivateHelp": "Others see only your display name and photo where you take part.",
+  "profileEditVisibilityConnections": "Friends and group members",
+  "profileEditVisibilityConnectionsHelp": "Your bio, location and interests are shown to people you're connected with.",
+  "profileEditVisibilityPublic": "Everyone on Montra",
+  "profileEditVisibilityPublicHelp": "Anyone signed in to Montra can see your profile details.",
+  "profileEditUsernameHelp": "3 to 30 lowercase letters, digits, “_” or “.”. Leave it empty to remove it. Who can find you by it is set in Friends.",
+  "profileEditSaved": "Profile saved.",
+  "profileEditFinanceNote": "Your profile never shows your accounts, amounts or transactions.",
+  "prefsTitle": "Preferences",
+  "prefsEntrySubtitle": "Currency, region, formats, defaults, theme and accessibility",
+  "prefsSaved": "Preferences saved.",
+  "prefsMoneySection": "Money",
+  "prefsBaseCurrency": "Base currency",
+  "prefsBaseCurrencyExplain": "Your base currency is the default for new accounts, budgets, goals, bills and receipts, and comes first on Home. Changing it converts nothing: existing accounts, transactions, budgets and goals keep their own currency, and amounts in different currencies are never added together.",
+  "prefsBaseCurrencyChanged": "From now on new records default to {currency}. Nothing you already recorded changes.",
+  "@prefsBaseCurrencyChanged": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "prefsDisplayCurrency": "Second currency to show",
+  "prefsDisplayCurrencyHelp": "Optional. Where exchange rates are used, amounts can also be shown in this currency; your records keep their own currency.",
+  "prefsNone": "None",
+  "prefsDefaultAccount": "Default account",
+  "prefsDefaultAccountHelp": "Chosen first when you add an expense or income.",
+  "prefsDefaultAccountMissing": "An account that is no longer active",
+  "prefsDefaultRange": "Default period",
+  "prefsDefaultRangeHelp": "The period Home opens with.",
+  "prefsRegionSection": "Region and language",
+  "prefsCountryHelp": "Two letters, for example IN. Leave it empty to remove it.",
+  "prefsTimezoneHelp": "\"Today\", budget periods and reminders follow this time zone. Changing it doesn't move anything you already recorded.",
+  "prefsTimezoneSearch": "Search time zones",
+  "prefsTimezoneUseTyped": "Use “{zone}”",
+  "@prefsTimezoneUseTyped": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "prefsTimezoneDevice": "This device: {zone}",
+  "@prefsTimezoneDevice": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "prefsLocale": "Language and region",
+  "prefsLocaleHelp": "The app's language follows this setting.",
+  "prefsLocaleEnIn": "English (India)",
+  "prefsLocaleEnUs": "English (United States)",
+  "prefsLocaleEnGb": "English (United Kingdom)",
+  "prefsLocaleHiIn": "हिन्दी (भारत)",
+  "prefsFormatsSection": "Formats",
+  "prefsDateFormat": "Date format",
+  "prefsDateFormatLocale": "Follow the language",
+  "prefsDateFormatDmy": "Day, month, year (31/12/2026)",
+  "prefsDateFormatMdy": "Month, day, year (12/31/2026)",
+  "prefsDateFormatYmd": "Year, month, day (2026-12-31)",
+  "prefsDateFormatHelp": "Used in exports, reports and emails.",
+  "prefsNumberFormat": "Number format",
+  "prefsNumberFormatLocale": "Follow the language and region",
+  "prefsNumberFormatIndian": "Lakh and crore ({example})",
+  "@prefsNumberFormatIndian": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "prefsNumberFormatInternational": "Thousands and millions ({example})",
+  "@prefsNumberFormatInternational": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "prefsNumberFormatHelp": "How amounts are grouped in the app, for example {example}.",
+  "@prefsNumberFormatHelp": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "prefsWeekStart": "Week starts on",
+  "prefsWeekStartHelp": "Used for weekly budgets, reports and weekly totals.",
+  "prefsMonthStart": "Month starts on day",
+  "prefsMonthStartHelp": "For example 25 if your salary arrives on the 25th. Days 1 to 28.",
+  "prefsMonthStartDay": "Day {day}",
+  "@prefsMonthStartDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "prefsAppearanceSection": "Theme",
+  "prefsThemeHelp": "Saved to your account and used on this device.",
+  "a11yTitle": "Accessibility",
+  "a11yIntro": "These settings apply in the app as soon as you save, on top of your phone's own accessibility settings.",
+  "a11yReducedMotion": "Reduce motion",
+  "a11yReducedMotionHelp": "Turns off screen transitions and other animations.",
+  "a11yHighContrast": "High contrast",
+  "a11yHighContrastHelp": "Stronger colors and borders that are easier to tell apart.",
+  "a11yTextSize": "Text size",
+  "a11yTextSizeValue": "{percent}%",
+  "@a11yTextSizeValue": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yTextSizeHelp": "Multiplies your phone's text size, from 80% to 200%.",
+  "a11yTextSizeSmaller": "Smaller text",
+  "a11yTextSizeLarger": "Larger text",
+  "a11yTextSizePreview": "Preview: ₹1,250.50 spent on groceries this week.",
+  "prefsUnsavedTitle": "Discard your changes?",
+  "prefsUnsavedBody": "You changed some settings but didn't save them.",
+  "prefsDiscard": "Discard",
+  "receiptPagesAddTitle": "Add receipt",
+  "receiptPagesIntro": "Add each photo or PDF of the receipt, in order. A long receipt can have up to {max} pages. Nothing is read automatically: you enter the details next.",
+  "@receiptPagesIntro": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesNoneTitle": "No pages yet",
+  "receiptPagesNoneBody": "Take a photo, or choose photos or files. Each one becomes a page.",
+  "receiptPagesTakePhoto": "Take a photo",
+  "receiptPagesChoosePhotos": "Choose photos",
+  "receiptPagesChooseFiles": "Choose files",
+  "receiptPagesPage": "Page {position} of {total}",
+  "@receiptPagesPage": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesFile": "File {position} of {total}",
+  "@receiptPagesFile": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesMoveUp": "Move {name} up",
+  "@receiptPagesMoveUp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptPagesMoveDown": "Move {name} down",
+  "@receiptPagesMoveDown": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptPagesRemove": "Remove {name}",
+  "@receiptPagesRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptPagesStateWaiting": "Ready to upload",
+  "receiptPagesStateUploaded": "Uploaded",
+  "receiptPagesStateCreating": "Adding the receipt…",
+  "receiptPagesStateFailed": "Not added: {reason}",
+  "@receiptPagesStateFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptPagesStateDone": "Added",
+  "receiptPagesModeTitle": "These files are",
+  "receiptPagesModePages": "Pages of one receipt",
+  "receiptPagesModePagesHelp": "In the order shown above.",
+  "receiptPagesModeSeparate": "Separate receipts",
+  "receiptPagesModeSeparateHelp": "Each file becomes its own receipt.",
+  "receiptPagesNotes": "Note",
+  "receiptPagesNotesHelp": "For example who it was for. Kept with the receipt.",
+  "receiptPagesSave": "{count, plural, =1{Add receipt} other{Add receipt with {count} pages}}",
+  "@receiptPagesSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesSaveSeparate": "{count, plural, =1{Add 1 receipt} other{Add {count} receipts}}",
+  "@receiptPagesSaveSeparate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesStop": "Stop uploading",
+  "receiptPagesStopped": "Stopped. Nothing was added; uploaded pages are kept until you leave this screen.",
+  "receiptPagesTooMany": "A receipt can have up to {max} pages.",
+  "@receiptPagesTooMany": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesAlreadyAdded": "{name} is already in the list.",
+  "@receiptPagesAlreadyAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptPagesRefused": "{name} wasn't added: {reason}",
+  "@receiptPagesRefused": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptPagesUploadFailed": "Some pages couldn't be uploaded. Try again to upload the rest; uploaded pages aren't sent twice.",
+  "receiptPagesSomeFailed": "{count, plural, =1{1 receipt wasn't added. Try again to add it.} other{{count} receipts weren't added. Try again to add them.}}",
+  "@receiptPagesSomeFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesAddedMany": "{count, plural, =1{1 receipt added. Enter its details next.} other{{count} receipts added. Enter their details next.}}",
+  "@receiptPagesAddedMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptPagesLeaveTitle": "Leave without adding?",
+  "receiptPagesLeaveBody": "The pages you chose won't be added, and uploaded ones are deleted.",
+  "receiptPagesLeave": "Leave"
 }

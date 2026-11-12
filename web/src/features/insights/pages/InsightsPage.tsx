@@ -22,7 +22,7 @@ import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { describeError } from '@/shared/i18n/describeError';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import type { MessageKey } from '@/shared/i18n/types';
-import { insightsApi, useInsights } from '../api';
+import { insightsApi, useInsight, useInsights } from '../api';
 import { FeedbackDialog } from '../components/FeedbackDialog';
 import { InsightCard } from '../components/InsightCard';
 import { MutedTypesCard } from '../components/MutedTypesCard';
@@ -30,6 +30,7 @@ import { muteKey, muteScopeOf } from '../evidence';
 import {
   INSIGHTS_LIST_HEADING_ID,
   insightThanksId,
+  LINKED_INSIGHT_HEADING_ID,
   insightTitleId,
   MUTED_TYPES_HEADING_ID,
 } from '../ids';
@@ -70,6 +71,10 @@ function isListQuery(value: unknown): value is InsightListQuery {
  * active again, the full list replaces it.
  */
 function applyUpdate(queryClient: QueryClient, updated: Insight) {
+  // An insight opened from a link is cached on its own too (any status).
+  if (queryClient.getQueryData(insightsKeys.detail(updated.id))) {
+    queryClient.setQueryData(insightsKeys.detail(updated.id), updated);
+  }
   for (const [key, data] of queryClient.getQueriesData<InfiniteData<InsightPage>>({
     queryKey: insightsKeys.lists(),
   })) {
@@ -115,7 +120,12 @@ export function InsightsPage() {
   const requestedKind = params.get('kind');
   const kind: InsightKindFilter = isInsightKind(requestedKind) ? requestedKind : '';
   const insights = useInsights({ all: view === 'all', kind });
-  const items = insights.data?.pages.flatMap((page) => page.items);
+  // A link to one insight (notification): read it by ID, whatever its status.
+  const linked = useInsight(insightId);
+  // The linked insight is shown on its own above the list, never twice.
+  const items = insights.data?.pages
+    .flatMap((page) => page.items)
+    .filter((item) => item.id !== insightId);
 
   const [muting, setMuting] = useState<Insight | null>(null);
   const [muteError, setMuteError] = useState<string | null>(null);
@@ -293,16 +303,15 @@ export function InsightsPage() {
     );
   };
 
-  // A link to one insight (notification): show it once the list is loaded.
-  const target = insightId && items?.some((item) => item.id === insightId) ? insightId : null;
+  const linkedId = linked.data?.id ?? null;
   const focusedTarget = useRef<string | null>(null);
   useEffect(() => {
-    if (!target || focusedTarget.current === target) return;
+    if (!linkedId || focusedTarget.current === linkedId) return;
     // Two frames: after the route announcer has focused the page heading.
     let frame = window.requestAnimationFrame(() => {
       frame = window.requestAnimationFrame(() => {
-        focusedTarget.current = target;
-        const element = document.getElementById(insightTitleId(target));
+        focusedTarget.current = linkedId;
+        const element = document.getElementById(insightTitleId(linkedId));
         element?.scrollIntoView({ block: 'center' });
         element?.focus({ preventScroll: true });
       });
@@ -310,7 +319,71 @@ export function InsightsPage() {
     return () => {
       window.cancelAnimationFrame(frame);
     };
-  }, [target]);
+  }, [linkedId]);
+
+  const renderCard = (insight: Insight, highlighted: boolean) => (
+    <InsightCard
+      insight={insight}
+      highlighted={highlighted}
+      busy={
+        (act.isPending && act.variables.insight.id === insight.id) ||
+        (unmute.isPending &&
+          unmute.variables.subtype === insight.subtype &&
+          (unmute.variables.scope === '*' || unmute.variables.scope === muteScopeOf(insight)))
+      }
+      locked={locked}
+      feedback={insight.my_feedback ?? sent.get(insight.id) ?? null}
+      feedbackBusy={feedback.isPending}
+      onAction={(input) => {
+        runAction(insight, input);
+      }}
+      onMute={() => {
+        setMuteError(null);
+        setMuting(insight);
+      }}
+      onUnmute={() => {
+        runUnmute({
+          subtype: insight.subtype,
+          scope: muteScopeOf(insight),
+          created_at: insight.created_at,
+        });
+      }}
+      onFeedback={(value) => {
+        sendFeedback(insight, value);
+      }}
+      onReport={() => {
+        if (feedback.isPending) return;
+        setReportError(null);
+        setReporting(insight);
+      }}
+    />
+  );
+
+  let linkedContent = null;
+  if (insightId) {
+    if (linked.data) {
+      // A failed refresh keeps showing the insight already read.
+      linkedContent = renderCard(linked.data, true);
+    } else if (linked.isPending) {
+      linkedContent = <LoadingState label={t('insights.linked.loading')} />;
+    } else {
+      linkedContent = hasErrorCode(linked.error, 'NOT_FOUND') ? (
+        <Alert tone="info">{t('insights.linked.missing')}</Alert>
+      ) : hasErrorCode(linked.error, 'FORBIDDEN') ? (
+        <PermissionDenied titleAs="p" />
+      ) : (
+        <ErrorState
+          titleAs="p"
+          title={t('insights.linked.error')}
+          error={linked.error}
+          retrying={linked.isFetching}
+          onRetry={() => {
+            void linked.refetch();
+          }}
+        />
+      );
+    }
+  }
 
   let content;
   if (insights.isPending) {
@@ -341,44 +414,7 @@ export function InsightsPage() {
       <div className="space-y-4">
         <ul className="space-y-4">
           {items.map((insight) => (
-            <li key={insight.id}>
-              <InsightCard
-                insight={insight}
-                highlighted={insight.id === insightId}
-                busy={
-                  (act.isPending && act.variables.insight.id === insight.id) ||
-                  (unmute.isPending &&
-                    unmute.variables.subtype === insight.subtype &&
-                    (unmute.variables.scope === '*' ||
-                      unmute.variables.scope === muteScopeOf(insight)))
-                }
-                locked={locked}
-                feedback={insight.my_feedback ?? sent.get(insight.id) ?? null}
-                feedbackBusy={feedback.isPending}
-                onAction={(input) => {
-                  runAction(insight, input);
-                }}
-                onMute={() => {
-                  setMuteError(null);
-                  setMuting(insight);
-                }}
-                onUnmute={() => {
-                  runUnmute({
-                    subtype: insight.subtype,
-                    scope: muteScopeOf(insight),
-                    created_at: insight.created_at,
-                  });
-                }}
-                onFeedback={(value) => {
-                  sendFeedback(insight, value);
-                }}
-                onReport={() => {
-                  if (feedback.isPending) return;
-                  setReportError(null);
-                  setReporting(insight);
-                }}
-              />
-            </li>
+            <li key={insight.id}>{renderCard(insight, false)}</li>
           ))}
         </ul>
         {insights.isFetchNextPageError ? (
@@ -410,10 +446,13 @@ export function InsightsPage() {
         <p className="max-w-prose text-sm text-fg-muted">{t('insights.howItWorks.body')}</p>
       </Disclosure>
 
-      {insightId && insights.isSuccess && !target ? (
-        <Alert tone="info" className="mb-6">
-          {view === 'all' ? t('insights.link.missing') : t('insights.link.notActive')}
-        </Alert>
+      {insightId ? (
+        <section aria-labelledby={LINKED_INSIGHT_HEADING_ID} className="mb-8 space-y-4">
+          <h2 id={LINKED_INSIGHT_HEADING_ID} className="text-lg font-semibold text-fg">
+            {t('insights.linked.title')}
+          </h2>
+          {linkedContent}
+        </section>
       ) : null}
 
       <div className="mb-6 flex flex-wrap items-end gap-4">

@@ -8942,6 +8942,7 @@ final class CommunityInvitationDto {
     this.invitee,
     this.inviteeUserId,
     required this.kind,
+    this.shareUrl,
     required this.status,
     this.token,
   });
@@ -8994,6 +8995,9 @@ final class CommunityInvitationDto {
     kind: CommunityInvitationDtoKind.fromJson(
       _cast<String>(json['kind'], 'CommunityInvitationDTO.kind'),
     ),
+    shareUrl: json['share_url'] == null
+        ? null
+        : _cast<String>(json['share_url'], 'CommunityInvitationDTO.share_url'),
     status: CommunityInvitationDtoStatus.fromJson(
       _cast<String>(json['status'], 'CommunityInvitationDTO.status'),
     ),
@@ -9033,6 +9037,11 @@ final class CommunityInvitationDto {
   /// JSON `kind`.
   final CommunityInvitationDtoKind kind;
 
+  /// Shown once with token: the web join link (token in the URL fragment, never sent to servers).
+  ///
+  /// JSON `share_url` (optional).
+  final String? shareUrl;
+
   /// JSON `status`.
   final CommunityInvitationDtoStatus status;
 
@@ -9052,6 +9061,7 @@ final class CommunityInvitationDto {
     'invitee': ?invitee?.toJson(),
     'invitee_user_id': ?inviteeUserId,
     'kind': kind.json,
+    'share_url': ?shareUrl,
     'status': status.json,
     'token': ?token,
   };
@@ -9069,6 +9079,7 @@ final class CommunityInvitationDto {
           other.invitee == invitee &&
           other.inviteeUserId == inviteeUserId &&
           other.kind == kind &&
+          other.shareUrl == shareUrl &&
           other.status == status &&
           other.token == token;
 
@@ -9083,6 +9094,7 @@ final class CommunityInvitationDto {
     invitee,
     inviteeUserId,
     kind,
+    shareUrl,
     status,
     token,
   ]);
@@ -12412,6 +12424,206 @@ final class DailyUsage {
   String toString() => 'DailyUsage(...)';
 }
 
+/// Schema `DashboardPlanning`.
+@immutable
+final class DashboardPlanning {
+  /// Creates a [DashboardPlanning].
+  const DashboardPlanning({
+    required this.budgetCount,
+    required this.budgets,
+    required this.goalCount,
+    required this.goals,
+    required this.groupBalances,
+    required this.groupCount,
+    required this.overBudgetCount,
+    required this.overdueCount,
+    required this.today,
+    required this.upcoming,
+    required this.upcomingCount,
+    required this.upcomingThrough,
+  });
+
+  /// Decodes a `DashboardPlanning` JSON object.
+  factory DashboardPlanning.fromJson(Map<String, Object?> json) =>
+      DashboardPlanning(
+        budgetCount: _cast<int>(
+          json['budget_count'],
+          'DashboardPlanning.budget_count',
+        ),
+        budgets: _castList(
+          json['budgets'],
+          'DashboardPlanning.budgets',
+          (Object? e1, String p1) =>
+              BudgetDto.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
+        goalCount: _cast<int>(
+          json['goal_count'],
+          'DashboardPlanning.goal_count',
+        ),
+        goals: _castList(
+          json['goals'],
+          'DashboardPlanning.goals',
+          (Object? e1, String p1) =>
+              GoalDto.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
+        groupBalances: _castList(
+          json['group_balances'],
+          'DashboardPlanning.group_balances',
+          (Object? e1, String p1) =>
+              GroupBalance.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
+        groupCount: _cast<int>(
+          json['group_count'],
+          'DashboardPlanning.group_count',
+        ),
+        overBudgetCount: _cast<int>(
+          json['over_budget_count'],
+          'DashboardPlanning.over_budget_count',
+        ),
+        overdueCount: _cast<int>(
+          json['overdue_count'],
+          'DashboardPlanning.overdue_count',
+        ),
+        today: _cast<String>(json['today'], 'DashboardPlanning.today'),
+        upcoming: _castList(
+          json['upcoming'],
+          'DashboardPlanning.upcoming',
+          (Object? e1, String p1) =>
+              CalendarItem.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
+        upcomingCount: _cast<int>(
+          json['upcoming_count'],
+          'DashboardPlanning.upcoming_count',
+        ),
+        upcomingThrough: _cast<String>(
+          json['upcoming_through'],
+          'DashboardPlanning.upcoming_through',
+        ),
+      );
+
+  /// Active budgets.
+  ///
+  /// JSON `budget_count`.
+  ///
+  /// Format: `int64`.
+  final int budgetCount;
+
+  /// Active budgets, fullest first (percent of limit spent), up to 5.
+  ///
+  /// JSON `budgets`.
+  final List<BudgetDto> budgets;
+
+  /// Active goals.
+  ///
+  /// JSON `goal_count`.
+  ///
+  /// Format: `int64`.
+  final int goalCount;
+
+  /// Active goals, nearest target date first (goals without one last, then by priority), up to 4.
+  ///
+  /// JSON `goals`.
+  final List<GoalDto> goals;
+
+  /// Active groups where you are owed or owe, largest amounts first within each currency, up to 5.
+  ///
+  /// JSON `group_balances`.
+  final List<GroupBalance> groupBalances;
+
+  /// Active groups with an open balance.
+  ///
+  /// JSON `group_count`.
+  ///
+  /// Format: `int64`.
+  final int groupCount;
+
+  /// JSON `over_budget_count`.
+  ///
+  /// Format: `int64`.
+  final int overBudgetCount;
+
+  /// JSON `overdue_count`.
+  ///
+  /// Format: `int64`.
+  final int overdueCount;
+
+  /// Your local date (YYYY-MM-DD).
+  ///
+  /// JSON `today`.
+  final String today;
+
+  /// Overdue items first (oldest first), then items due from today through upcoming_through, up to 8. Bills, recurring transactions, shared recurring expenses, subscription renewals, trial ends and goal target dates.
+  ///
+  /// JSON `upcoming`.
+  final List<CalendarItem> upcoming;
+
+  /// All items the list was taken from.
+  ///
+  /// JSON `upcoming_count`.
+  ///
+  /// Format: `int64`.
+  final int upcomingCount;
+
+  /// Last date the upcoming list covers (today + 14 days).
+  ///
+  /// JSON `upcoming_through`.
+  final String upcomingThrough;
+
+  /// Encodes this object as JSON. Absent optional fields are omitted.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'budget_count': budgetCount,
+    'budgets': budgets.map((BudgetDto item1) => item1.toJson()).toList(),
+    'goal_count': goalCount,
+    'goals': goals.map((GoalDto item1) => item1.toJson()).toList(),
+    'group_balances': groupBalances
+        .map((GroupBalance item1) => item1.toJson())
+        .toList(),
+    'group_count': groupCount,
+    'over_budget_count': overBudgetCount,
+    'overdue_count': overdueCount,
+    'today': today,
+    'upcoming': upcoming.map((CalendarItem item1) => item1.toJson()).toList(),
+    'upcoming_count': upcomingCount,
+    'upcoming_through': upcomingThrough,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DashboardPlanning &&
+          other.budgetCount == budgetCount &&
+          _listEquals(other.budgets, budgets) &&
+          other.goalCount == goalCount &&
+          _listEquals(other.goals, goals) &&
+          _listEquals(other.groupBalances, groupBalances) &&
+          other.groupCount == groupCount &&
+          other.overBudgetCount == overBudgetCount &&
+          other.overdueCount == overdueCount &&
+          other.today == today &&
+          _listEquals(other.upcoming, upcoming) &&
+          other.upcomingCount == upcomingCount &&
+          other.upcomingThrough == upcomingThrough;
+
+  @override
+  int get hashCode => Object.hashAll(<Object?>[
+    budgetCount,
+    _listHash(budgets),
+    goalCount,
+    _listHash(goals),
+    _listHash(groupBalances),
+    groupCount,
+    overBudgetCount,
+    overdueCount,
+    today,
+    _listHash(upcoming),
+    upcomingCount,
+    upcomingThrough,
+  ]);
+
+  @override
+  String toString() => 'DashboardPlanning(...)';
+}
+
 /// Schema `DashboardSummary`.
 @immutable
 final class DashboardSummary {
@@ -14382,6 +14594,18 @@ EnvelopeCreateResult decodeEnvelopeCreateResult(Map<String, Object?> json) =>
       (Object? data, String path) =>
           CreateResult.fromJson(_cast<Map<String, Object?>>(data, path)),
     );
+
+/// Schema `EnvelopeDashboardPlanning`: an [Envelope] whose `data` is `DashboardPlanning`.
+typedef EnvelopeDashboardPlanning = Envelope<DashboardPlanning>;
+
+/// Decodes a `EnvelopeDashboardPlanning` response body.
+EnvelopeDashboardPlanning decodeEnvelopeDashboardPlanning(
+  Map<String, Object?> json,
+) => Envelope<DashboardPlanning>.fromJson(
+  json,
+  (Object? data, String path) =>
+      DashboardPlanning.fromJson(_cast<Map<String, Object?>>(data, path)),
+);
 
 /// Schema `EnvelopeDashboardSummary`: an [Envelope] whose `data` is `DashboardSummary`.
 typedef EnvelopeDashboardSummary = Envelope<DashboardSummary>;
@@ -20217,6 +20441,68 @@ final class GroupActivitySummary {
   String toString() => 'GroupActivitySummary(...)';
 }
 
+/// Schema `GroupBalance`.
+@immutable
+final class GroupBalance {
+  /// Creates a [GroupBalance].
+  const GroupBalance({
+    required this.groupId,
+    required this.groupType,
+    required this.myNet,
+    required this.name,
+  });
+
+  /// Decodes a `GroupBalance` JSON object.
+  factory GroupBalance.fromJson(Map<String, Object?> json) => GroupBalance(
+    groupId: _cast<String>(json['group_id'], 'GroupBalance.group_id'),
+    groupType: GroupBalanceGroupType.fromJson(
+      _cast<String>(json['group_type'], 'GroupBalance.group_type'),
+    ),
+    myNet: Money.fromJson(
+      _cast<Map<String, Object?>>(json['my_net'], 'GroupBalance.my_net'),
+    ),
+    name: _cast<String>(json['name'], 'GroupBalance.name'),
+  );
+
+  /// JSON `group_id`.
+  final String groupId;
+
+  /// JSON `group_type`.
+  final GroupBalanceGroupType groupType;
+
+  /// Positive: you are owed; negative: you owe (group currency).
+  ///
+  /// JSON `my_net`.
+  final Money myNet;
+
+  /// JSON `name`.
+  final String name;
+
+  /// Encodes this object as JSON. Absent optional fields are omitted.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'group_id': groupId,
+    'group_type': groupType.json,
+    'my_net': myNet.toJson(),
+    'name': name,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GroupBalance &&
+          other.groupId == groupId &&
+          other.groupType == groupType &&
+          other.myNet == myNet &&
+          other.name == name;
+
+  @override
+  int get hashCode =>
+      Object.hashAll(<Object?>[groupId, groupType, myNet, name]);
+
+  @override
+  String toString() => 'GroupBalance(...)';
+}
+
 /// Schema `GroupBalancesDTO`.
 @immutable
 final class GroupBalancesDto {
@@ -22392,6 +22678,7 @@ final class GroupInvitationDto {
     this.inviteeUserId,
     required this.kind,
     this.maxUses,
+    this.shareUrl,
     required this.status,
     this.token,
     required this.useCount,
@@ -22442,6 +22729,9 @@ final class GroupInvitationDto {
         maxUses: json['max_uses'] == null
             ? null
             : _cast<int>(json['max_uses'], 'GroupInvitationDTO.max_uses'),
+        shareUrl: json['share_url'] == null
+            ? null
+            : _cast<String>(json['share_url'], 'GroupInvitationDTO.share_url'),
         status: GroupInvitationDtoStatus.fromJson(
           _cast<String>(json['status'], 'GroupInvitationDTO.status'),
         ),
@@ -22487,6 +22777,11 @@ final class GroupInvitationDto {
   /// Format: `int32`.
   final int? maxUses;
 
+  /// Shown once with token: the web join link (token in the URL fragment, never sent to servers).
+  ///
+  /// JSON `share_url` (optional).
+  final String? shareUrl;
+
   /// JSON `status`.
   final GroupInvitationDtoStatus status;
 
@@ -22512,6 +22807,7 @@ final class GroupInvitationDto {
     'invitee_user_id': ?inviteeUserId,
     'kind': kind.json,
     'max_uses': ?maxUses,
+    'share_url': ?shareUrl,
     'status': status.json,
     'token': ?token,
     'use_count': useCount,
@@ -22531,6 +22827,7 @@ final class GroupInvitationDto {
           other.inviteeUserId == inviteeUserId &&
           other.kind == kind &&
           other.maxUses == maxUses &&
+          other.shareUrl == shareUrl &&
           other.status == status &&
           other.token == token &&
           other.useCount == useCount;
@@ -22547,6 +22844,7 @@ final class GroupInvitationDto {
     inviteeUserId,
     kind,
     maxUses,
+    shareUrl,
     status,
     token,
     useCount,
@@ -32359,6 +32657,7 @@ final class ProfilePatch {
   /// Creates a [ProfilePatch].
   const ProfilePatch({
     this.allowFriendRequests,
+    this.avatarFileId,
     this.bio,
     this.coarseLocation,
     this.discoverableByUsername,
@@ -32379,6 +32678,9 @@ final class ProfilePatch {
               'ProfilePatch.allow_friend_requests',
             ),
           ),
+    avatarFileId: json['avatar_file_id'] == null
+        ? null
+        : _cast<String>(json['avatar_file_id'], 'ProfilePatch.avatar_file_id'),
     bio: json['bio'] == null
         ? null
         : _cast<String>(json['bio'], 'ProfilePatch.bio'),
@@ -32441,6 +32743,11 @@ final class ProfilePatch {
   /// JSON `allow_friend_requests` (optional).
   final ProfilePatchAllowFriendRequests? allowFriendRequests;
 
+  /// A ready image you uploaded with purpose avatar (POST /files/upload-intent); empty string removes the avatar. The file is not deleted.
+  ///
+  /// JSON `avatar_file_id` (optional).
+  final String? avatarFileId;
+
   /// JSON `bio` (optional).
   final String? bio;
 
@@ -32453,6 +32760,8 @@ final class ProfilePatch {
   /// JSON `display_name` (optional).
   final String? displayName;
 
+  /// Up to 10, each up to 40 characters (422 too_long {max} on body.interests[i]); blank items are dropped.
+  ///
   /// JSON `interests` (optional).
   final List<String>? interests;
 
@@ -32470,6 +32779,7 @@ final class ProfilePatch {
   /// Encodes this object as JSON. Absent optional fields are omitted.
   Map<String, Object?> toJson() => <String, Object?>{
     'allow_friend_requests': ?allowFriendRequests?.json,
+    'avatar_file_id': ?avatarFileId,
     'bio': ?bio,
     'coarse_location': ?coarseLocation,
     'discoverable_by_username': ?discoverableByUsername,
@@ -32485,6 +32795,7 @@ final class ProfilePatch {
       identical(this, other) ||
       other is ProfilePatch &&
           other.allowFriendRequests == allowFriendRequests &&
+          other.avatarFileId == avatarFileId &&
           other.bio == bio &&
           other.coarseLocation == coarseLocation &&
           other.discoverableByUsername == discoverableByUsername &&
@@ -32497,6 +32808,7 @@ final class ProfilePatch {
   @override
   int get hashCode => Object.hashAll(<Object?>[
     allowFriendRequests,
+    avatarFileId,
     bio,
     coarseLocation,
     discoverableByUsername,
@@ -44499,6 +44811,7 @@ final class TransactionDto {
     this.fxRateAt,
     this.fxRateSource,
     this.groupExpenseId,
+    this.groupId,
     required this.id,
     required this.isCorrection,
     required this.localDate,
@@ -44589,6 +44902,9 @@ final class TransactionDto {
             json['group_expense_id'],
             'TransactionDTO.group_expense_id',
           ),
+    groupId: json['group_id'] == null
+        ? null
+        : _cast<String>(json['group_id'], 'TransactionDTO.group_id'),
     id: _cast<String>(json['id'], 'TransactionDTO.id'),
     isCorrection: _cast<bool>(
       json['is_correction'],
@@ -44742,6 +45058,11 @@ final class TransactionDto {
   /// JSON `group_expense_id` (optional).
   final String? groupExpenseId;
 
+  /// The group of a linked group expense or settlement, while you can see that group.
+  ///
+  /// JSON `group_id` (optional).
+  final String? groupId;
+
   /// JSON `id`.
   final String id;
 
@@ -44844,6 +45165,7 @@ final class TransactionDto {
     'fx_rate_at': ?fxRateAt?.toUtc().toIso8601String(),
     'fx_rate_source': ?fxRateSource,
     'group_expense_id': ?groupExpenseId,
+    'group_id': ?groupId,
     'id': id,
     'is_correction': isCorrection,
     'local_date': localDate,
@@ -44890,6 +45212,7 @@ final class TransactionDto {
           other.fxRateAt == fxRateAt &&
           other.fxRateSource == fxRateSource &&
           other.groupExpenseId == groupExpenseId &&
+          other.groupId == groupId &&
           other.id == id &&
           other.isCorrection == isCorrection &&
           other.localDate == localDate &&
@@ -44933,6 +45256,7 @@ final class TransactionDto {
     fxRateAt,
     fxRateSource,
     groupExpenseId,
+    groupId,
     id,
     isCorrection,
     localDate,
@@ -47191,6 +47515,8 @@ final class WidgetDto {
     visible: _cast<bool>(json['visible'], 'WidgetDTO.visible'),
   );
 
+  /// New widgets may be added; clients skip keys they do not know.
+  ///
   /// JSON `key`.
   final WidgetDtoKey key;
 
@@ -52395,6 +52721,47 @@ enum GroupActivitySummaryVia {
   /// Decodes a wire value, falling back to [unrecognized].
   static GroupActivitySummaryVia fromJson(String value) {
     for (final GroupActivitySummaryVia candidate in values) {
+      if (candidate != unrecognized && candidate.json == value) {
+        return candidate;
+      }
+    }
+    return unrecognized;
+  }
+}
+
+/// Allowed values of `GroupBalance.group_type`: `household`, `roommates`, `trip`, `event`, `friends`, `custom`.
+///
+/// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
+enum GroupBalanceGroupType {
+  /// Wire value `household`.
+  household('household'),
+
+  /// Wire value `roommates`.
+  roommates('roommates'),
+
+  /// Wire value `trip`.
+  trip('trip'),
+
+  /// Wire value `event`.
+  event('event'),
+
+  /// Wire value `friends`.
+  friends('friends'),
+
+  /// Wire value `custom`.
+  custom('custom'),
+
+  /// A value this client version does not know. Never sent to the server.
+  unrecognized('');
+
+  const GroupBalanceGroupType(this.json);
+
+  /// The wire value.
+  final String json;
+
+  /// Decodes a wire value, falling back to [unrecognized].
+  static GroupBalanceGroupType fromJson(String value) {
+    for (final GroupBalanceGroupType candidate in values) {
       if (candidate != unrecognized && candidate.json == value) {
         return candidate;
       }
@@ -60786,7 +61153,7 @@ enum WebhookResultStatus {
   }
 }
 
-/// Allowed values of `WidgetDTO.key`: `balances`, `cash_flow`, `income_vs_expense`, `cash_flow_trend`, `category_breakdown`, `top_merchants`, `recent_transactions`, `data_coverage`.
+/// Allowed values of `WidgetDTO.key`: `balances`, `cash_flow`, `budgets`, `upcoming`, `income_vs_expense`, `cash_flow_trend`, `category_breakdown`, `top_merchants`, `goals`, `group_balances`, `recent_transactions`, `data_coverage`.
 ///
 /// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
 enum WidgetDtoKey {
@@ -60795,6 +61162,12 @@ enum WidgetDtoKey {
 
   /// Wire value `cash_flow`.
   cashFlow('cash_flow'),
+
+  /// Wire value `budgets`.
+  budgets('budgets'),
+
+  /// Wire value `upcoming`.
+  upcoming('upcoming'),
 
   /// Wire value `income_vs_expense`.
   incomeVsExpense('income_vs_expense'),
@@ -60807,6 +61180,12 @@ enum WidgetDtoKey {
 
   /// Wire value `top_merchants`.
   topMerchants('top_merchants'),
+
+  /// Wire value `goals`.
+  goals('goals'),
+
+  /// Wire value `group_balances`.
+  groupBalances('group_balances'),
 
   /// Wire value `recent_transactions`.
   recentTransactions('recent_transactions'),

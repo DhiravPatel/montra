@@ -1,5 +1,5 @@
 import { hasErrorCode, isApiError } from '@/shared/api/errors';
-import { domainRuleCode } from '@/shared/finance/domainErrors';
+import { domainRuleCode, errorDetailCode } from '@/shared/finance/domainErrors';
 import { describeError } from '@/shared/i18n/describeError';
 import type { MessageKey, Translate } from '@/shared/i18n/types';
 
@@ -32,7 +32,12 @@ export function integrationErrorMessage(
   }
   if (hasErrorCode(error, 'PROVIDER_UNAVAILABLE')) return t('integrations.error.providerFailed');
   if (hasErrorCode(error, 'GONE')) return t('integrations.error.requestExpired');
-  if (hasErrorCode(error, 'CONFLICT') && action === 'sync') {
+  // 409 sync_running; a 409 without a code from an older server means the same for a sync.
+  const conflict = errorDetailCode(error, ['CONFLICT']);
+  if (
+    conflict === 'sync_running' ||
+    (conflict === null && hasErrorCode(error, 'CONFLICT') && action === 'sync')
+  ) {
     return t('integrations.error.syncRunning');
   }
   if (hasErrorCode(error, 'NOT_FOUND') && action !== 'connect') {

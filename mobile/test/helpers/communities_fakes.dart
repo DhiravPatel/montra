@@ -216,7 +216,9 @@ CommunityInvitationDto invitation({
   String kind = 'link',
   String status = 'active',
   String? token,
+  String? shareUrl,
 }) => CommunityInvitationDto.fromJson(<String, Object?>{
+  'share_url': ?shareUrl,
   'id': id,
   'community_id': 'com-1',
   'community_name': 'Savers Circle',

@@ -1,14 +1,16 @@
 # Montra — Feature Coverage
 
 Per-section summary of `docs/REQUIREMENTS_TRACEABILITY.md` after the P13
-backend verification pass and the P13 client verification pass (both
-2026-11-12). Row-level evidence (test names, files, limitations) lives in
+backend verification pass, the P13 client verification pass and the
+round-6 re-check (all 2026-11-12). Row-level evidence (test names, files, limitations) lives in
 the matrix; this page is the roll-up.
 
 **Status: backend and clients verified row by row.** The 67 rows whose
 Location includes web, mobile or `all` were re-checked against the web and
 mobile code and their test assertions; the last column of the table counts
 them per section. No row was upgraded on the strength of an agent report.
+The round-6 re-check (below) re-read the code and tests for the rows the
+round-6 work touched.
 
 ## How the backend was verified
 
@@ -44,6 +46,18 @@ real provider was contacted.
 | Mobile `flutter build apk --debug` | Built. No on-device integration tests; the Android emulator runs were manual and are not counted. iOS unverified (no Xcode) |
 | Assertion review | The client tests named in each row were read for what they assert. Bundle check: a manual grep of `web/dist` (no automated scan) |
 
+## Round 6 re-check (2026-11-12)
+
+| Check (main session, after the last code change) | Result |
+|---|---|
+| Backend `go test ./...`, golangci-lint, `make contract-check`, `make docs-check` | All ok, 0 issues, contract up to date, docs ok. New: `tests/api/round6_test.go` (TestDashboardPlanningCardsAndWidgets, TestProfileAvatarOwnershipAndClear, TestRound6ReadsLinksAndCodes, TestGroupBudgetVisibleToViewerMember, TestCommunityInvitationNoticeAndInviterName), `internal/analytics/widgets_test.go`, `internal/platform/ratelimit/ratelimit_test.go`, config TestDevAuthRateIsDevelopmentOnly. Migration 000028 applied to `montra_dev` |
+| Web `vitest run` | 133 files, 1279 tests passed (incl. jest-axe page checks in `src/tests/a11y`) |
+| Web tsc (app and node), eslint, prettier, `check:api`, `pnpm build` | 0 errors, 0 warnings, clean, matches, build OK |
+| Web Playwright `E2E_PORT=5199 PW_CHANNEL=chrome pnpm e2e` | 111 passed, 0 failed, 21.1 min against the live local API: 11 specs, 37 tests in each of desktop-chromium, phone-chromium (Pixel 7) and tablet-chromium (768×1024); 0 rate-limit responses. Includes `accessibility.spec.ts` (axe WCAG A/AA in light and dark, no horizontal scroll, reduced motion) |
+| Mobile `dart format`, `gen_api --check`, `flutter analyze` | 0 changed, up to date, no issues |
+| Mobile `flutter test` | +2037, all passed (adds `a11y_guidelines_test.dart` meetsGuideline on 11 screens, `profile_preferences_test.dart`, `app/accessibility_settings_test.dart`, `group_link_test.dart`, planning-card, multi-page receipt and router `next` tests) |
+| Mobile `flutter build apk --debug` | Built. iOS still unverified (no Xcode); emulator runs manual only |
+
 Statuses for client rows: `VERIFIED` means the backend evidence covers the
 server side and passing client tests cover every client clause on each
 client the row names. `TESTED` rows name the clauses no client test
@@ -67,7 +81,7 @@ Counts are rows in the matrix (415 in total).
 | 8. Budgets (§4.6, §20B.7) | 11 | 0 | 1 | 2 | 6 | 2 | 0 | 1 |
 | 9. Recurring & bills (§4.7, §20B.8) | 11 | 0 | 0 | 0 | 5 | 6 | 0 | 1 |
 | 10. Subscriptions (§4.8, §20B.9) | 8 | 0 | 0 | 0 | 1 | 6 | 1 | 2 |
-| 11. Receipts & storage (§4.9, §10, §20B.10) | 16 | 0 | 3 | 1 | 10 | 2 | 0 | 1 |
+| 11. Receipts & storage (§4.9, §10, §20B.10) | 16 | 0 | 2 | 1 | 11 | 2 | 0 | 1 |
 | 12. Imports & reconciliation (§4.10, §20B.11) | 12 | 0 | 1 | 0 | 7 | 4 | 0 | 1 |
 | 13. Analytics, reports, exports (§4.11, §20B.12) | 17 | 0 | 1 | 0 | 13 | 3 | 0 | 1 |
 | 14. AI (§4.12, §20B.13) | 17 | 0 | 3 | 1 | 9 | 4 | 0 | 1 |
@@ -78,27 +92,27 @@ Counts are rows in the matrix (415 in total).
 | 19. Notifications (§4.17, §20B.18) | 8 | 0 | 0 | 1 | 6 | 1 | 0 | 1 |
 | 20. Integrations (§4.18, §20B.19) | 11 | 0 | 0 | 0 | 7 | 3 | 1 | 3 |
 | 21. Multi-currency (§4.19, §20B.20) | 7 | 0 | 0 | 0 | 4 | 3 | 0 | 0 |
-| 22. Search, settings, help (§4.20, §4.21, §20B.21) | 6 | 0 | 2 | 1 | 3 | 0 | 0 | 2 |
+| 22. Search, settings, help (§4.20, §4.21, §20B.21) | 6 | 0 | 1 | 1 | 4 | 0 | 0 | 2 |
 | 23. Data model (§5) | 4 | 0 | 1 | 1 | 2 | 0 | 0 | 0 |
 | 24. API (§6) | 11 | 0 | 0 | 1 | 7 | 3 | 0 | 0 |
-| 25. Clients (§7, §20B.23) | 23 | 0 | 1 | 3 | 14 | 4 | 1 | 22 |
+| 25. Clients (§7, §20B.23) | 23 | 0 | 0 | 2 | 15 | 5 | 1 | 22 |
 | 26. Backend, database, jobs (§8, §9, §11, §20B.22) | 24 | 0 | 5 | 7 | 12 | 0 | 0 | 1 |
 | 27. Security, privacy, operations (§12, §13) | 23 | 0 | 5 | 5 | 8 | 3 | 2 | 4 |
-| 28. Testing, deployment, a11y, l10n (§14–§16) | 18 | 1 | 5 | 7 | 4 | 1 | 0 | 4 |
+| 28. Testing, deployment, a11y, l10n (§14–§16) | 18 | 1 | 4 | 7 | 5 | 1 | 0 | 4 |
 | 29. Critical workflows, docs, decisions (§18, §22, §23) | 12 | 0 | 1 | 2 | 6 | 3 | 0 | 0 |
-| **Total** | **415** | **2** | **40** | **51** | **217** | **99** | **6** | **67** |
+| **Total** | **415** | **2** | **36** | **50** | **221** | **100** | **6** | **67** |
 
 Status histogram for the whole matrix:
 
-| Status | After the backend pass | After the client pass |
-|---|---|---|
-| NOT_STARTED | 42 | 2 (AUTH-014 optional OAuth/passkeys; PA-001 no analytics pipeline) |
-| IN_PROGRESS | 52 | 40 |
-| IMPLEMENTED | 50 | 51 |
-| TESTED | 184 | 217 |
-| VERIFIED | 83 | 99 |
-| BLOCKED | 4 | 6 (adds MOB-005 push, PRIV-005 legal texts) |
-| Total | 415 | 415 |
+| Status | After the backend pass | After the client pass | After round 6 |
+|---|---|---|---|
+| NOT_STARTED | 42 | 2 (AUTH-014 optional OAuth/passkeys; PA-001 no analytics pipeline) | 2 |
+| IN_PROGRESS | 52 | 40 | 36 |
+| IMPLEMENTED | 50 | 51 | 50 |
+| TESTED | 184 | 217 | 221 |
+| VERIFIED | 83 | 99 | 100 |
+| BLOCKED | 4 | 6 (adds MOB-005 push, PRIV-005 legal texts) | 6 |
+| Total | 415 | 415 | 415 |
 
 Client rows changed in this pass (old → new): 15 to VERIFIED (GEN-001,
 GEN-004, GEN-005, DASH-008, BILL-003, SUB-004, SUB-007, IMP-002, ANL-008,
@@ -109,20 +123,30 @@ IN_PROGRESS. AUTH-011, DASH-001, RCPT-001, AI-001, HELP-001 and OPS-002
 stay IN_PROGRESS and PA-001 stays NOT_STARTED, now with the missing
 pieces named.
 
+Rows changed in the round-6 re-check (old → new): SET-001, WEB-014,
+RCPT-001 and TEST-003 IN_PROGRESS → TESTED; WEB-011 IMPLEMENTED →
+VERIFIED. Re-checked with narrower notes but the same status: DASH-001 and
+DASH-002 (IN_PROGRESS: web alerts card; recurring and renewal-calendar
+widgets), AUTH-011 (IN_PROGRESS, onboarding unchanged), DASH-004
+(IMPLEMENTED: only GET is called by a backend test), DASH-005, DASH-011,
+AUTH-010, TXN-006, MOB-001, MOB-004, WEB-010, A11Y-001 (TESTED) and
+BUD-008 (VERIFIED, new evidence). ARCH-015, WEB-009 and AUTHZ-011 are
+unchanged: the bundle check is still a manual grep.
+
 ## Notable gaps and limitations (clients)
 
-| Area | Gaps found in the P13 client pass |
+| Area | Gaps after the P13 client pass and the round-6 re-check |
 |---|---|
-| Mobile, all areas | No on-device integration tests; emulator runs were manual. iOS never built or run (no Xcode). No accessibility guideline checks (`meetsGuideline`) and no TalkBack/VoiceOver review. |
-| Web, all areas | No axe tests; Playwright runs desktop Chrome only (tablet/phone widths untested); E2E is not in CI and covers journeys 1–10 and 13 only (TEST-003). No automated bundle scan. 183 of 7,725 strings lack Hindi. About ten small forms validate without a schema. |
+| Mobile, all areas | No on-device integration tests; emulator runs were manual. iOS never built or run (no Xcode). `meetsGuideline` checks cover 11 screens in the light theme only; no TalkBack/VoiceOver review. |
+| Web, all areas | Axe runs in the browser and in jsdom, and Playwright covers phone, tablet and desktop widths, but Chromium only; no screen-reader review. E2E covers journeys 1–21 and 23–26 (22 is AI, deferred; journey 10's reminder delivery is not observable) and is not in CI (TEST-003). No automated bundle scan. 183 of 7,725 strings lack Hindi (count from the P13 pass). About ten small forms validate without a schema. |
 | Auth & onboarding | Mobile sign-up form and mobile sign-out are untested. Neither client has the optional goals onboarding step; mobile onboarding has no week/month start or notification step. Cookie Secure/SameSite never asserted. |
-| Dashboard | Budget, bills/subscriptions, goals and group-balance cards/widgets are not built on either client; web Home has no alerts card. Web last-updated time is not asserted. |
-| Accounts & transactions | Account restore is untested on both clients and close on mobile; adding income is untested on both. |
+| Dashboard | Budgets, coming-up, goals and group-balance cards are built and tested on both clients (round 6). Still missing: a web Home alerts card, and recurring and renewal-calendar widgets on both. The web layout-load alert is untested; the API's `generated_at` is never asserted. |
+| Accounts & transactions | Account restore is untested on both clients and close on mobile; adding income is untested on mobile (web covers it in a page test and e2e). |
 | Budgets | Creation is one guided form, not a step-by-step wizard (BUD-010). |
-| Receipts | Mobile creates one-page receipts only; camera capture itself is untested on mobile; web has no camera capture. |
+| Receipts | Mobile multi-page receipts built and tested (round 6). Camera capture itself is untested on mobile; web has no in-page camera; no API test creates a multi-page or PDF receipt. |
 | Communities | Fixed 2026-11-12: mobile `safeLink` now refuses `user:password@` links like web (COMM-005 now VERIFIED). |
 | Integrations | Syncing, partial and failed labels are not asserted on either client. |
-| Settings & help | No profile/preferences settings screen on either client (display name, avatar, bio, currency, time zone, locale, default account). Help is five short topics; no guides, troubleshooting or status link. |
+| Settings & help | Profile and preferences screens built and tested on both clients (round 6). Untested: a web locale change, mobile date format and week/month start, a successful time-zone change. Help is five short topics; no guides, troubleshooting or status link. |
 | Notifications | Mobile push is not built (needs owner Firebase/APNs credentials). Web push depends on the owner's VAPID keys. |
 | Product analytics | No analytics is collected (PA-001). Web onboarding copy corrected 2026-11-12 to say so, matching mobile. |
 | By owner decision | AI client screens deferred (AI backend off by default). Staff screens (support queue, platform moderation, admin usage) are web-only. |
@@ -134,7 +158,7 @@ pieces named.
 | 1. Architecture | No seed data: `make seed` runs, but `supabase/seeds/` does not exist (ARCH-010). No `backend/`, `supabase/` or `contracts/` README. No web import-boundary lint rule found (ARCH-004). No documented hosted RLS verification step (ARCH-013). |
 | 2. Authorization | The RLS inventory test checks that RLS is enabled on every table and that there are no PUBLIC grants. It does not check FORCE RLS, that each table has a policy, or function grants (AUTHZ-010, downgraded). Attaching another user's file to a transaction is not tested (AUTHZ-014). |
 | 3. Auth & lifecycle | Deactivate/reactivate has no tests (AUTH-018). Security events are asserted only for email verification and the MFA alert (AUTH-017). Token expiry (verification, reset, access TTL) is not asserted. The storage purge on account deletion is not asserted, and the due job is enqueued by hand in the test. OAuth/passkeys are not built (optional). |
-| 4–6. Dashboard, accounts, transactions | No tests for `/dashboard/widgets`, account balance history, include-in-overview, `POST /transactions/{id}/duplicate`, bulk delete, saved filters, location text or attachment endpoints. Replay of `POST /transactions` itself is not asserted. |
+| 4–6. Dashboard, accounts, transactions | No test for `PATCH /dashboard/widgets` (GET and `/dashboard/planning` are tested since round 6), account balance history, include-in-overview, `POST /transactions/{id}/duplicate`, bulk delete, saved filters, location text or attachment endpoints. Replay of `POST /transactions` itself is not asserted. |
 | 8. Budgets | Snooze and quiet hours are untested (BUD-007, downgraded). Current-period vs future-only edit semantics are untested (BUD-009, downgraded). No time-zone-change boundary test. Group/trip budget progress is not asserted. |
 | 9–10. Recurring, subscriptions | The 7-day retry window for failed auto-posts is not asserted. DST is covered by unit tests only. Group-shared subscriptions are untested. Unused-subscription hints need a usage source (blocked). |
 | 11. Receipts & storage | Multi-page and PDF receipts, date/total/merchant duplicate detection, extraction timeout and EXIF stripping are untested. There is no file scanner (`scan_status = skipped`) and no community-media file purpose. The Appwrite adapter is tested only against a double. |
@@ -187,7 +211,8 @@ moved from NOT_STARTED to BLOCKED because they wait on owner decisions.
 
 ## Pending
 
-- Client gaps listed above (dashboard cards, profile/preferences settings,
-  onboarding goals step, mobile multi-page receipts, E2E journeys 11–26,
-  mobile on-device tests, iOS).
+- Client gaps listed above (web Home alerts card, recurring and
+  renewal-calendar widgets, onboarding goals step and mobile onboarding
+  week/month start and notifications, E2E in CI, mobile on-device tests,
+  screen-reader review, iOS).
 - Refresh the readiness report (DOC-002).

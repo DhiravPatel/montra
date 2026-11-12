@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/api_exception.dart';
-import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
 import 'package:montra_mobile/core/widgets/error_messages.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
@@ -23,12 +22,12 @@ class WidgetSettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
-    final AsyncValue<List<WidgetDto>> layout = ref.watch(
+    final AsyncValue<List<DashboardWidget>> layout = ref.watch(
       dashboardLayoutProvider,
     );
     return layout.when(
       skipLoadingOnReload: true,
-      data: (List<WidgetDto> widgets) => _Editor(widgets: widgets),
+      data: (List<DashboardWidget> widgets) => _Editor(widgets: widgets),
       loading: () => Scaffold(
         appBar: AppBar(title: Text(l10n.widgetSettingsTitle)),
         body: const LoadingStateView(),
@@ -47,20 +46,20 @@ class WidgetSettingsScreen extends ConsumerWidget {
 class _Editor extends ConsumerStatefulWidget {
   const _Editor({required this.widgets});
 
-  final List<WidgetDto> widgets;
+  final List<DashboardWidget> widgets;
 
   @override
   ConsumerState<_Editor> createState() => _EditorState();
 }
 
 class _EditorState extends ConsumerState<_Editor> {
-  late List<WidgetDto> _items = List<WidgetDto>.of(widget.widgets);
+  late List<DashboardWidget> _items = List<DashboardWidget>.of(widget.widgets);
 
   @override
   void didUpdateWidget(covariant _Editor oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!listEquals(oldWidget.widgets, widget.widgets)) {
-      _items = List<WidgetDto>.of(widget.widgets);
+      _items = List<DashboardWidget>.of(widget.widgets);
     }
   }
 
@@ -78,18 +77,12 @@ class _EditorState extends ConsumerState<_Editor> {
   }
 
   void _move(int from, int to) => setState(() {
-    final WidgetDto item = _items.removeAt(from);
+    final DashboardWidget item = _items.removeAt(from);
     _items.insert(to, item);
   });
 
   void _toggle(int index, bool visible) => setState(() {
-    final WidgetDto w = _items[index];
-    _items[index] = WidgetDto(
-      key: w.key,
-      position: w.position,
-      settings: w.settings,
-      visible: visible,
-    );
+    _items[index] = _items[index].copyWith(visible: visible);
   });
 
   Future<void> _save() async {
@@ -186,7 +179,7 @@ class _Row extends StatelessWidget {
     required this.onDown,
   });
 
-  final WidgetDto item;
+  final DashboardWidget item;
   final int position;
   final int total;
   final ValueChanged<bool> onToggle;
@@ -196,7 +189,7 @@ class _Row extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = context.l10n;
-    final String title = widgetTitle(l10n, item.key);
+    final String title = widgetTitle(l10n, item.kind);
     return Card(
       margin: const EdgeInsets.symmetric(
         horizontal: Insets.md,
@@ -205,10 +198,10 @@ class _Row extends StatelessWidget {
       child: Column(
         children: <Widget>[
           SwitchListTile(
-            secondary: ExcludeSemantics(child: Icon(widgetIcon(item.key))),
+            secondary: ExcludeSemantics(child: Icon(widgetIcon(item.kind))),
             title: Text(title),
             subtitle: Text(
-              '${widgetDescription(l10n, item.key)}\n'
+              '${widgetDescription(l10n, item.kind)}\n'
               '${l10n.widgetPosition(position, total)}',
             ),
             value: item.visible,

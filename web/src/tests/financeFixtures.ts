@@ -2,6 +2,7 @@ import type {
   Account,
   AccountsReport,
   Category,
+  DashboardPlanning,
   DashboardSummary,
   PaymentMethod,
   Preferences,
@@ -201,19 +202,43 @@ export function makePreferences(overrides: Partial<Preferences> = {}): Preferenc
   };
 }
 
+/** The API's widget registry, in its default order (backend analytics widgetRegistry). */
 export const WIDGET_KEYS: Widget['key'][] = [
   'balances',
   'cash_flow',
+  'budgets',
+  'upcoming',
   'income_vs_expense',
   'cash_flow_trend',
   'category_breakdown',
   'top_merchants',
+  'goals',
+  'group_balances',
   'recent_transactions',
   'data_coverage',
 ];
 
 export function defaultWidgets(): Widget[] {
   return WIDGET_KEYS.map((key, position) => ({ key, position, visible: true, settings: {} }));
+}
+
+/** GET /dashboard/planning for someone with nothing planned yet. */
+export function emptyPlanning(overrides: Partial<DashboardPlanning> = {}): DashboardPlanning {
+  return {
+    today: '2026-11-12',
+    upcoming_through: '2026-11-26',
+    budgets: [],
+    budget_count: 0,
+    over_budget_count: 0,
+    upcoming: [],
+    upcoming_count: 0,
+    overdue_count: 0,
+    goals: [],
+    goal_count: 0,
+    group_balances: [],
+    group_count: 0,
+    ...overrides,
+  };
 }
 
 export function makeAccountsReport(): AccountsReport {

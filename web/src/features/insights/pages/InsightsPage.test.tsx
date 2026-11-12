@@ -649,4 +649,110 @@ describe('InsightsPage', () => {
     );
     expect(await screen.findByText('Couldn’t update the insight')).toBeInTheDocument();
   });
+
+  describe('opened from a link', () => {
+    const OVERSPEND_TITLE = 'Dining out budget exceeded in 2 of the last 3 periods';
+
+    /** GET /insights/{id} for one ID (a pattern would also catch /insights/mutes). */
+    function detailHandler(backend: Backend, id: string, calls: string[]) {
+      return http.get(`${API}/insights/${id}`, () => {
+        calls.push(id);
+        const insight = backend.insights.find((item) => item.id === id);
+        return insight
+          ? HttpResponse.json(envelope(insight))
+          : HttpResponse.json(errorBody({ code: 'NOT_FOUND' }), { status: 404 });
+      });
+    }
+
+    it('reads the insight by ID in any status, shows it first and focuses it', async () => {
+      const backend = insightsBackend([
+        makeInsight(),
+        makeOverspendInsight({ status: 'dismissed' }),
+      ]);
+      const bodies = actionsBackend(backend);
+      const calls: string[] = [];
+      server.use(detailHandler(backend, INSIGHT_OVERSPEND, calls));
+      const user = userEvent.setup();
+      renderRoute(`/insights/${INSIGHT_OVERSPEND}`, { user: user0() });
+      await findPageHeading('Insights');
+
+      const linked = await screen.findByRole('region', { name: 'The insight you opened' });
+      const opened = await within(linked).findByRole('article', { name: OVERSPEND_TITLE });
+      expect(within(opened).getByText('Dismissed')).toBeInTheDocument();
+      expect(calls).toEqual([INSIGHT_OVERSPEND]);
+      // Never paged through the list to find it.
+      expect(backend.calls).toEqual([{}]);
+      await waitFor(() => {
+        expect(within(opened).getByRole('heading', { name: OVERSPEND_TITLE })).toHaveFocus();
+      });
+      // The active list still shows the others.
+      const list = screen.getByRole('region', { name: 'Active insights' });
+      expect(
+        await within(list).findByRole('article', { name: 'Unusually large Groceries expense' }),
+      ).toBeInTheDocument();
+
+      await user.click(
+        within(opened).getByRole('button', { name: `Show again: ${OVERSPEND_TITLE}` }),
+      );
+      expect(await screen.findByText('The insight is back in your list')).toBeInTheDocument();
+      expect(bodies).toEqual([{ action: 'reopen' }]);
+      await waitFor(() => {
+        expect(within(linked).queryByText('Dismissed')).not.toBeInTheDocument();
+      });
+      // Shown once only, even now that it is active again.
+      await waitFor(() => {
+        expect(screen.getAllByRole('article', { name: OVERSPEND_TITLE })).toHaveLength(1);
+      });
+    });
+
+    it('says calmly when the insight no longer exists', async () => {
+      const backend = insightsBackend([makeInsight()]);
+      const calls: string[] = [];
+      server.use(detailHandler(backend, INSIGHT_OVERSPEND, calls));
+      renderRoute(`/insights/${INSIGHT_OVERSPEND}`, { user: user0() });
+      await findPageHeading('Insights');
+      expect(
+        await screen.findByText(
+          'This insight isn’t available any more. Montra may have removed it after your records changed.',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        await screen.findByRole('article', { name: 'Unusually large Groceries expense' }),
+      ).toBeInTheDocument();
+    });
+
+    it('shows an error with retry, and permission denied when refused', async () => {
+      const backend = insightsBackend([makeInsight(), makeOverspendInsight()]);
+      let status = 503;
+      server.use(
+        http.get(`${API}/insights/${INSIGHT_OVERSPEND}`, () =>
+          status === 200
+            ? HttpResponse.json(envelope(backend.insights[1]))
+            : HttpResponse.json(
+                errorBody({ code: status === 403 ? 'FORBIDDEN' : 'SERVICE_UNAVAILABLE' }),
+                { status },
+              ),
+        ),
+      );
+      const user = userEvent.setup();
+      const first = renderRoute(`/insights/${INSIGHT_OVERSPEND}`, { user: user0() });
+      await findPageHeading('Insights');
+      const linked = await screen.findByRole('region', { name: 'The insight you opened' });
+      expect(
+        await within(linked).findByText('We couldn’t load the insight you opened'),
+      ).toBeInTheDocument();
+      status = 200;
+      await user.click(within(linked).getByRole('button', { name: 'Try again' }));
+      expect(
+        await within(linked).findByRole('article', { name: OVERSPEND_TITLE }),
+      ).toBeInTheDocument();
+      first.unmount();
+
+      status = 403;
+      renderRoute(`/insights/${INSIGHT_OVERSPEND}`, { user: user0() });
+      await findPageHeading('Insights');
+      const refused = await screen.findByRole('region', { name: 'The insight you opened' });
+      expect(await within(refused).findByText('You don’t have access to this')).toBeInTheDocument();
+    });
+  });
 });

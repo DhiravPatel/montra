@@ -149,5 +149,10 @@ String? privacyDetailMessage(AppLocalizations l10n, Detail detail) =>
       'consent_version_outdated' => l10n.privacyConsentOutdated(
         detail.params?['version'] ?? '',
       ),
+      'confirm_word_mismatch' => l10n.codeConfirmWordMismatch(
+        detail.params?['word'] ?? 'DELETE',
+      ),
+      'deletion_already_scheduled' => l10n.codeDeletionAlreadyScheduled,
+      'no_deletion_scheduled' => l10n.codeNoDeletionScheduled,
       _ => null,
     };

@@ -493,7 +493,7 @@ func (s *Service) SyncNow(ctx context.Context, id uuid.UUID) (*SyncRunDTO, error
 			return err
 		}
 		if running {
-			return apperr.Conflict("A sync is already running.")
+			return apperr.ConflictCode("sync_running", "A sync is already running.", nil)
 		}
 		runID, err := s.enqueueSync(ctx, tx, uid, id, "manual")
 		if err != nil {

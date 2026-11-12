@@ -13,6 +13,8 @@ export const paths = Object.freeze({
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   account: '/account',
+  /** Profile and preferences (SET-001). */
+  profileSettings: '/settings/profile',
   securitySettings: '/settings/security',
   onboarding: '/onboarding',
   dashboard: '/dashboard',

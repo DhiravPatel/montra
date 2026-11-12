@@ -8,6 +8,7 @@ import 'package:montra_mobile/core/auth/auth_state.dart';
 import 'package:montra_mobile/core/widgets/range_picker.dart';
 import 'package:montra_mobile/features/accounts/data/accounts_api.dart';
 import 'package:montra_mobile/features/dashboard/data/dashboard_api.dart';
+import 'package:montra_mobile/features/dashboard/domain/widget_info.dart';
 import 'package:montra_mobile/features/labels/data/labels_api.dart';
 import 'package:montra_mobile/features/payment_methods/data/payment_methods_api.dart';
 import 'package:montra_mobile/features/settings/data/preferences_api.dart';
@@ -60,7 +61,7 @@ void registerFinanceFallbacks() {
   );
   registerFallbackValue(const PaymentMethodPatch());
   registerFallbackValue(const PreferencesPatch());
-  registerFallbackValue(<WidgetDto>[]);
+  registerFallbackValue(<DashboardWidget>[]);
 }
 
 /// Minor units of a decimal string for test fixtures only (the app never
@@ -365,25 +366,31 @@ PreferencesDto preferences({
   'updated_at': '2026-11-01T08:00:00Z',
 });
 
-/// The default widget layout.
-List<WidgetDto> widgetLayout({
-  List<WidgetDtoKey> keys = const <WidgetDtoKey>[
-    WidgetDtoKey.balances,
-    WidgetDtoKey.cashFlow,
-    WidgetDtoKey.incomeVsExpense,
-    WidgetDtoKey.cashFlowTrend,
-    WidgetDtoKey.categoryBreakdown,
-    WidgetDtoKey.topMerchants,
-    WidgetDtoKey.recentTransactions,
-    WidgetDtoKey.dataCoverage,
-  ],
-  Set<WidgetDtoKey> hidden = const <WidgetDtoKey>{},
-}) => <WidgetDto>[
+/// The server's default widget layout (all twelve widgets) as wire keys.
+const List<String> defaultWidgetKeys = <String>[
+  'balances',
+  'cash_flow',
+  'budgets',
+  'upcoming',
+  'income_vs_expense',
+  'cash_flow_trend',
+  'category_breakdown',
+  'top_merchants',
+  'goals',
+  'group_balances',
+  'recent_transactions',
+  'data_coverage',
+];
+
+/// A widget layout; [hidden] keys are not visible.
+List<DashboardWidget> widgetLayout({
+  List<String> keys = defaultWidgetKeys,
+  Set<String> hidden = const <String>{},
+}) => <DashboardWidget>[
   for (int i = 0; i < keys.length; i++)
-    WidgetDto(
+    DashboardWidget(
       key: keys[i],
       position: i,
-      settings: const <String, Object?>{},
       visible: !hidden.contains(keys[i]),
     ),
 ];

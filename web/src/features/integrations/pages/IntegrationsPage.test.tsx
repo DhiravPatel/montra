@@ -251,9 +251,14 @@ describe('IntegrationsPage: connections', () => {
     serveOverview(makeOverview([sandboxProvider()], [makeConnection()]));
     server.use(
       http.post(`${API}/integrations/:ref/sync`, () =>
-        HttpResponse.json(errorBody({ code: 'CONFLICT', message: 'A sync is already running.' }), {
-          status: 409,
-        }),
+        HttpResponse.json(
+          errorBody({
+            code: 'CONFLICT',
+            message: 'A sync is already running.',
+            details: [{ message: 'A sync is already running.', code: 'sync_running' }],
+          }),
+          { status: 409 },
+        ),
       ),
     );
     const user = userEvent.setup();

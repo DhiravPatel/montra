@@ -17,7 +17,8 @@ interface WidgetCardProps {
   window?: ReportWindow;
   /** What a widget without a window covers (e.g. "Current balances"). */
   scopeLabel?: string;
-  generatedAt: string;
+  /** When the server computed the figures; omitted while they load. */
+  generatedAt?: string;
   /** Route to the underlying records. */
   drillDown?: { to: string; label: string };
   children: ReactNode;
@@ -37,7 +38,7 @@ export function WidgetCard({
 }: WidgetCardProps) {
   const { t, formatLocale } = useI18n();
   const now = useNow();
-  const generated = parseTimestamp(generatedAt);
+  const generated = generatedAt ? parseTimestamp(generatedAt) : null;
   return (
     <Card
       title={title}

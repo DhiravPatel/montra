@@ -3800,6 +3800,10 @@
             ],
             "type": "string"
           },
+          "share_url": {
+            "description": "Shown once with token: the web join link (token in the URL fragment, never sent to servers)",
+            "type": "string"
+          },
           "status": {
             "enum": [
               "active",
@@ -5195,6 +5199,90 @@
         ],
         "type": "object"
       },
+      "DashboardPlanning": {
+        "additionalProperties": false,
+        "properties": {
+          "budget_count": {
+            "description": "Active budgets",
+            "format": "int64",
+            "type": "integer"
+          },
+          "budgets": {
+            "description": "Active budgets, fullest first (percent of limit spent), up to 5",
+            "items": {
+              "$ref": "#/components/schemas/BudgetDTO"
+            },
+            "type": "array"
+          },
+          "goal_count": {
+            "description": "Active goals",
+            "format": "int64",
+            "type": "integer"
+          },
+          "goals": {
+            "description": "Active goals, nearest target date first (goals without one last, then by priority), up to 4",
+            "items": {
+              "$ref": "#/components/schemas/GoalDTO"
+            },
+            "type": "array"
+          },
+          "group_balances": {
+            "description": "Active groups where you are owed or owe, largest amounts first within each currency, up to 5",
+            "items": {
+              "$ref": "#/components/schemas/GroupBalance"
+            },
+            "type": "array"
+          },
+          "group_count": {
+            "description": "Active groups with an open balance",
+            "format": "int64",
+            "type": "integer"
+          },
+          "over_budget_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "overdue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "today": {
+            "description": "Your local date (YYYY-MM-DD)",
+            "type": "string"
+          },
+          "upcoming": {
+            "description": "Overdue items first (oldest first), then items due from today through upcoming_through, up to 8. Bills, recurring transactions, shared recurring expenses, subscription renewals, trial ends and goal target dates",
+            "items": {
+              "$ref": "#/components/schemas/CalendarItem"
+            },
+            "type": "array"
+          },
+          "upcoming_count": {
+            "description": "All items the list was taken from",
+            "format": "int64",
+            "type": "integer"
+          },
+          "upcoming_through": {
+            "description": "Last date the upcoming list covers (today + 14 days)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "today",
+          "upcoming_through",
+          "budgets",
+          "budget_count",
+          "over_budget_count",
+          "upcoming",
+          "upcoming_count",
+          "overdue_count",
+          "goals",
+          "goal_count",
+          "group_balances",
+          "group_count"
+        ],
+        "type": "object"
+      },
       "DashboardSummary": {
         "additionalProperties": false,
         "properties": {
@@ -6397,6 +6485,22 @@
         "properties": {
           "data": {
             "$ref": "#/components/schemas/CreateResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EnvelopeDashboardPlanning": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/DashboardPlanning"
           },
           "meta": {
             "$ref": "#/components/schemas/Meta"
@@ -10727,6 +10831,39 @@
         },
         "type": "object"
       },
+      "GroupBalance": {
+        "additionalProperties": false,
+        "properties": {
+          "group_id": {
+            "type": "string"
+          },
+          "group_type": {
+            "enum": [
+              "household",
+              "roommates",
+              "trip",
+              "event",
+              "friends",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "my_net": {
+            "$ref": "#/components/schemas/Money",
+            "description": "Positive: you are owed; negative: you owe (group currency)"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "group_id",
+          "name",
+          "group_type",
+          "my_net"
+        ],
+        "type": "object"
+      },
       "GroupBalancesDTO": {
         "additionalProperties": false,
         "properties": {
@@ -11661,6 +11798,10 @@
           "max_uses": {
             "format": "int32",
             "type": "integer"
+          },
+          "share_url": {
+            "description": "Shown once with token: the web join link (token in the URL fragment, never sent to servers)",
+            "type": "string"
           },
           "status": {
             "enum": [
@@ -15735,6 +15876,10 @@
             ],
             "type": "string"
           },
+          "avatar_file_id": {
+            "description": "A ready image you uploaded with purpose avatar (POST /files/upload-intent); empty string removes the avatar. The file is not deleted",
+            "type": "string"
+          },
           "bio": {
             "maxLength": 280,
             "type": "string"
@@ -15752,6 +15897,7 @@
             "type": "string"
           },
           "interests": {
+            "description": "Up to 10, each up to 40 characters (422 too_long {max} on body.interests[i]); blank items are dropped",
             "items": {
               "type": "string"
             },
@@ -20869,6 +21015,10 @@
           "group_expense_id": {
             "type": "string"
           },
+          "group_id": {
+            "description": "The group of a linked group expense or settlement, while you can see that group",
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -21865,13 +22015,18 @@
         "additionalProperties": false,
         "properties": {
           "key": {
+            "description": "New widgets may be added; clients skip keys they do not know",
             "enum": [
               "balances",
               "cash_flow",
+              "budgets",
+              "upcoming",
               "income_vs_expense",
               "cash_flow_trend",
               "category_breakdown",
               "top_merchants",
+              "goals",
+              "group_balances",
               "recent_transactions",
               "data_coverage"
             ],
@@ -49778,6 +49933,174 @@
         ]
       }
     },
+    "/dashboard/planning": {
+      "get": {
+        "operationId": "dashboard-planning",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          },
+          {
+            "$ref": "#/components/parameters/ClientVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeDashboardPlanning"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Budgets, upcoming bills and renewals, goals and group balances for the dashboard",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
     "/dashboard/summary": {
       "get": {
         "operationId": "dashboard-summary",
@@ -71137,6 +71460,182 @@
         ]
       }
     },
+    "/insights/{id}": {
+      "get": {
+        "operationId": "insights-get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          },
+          {
+            "$ref": "#/components/parameters/ClientVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeInsightDTO"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "One of your insights in any status (for links from notifications)",
+        "tags": [
+          "Insights"
+        ]
+      }
+    },
     "/insights/{id}/actions": {
       "post": {
         "operationId": "insights-act",
@@ -91256,6 +91755,180 @@
           }
         ],
         "summary": "Delete a scheduled report",
+        "tags": [
+          "Reports"
+        ]
+      },
+      "get": {
+        "operationId": "reports-schedules-get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          },
+          {
+            "$ref": "#/components/parameters/ClientVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeScheduleDTO"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "One scheduled report",
         "tags": [
           "Reports"
         ]

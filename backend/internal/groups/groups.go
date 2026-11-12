@@ -33,6 +33,8 @@ type Service struct {
 	Finance   *finance.Service
 	Recurring *recurring.Service
 	Now       func() time.Time
+	// WebAppURL is the web app origin used to build invitation share links.
+	WebAppURL string
 }
 
 func (s *Service) now() time.Time {

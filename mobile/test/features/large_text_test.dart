@@ -14,6 +14,7 @@ import 'package:montra_mobile/features/payment_methods/data/payment_methods_api.
 import 'package:montra_mobile/features/settings/data/preferences_api.dart';
 import 'package:montra_mobile/features/transactions/data/transactions_api.dart';
 
+import '../helpers/dashboard_fakes.dart';
 import '../helpers/finance_fakes.dart';
 import '../helpers/router_app.dart';
 
@@ -41,6 +42,8 @@ void main() {
     when(() => dashboard.summary(any()))
         .thenAnswer((_) async => summary(withUsd: true));
     when(() => dashboard.widgets()).thenAnswer((_) async => widgetLayout());
+    when(() => dashboard.planning())
+        .thenAnswer((_) async => dashboardPlanning());
     when(
       () => transactions.list(
         any(),

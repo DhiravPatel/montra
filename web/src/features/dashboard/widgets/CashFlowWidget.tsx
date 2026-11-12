@@ -66,7 +66,10 @@ export function CashFlowWidget({ summary, title, drill }: WidgetProps) {
           {totals.map((total) => (
             <section
               key={total.currency}
-              aria-label={t('dashboard.inCurrency', { currency: total.currency })}
+              aria-label={t('dashboard.widgetInCurrency', {
+                widget: title,
+                currency: total.currency,
+              })}
             >
               {totals.length > 1 ? <CurrencyHeading currency={total.currency} /> : null}
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

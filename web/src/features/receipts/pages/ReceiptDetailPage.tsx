@@ -138,6 +138,10 @@ export function ReceiptDetailPage() {
 
   const runUnlink = () => {
     if (unlink.isPending) return;
+    // A dialog left open when the receipt got linked (here or elsewhere) was
+    // unmounted, not closed: unlinking must not bring it back.
+    setMatching(false);
+    setRecording(false);
     unlink.mutate(undefined, {
       onSuccess: () => {
         toast.show({ tone: 'success', title: t('receipts.link.unlinked') });

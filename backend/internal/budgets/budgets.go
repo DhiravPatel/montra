@@ -140,13 +140,16 @@ type budgetRow struct {
 	loc     *time.Location
 	weekSt  time.Weekday
 	monthSt int
+	// system is true when no user is acting (the worker's evaluation),
+	// which keeps snapshots fresh for collaborators.
+	system bool
 }
 
 const budgetSelect = `select b.id, b.owner_user_id, b.group_id, b.name, b.budget_type, b.period, b.timezone, b.currency, b.limit_minor,
 	b.rollover_policy, b.rollover_cap_minor, b.include_pending, b.refunds_restore, b.count_group_shares, b.included_account_ids,
 	b.excluded_category_ids, b.merchant_ids, b.alert_thresholds, b.alert_forecast, b.visibility, b.status, b.starts_on, b.ends_on,
 	b.notes, coalesce(montra.budget_access(b.id), 'viewer'), b.version, b.created_at, b.updated_at,
-	coalesce(p.week_start, 1), coalesce(p.month_start_day, 1)
+	coalesce(p.week_start, 1), coalesce(p.month_start_day, 1), montra.current_user_id() is null
 	from budgets b left join user_preferences p on p.user_id = b.owner_user_id`
 
 func scanBudget(r pgx.Row) (*budgetRow, error) {
@@ -155,7 +158,7 @@ func scanBudget(r pgx.Row) (*budgetRow, error) {
 	if err := r.Scan(&b.ID, &b.OwnerUserID, &b.GroupID, &b.Name, &b.BudgetType, &b.Period, &b.Timezone, &b.Currency, &b.limit,
 		&b.RolloverPolicy, &b.capMin, &b.IncludePending, &b.RefundsRestore, &b.CountGroupShares, &b.IncludedAccountIDs,
 		&b.ExcludedCategoryIDs, &b.MerchantIDs, &b.AlertThresholds, &b.AlertForecast, &b.Visibility, &b.Status, &b.starts, &b.ends,
-		&b.Notes, &b.Access, &b.Version, &b.CreatedAt, &b.UpdatedAt, &ws, &md); err != nil {
+		&b.Notes, &b.Access, &b.Version, &b.CreatedAt, &b.UpdatedAt, &ws, &md, &b.system); err != nil {
 		return nil, err
 	}
 	b.Limit = apitypes.M(b.limit, b.Currency)
@@ -288,8 +291,18 @@ func canComputeLive(b *budgetRow, uid uuid.UUID) bool {
 	return b.GroupID != nil || b.OwnerUserID == uid
 }
 
+// canWriteSnapshot reports whether the caller may store snapshots: the
+// worker, owners and editors. RLS refuses viewers, and a refused statement
+// would abort the whole transaction, failing every budget read after it.
+func canWriteSnapshot(b *budgetRow) bool {
+	return b.system || b.Access == "owner" || b.Access == "editor"
+}
+
 // cache stores current-period aggregates for collaborators.
 func cache(ctx context.Context, tx pgx.Tx, b *budgetRow, r period.Range, limit, carry, spent, count, other int64, allocs map[string]int64) error {
+	if !canWriteSnapshot(b) {
+		return nil
+	}
 	aj, _ := json.Marshal(allocs)
 	_, err := tx.Exec(ctx, `insert into budget_period_snapshots (budget_id, period_start, period_end, limit_minor, rollover_in_minor, spent_minor,
 		rollover_out_minor, allocations_spent, transaction_count, other_currency_count, computed_at)
@@ -347,6 +360,9 @@ func (s *Service) rolloverIn(ctx context.Context, tx pgx.Tx, b *budgetRow, r per
 			return 0, err
 		}
 		out := budgetcalc.Rollover(b.RolloverPolicy, limit+carryIn, spent, b.capMin)
+		if !canWriteSnapshot(b) {
+			return out, nil
+		}
 		if _, err := tx.Exec(ctx, `insert into budget_period_snapshots (budget_id, period_start, period_end, limit_minor, rollover_in_minor,
 			spent_minor, rollover_out_minor, computed_at) values ($1,$2,$3,$4,$5,$6,$7,now())
 			on conflict (budget_id, period_start) do update set rollover_in_minor = excluded.rollover_in_minor, spent_minor = excluded.spent_minor,

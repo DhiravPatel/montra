@@ -96,6 +96,25 @@ abstract final class InviteLinks {
     return candidate;
   }
 
+  /// The server's `share_url` for a new group invitation, when it is an
+  /// `http(s)` link to `/groups/join` that carries a token; null otherwise
+  /// (then [groupJoinLink] builds one).
+  static String? groupShareUrl(String? shareUrl) {
+    final Uri? uri = Uri.tryParse(shareUrl?.trim() ?? '');
+    if (uri == null ||
+        !(uri.scheme == 'https' || uri.scheme == 'http') ||
+        uri.host.isEmpty) {
+      return null;
+    }
+    final String path = uri.path.length > 1 && uri.path.endsWith('/')
+        ? uri.path.substring(0, uri.path.length - 1)
+        : uri.path;
+    if (!path.endsWith('/groups/join') || tokenFromUri(uri) == null) {
+      return null;
+    }
+    return uri.toString();
+  }
+
   /// A shareable group link for [token]: `/groups/join` with the token in
   /// the fragment, on the web portal's origin when the build sets
   /// `--dart-define=WEB_APP_URL` (as community links do), otherwise on the

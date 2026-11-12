@@ -202,6 +202,11 @@ abstract final class ApiEndpoints {
     '/dashboard/widgets',
     requiresAuth: true,
   );
+  static const ApiEndpoint dashboardPlanning = ApiEndpoint(
+    'GET',
+    '/dashboard/planning',
+    requiresAuth: true,
+  );
   static const ApiEndpoint analyticsAccounts = ApiEndpoint(
     'GET',
     '/analytics/accounts',
@@ -1219,6 +1224,11 @@ abstract final class ApiEndpoints {
     '/reports/schedules/{id}',
     requiresAuth: true,
   );
+  static const ApiEndpoint getReportSchedule = ApiEndpoint(
+    'GET',
+    '/reports/schedules/{id}',
+    requiresAuth: true,
+  );
 
   // Round 3: exchange rates.
   static const ApiEndpoint listFxRates = ApiEndpoint(
@@ -1981,6 +1991,11 @@ abstract final class ApiEndpoints {
     '/insights',
     requiresAuth: true,
   );
+  static const ApiEndpoint getInsight = ApiEndpoint(
+    'GET',
+    '/insights/{id}',
+    requiresAuth: true,
+  );
   static const ApiEndpoint actOnInsight = ApiEndpoint(
     'POST',
     '/insights/{id}/actions',
@@ -2120,6 +2135,7 @@ abstract final class ApiEndpoints {
     dashboardSummary,
     dashboardWidgets,
     updateDashboardWidgets,
+    dashboardPlanning,
     analyticsAccounts,
     listAccounts,
     createAccount,
@@ -2310,6 +2326,7 @@ abstract final class ApiEndpoints {
     listReportSchedules,
     createReportSchedule,
     deleteReportSchedule,
+    getReportSchedule,
     listFxRates,
     setFxRate,
     deleteFxRate,
@@ -2458,6 +2475,7 @@ abstract final class ApiEndpoints {
     recentSearches,
     clearRecentSearches,
     listInsights,
+    getInsight,
     actOnInsight,
     insightFeedback,
     listInsightMutes,

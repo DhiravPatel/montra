@@ -50,6 +50,16 @@ func (s *Service) Routes(api huma.API) {
 			}
 			return httpx.OK(ctx, l), nil
 		})
+	httpx.Protected(api, httpx.Op("reports-schedules-get", http.MethodGet, "/reports/schedules/{id}", "One scheduled report", tag),
+		func(ctx context.Context, in *struct {
+			ID uuid.UUID `path:"id"`
+		}) (*httpx.Response[ScheduleDTO], error) {
+			r, err := s.GetSchedule(ctx, in.ID)
+			if err != nil {
+				return nil, err
+			}
+			return httpx.OK(ctx, *r), nil
+		})
 	schedulePatch := write(httpx.Op("reports-schedules-update", http.MethodPatch, "/reports/schedules/{id}",
 		"Edit, pause or resume a scheduled report", tag))
 	schedulePatch.Description = "Changes only the fields sent: title, format, cadence, filters (replaced as a whole; the cadence sets the " +

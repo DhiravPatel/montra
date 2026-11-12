@@ -54,6 +54,15 @@ abstract class FileSource {
   /// null when the user cancels. Throws [CameraUnavailable] when the camera
   /// cannot be used.
   Future<PickedFile?> pick(FileOrigin origin, UploadPurpose purpose);
+
+  /// Like [pick], but the photo library and the files picker let the user
+  /// choose up to [limit] items at once (in the order chosen); the camera
+  /// takes one photo. Empty when the user cancels.
+  Future<List<PickedFile>> pickMany(
+    FileOrigin origin,
+    UploadPurpose purpose, {
+    required int limit,
+  });
 }
 
 /// [FileSource] backed by the system pickers: `image_picker` for the camera
@@ -119,6 +128,55 @@ class DeviceFileSource implements FileSource {
           bytes: bytes,
           mimeType: purpose.kindOf(file.name)?.mimeType,
         );
+    }
+  }
+
+  @override
+  Future<List<PickedFile>> pickMany(
+    FileOrigin origin,
+    UploadPurpose purpose, {
+    required int limit,
+  }) async {
+    if (limit < 1) {
+      return const <PickedFile>[];
+    }
+    switch (origin) {
+      case FileOrigin.camera:
+        final PickedFile? photo = await pick(origin, purpose);
+        return photo == null ? const <PickedFile>[] : <PickedFile>[photo];
+      case FileOrigin.photos:
+        if (limit == 1) {
+          final PickedFile? photo = await pick(origin, purpose);
+          return photo == null ? const <PickedFile>[] : <PickedFile>[photo];
+        }
+        final List<XFile> photos = await _images.pickMultiImage(
+          maxWidth: maxPhotoSide,
+          maxHeight: maxPhotoSide,
+          imageQuality: photoQuality,
+          limit: limit,
+          requestFullMetadata: false,
+        );
+        return <PickedFile>[
+          for (final XFile photo in photos.take(limit))
+            PickedFile(
+              name: photo.name,
+              bytes: await photo.readAsBytes(),
+              mimeType: photo.mimeType,
+            ),
+        ];
+      case FileOrigin.files:
+        final List<PlatformFile> files = await FilePicker.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: purpose.pickerExtensions,
+        );
+        return <PickedFile>[
+          for (final PlatformFile file in files.take(limit))
+            PickedFile(
+              name: file.name,
+              bytes: await file.readAsBytes(),
+              mimeType: purpose.kindOf(file.name)?.mimeType,
+            ),
+        ];
     }
   }
 

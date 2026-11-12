@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"montra/backend/internal/platform/crypto"
 	"montra/backend/internal/platform/database"
 	"montra/backend/internal/platform/identity"
+	"montra/backend/internal/platform/outbox"
 )
 
 // CommunityInvitationInput creates an invitation (moderators).
@@ -40,6 +42,7 @@ type CommunityInvitationDTO struct {
 	CommunityName string              `json:"community_name,omitempty"`
 	Kind          string              `json:"kind" enum:"link,username"`
 	Token         *string             `json:"token,omitempty" doc:"Shown once; send it in request bodies, never in URLs"`
+	ShareURL      *string             `json:"share_url,omitempty" doc:"Shown once with token: the web join link (token in the URL fragment, never sent to servers)"`
 	InviteeID     *uuid.UUID          `json:"invitee_user_id,omitempty"`
 	Invitee       *CommunityPersonDTO `json:"invitee,omitempty" doc:"Username invitations: the person invited"`
 	InvitedBy     *CommunityPersonDTO `json:"invited_by,omitempty" doc:"Who created it (absent when their account was deleted)"`
@@ -145,6 +148,12 @@ func (s *Service) Invite(ctx context.Context, id uuid.UUID, in CommunityInvitati
 		if err := audit.Record(ctx, tx, audit.Event{UserID: &uid, ActorUserID: &uid, EntityType: "community_invitation", EntityID: &invID, Action: "created"}); err != nil {
 			return err
 		}
+		if invitee != nil {
+			if err := outbox.Emit(ctx, tx, outbox.Event{Type: EventInvitationCreated, AggregateType: "community_invitation", AggregateID: invID,
+				UserID: &uid}); err != nil {
+				return err
+			}
+		}
 		if out, err = loadInvitation(ctx, tx, invID); err != nil {
 			return err
 		}
@@ -155,6 +164,10 @@ func (s *Service) Invite(ctx context.Context, id uuid.UUID, in CommunityInvitati
 		return nil, database.MapError(err)
 	}
 	out.Token = token
+	if token != nil && s.WebAppURL != "" {
+		link := strings.TrimRight(s.WebAppURL, "/") + "/communities/join#token=" + url.QueryEscape(*token)
+		out.ShareURL = &link
+	}
 	return &out, nil
 }
 

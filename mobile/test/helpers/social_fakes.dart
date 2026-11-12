@@ -213,8 +213,10 @@ GroupInvitationDto invitation({
   String kind = 'link',
   String status = 'active',
   String? token,
+  String? shareUrl,
   int uses = 0,
 }) => GroupInvitationDto.fromJson(<String, Object?>{
+  'share_url': ?shareUrl,
   'id': id,
   'group_id': 'grp-home',
   'group_name': 'Home',

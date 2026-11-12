@@ -394,8 +394,11 @@ class _InvitationsSectionState extends ConsumerState<_InvitationsSection> {
       }
       await showDialog<void>(
         context: context,
-        builder: (BuildContext dialogContext) =>
-            InviteLinkDialog(token: token, expiresAt: invitation.expiresAt),
+        builder: (BuildContext dialogContext) => InviteLinkDialog(
+          token: token,
+          expiresAt: invitation.expiresAt,
+          shareUrl: invitation.shareUrl,
+        ),
       );
     } on ApiException catch (error) {
       if (mounted) {
@@ -583,6 +586,7 @@ class InviteLinkDialog extends ConsumerWidget {
   const InviteLinkDialog({
     required this.token,
     required this.expiresAt,
+    this.shareUrl,
     super.key,
   });
 
@@ -592,14 +596,17 @@ class InviteLinkDialog extends ConsumerWidget {
   /// When the link stops working.
   final DateTime expiresAt;
 
+  /// The server's join link (`share_url`), preferred when it is a valid
+  /// `/communities/join` link.
+  final String? shareUrl;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
     final String locale = Localizations.localeOf(context).toString();
-    final String? link = communityJoinLink(
-      ref.watch(webAppOriginProvider),
-      token,
-    );
+    final String? link =
+        communityShareUrl(shareUrl) ??
+        communityJoinLink(ref.watch(webAppOriginProvider), token);
     final String shown = link ?? token;
     return AlertDialog(
       title: Text(l10n.communityInviteLinkTitle),

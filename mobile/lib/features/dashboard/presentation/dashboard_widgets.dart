@@ -12,6 +12,7 @@ import 'package:montra_mobile/core/widgets/charts.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/money_text.dart';
 import 'package:montra_mobile/features/dashboard/domain/widget_info.dart';
+import 'package:montra_mobile/features/dashboard/presentation/planning_cards.dart';
 import 'package:montra_mobile/features/labels/domain/label_display.dart';
 import 'package:montra_mobile/features/transactions/domain/transaction_filter.dart';
 import 'package:montra_mobile/features/transactions/presentation/transaction_tile.dart';
@@ -133,43 +134,50 @@ List<String> dashboardNotes(AppLocalizations l10n, DashboardSummary summary) {
   ];
 }
 
-/// The card for widget [widgetKey].
+/// The card for widget [kind]. Planning widgets (budgets, coming up, goals
+/// and group balances) read the planning answer instead of [data].
 class DashboardWidgetCard extends StatelessWidget {
   /// Creates the card.
   const DashboardWidgetCard({
-    required this.widgetKey,
+    required this.kind,
     required this.data,
     super.key,
   });
 
-  /// Widget key.
-  final WidgetDtoKey widgetKey;
+  /// Widget kind.
+  final DashboardWidgetKind kind;
 
   /// Dashboard data.
   final DashboardContext data;
 
   @override
   Widget build(BuildContext context) {
+    if (kind.isPlanning) {
+      return PlanningCard(kind: kind);
+    }
     final AppLocalizations l10n = context.l10n;
-    final Widget body = switch (widgetKey) {
-      WidgetDtoKey.balances => _Balances(data: data),
-      WidgetDtoKey.cashFlow => _CashFlow(data: data),
-      WidgetDtoKey.incomeVsExpense => _IncomeVsExpense(data: data),
-      WidgetDtoKey.cashFlowTrend => _Trend(data: data),
-      WidgetDtoKey.categoryBreakdown => _Categories(data: data),
-      WidgetDtoKey.topMerchants => _Merchants(data: data),
-      WidgetDtoKey.recentTransactions => _Recent(data: data),
-      WidgetDtoKey.dataCoverage => _Coverage(data: data),
-      WidgetDtoKey.unrecognized => const SizedBox.shrink(),
+    final Widget body = switch (kind) {
+      DashboardWidgetKind.balances => _Balances(data: data),
+      DashboardWidgetKind.cashFlow => _CashFlow(data: data),
+      DashboardWidgetKind.incomeVsExpense => _IncomeVsExpense(data: data),
+      DashboardWidgetKind.cashFlowTrend => _Trend(data: data),
+      DashboardWidgetKind.categoryBreakdown => _Categories(data: data),
+      DashboardWidgetKind.topMerchants => _Merchants(data: data),
+      DashboardWidgetKind.recentTransactions => _Recent(data: data),
+      DashboardWidgetKind.dataCoverage => _Coverage(data: data),
+      DashboardWidgetKind.budgets ||
+      DashboardWidgetKind.upcoming ||
+      DashboardWidgetKind.goals ||
+      DashboardWidgetKind.groupBalances => const SizedBox.shrink(),
     };
     return SectionCard(
-      title: widgetTitle(l10n, widgetKey),
-      trailing: switch (widgetKey) {
-        WidgetDtoKey.balances => TextButton(
+      title: widgetTitle(l10n, kind),
+      trailing: switch (kind) {
+        DashboardWidgetKind.balances => TextButton(
           onPressed: () => context.push(AppRoutes.accounts),
           child: Text(l10n.dashboardViewAccounts),
         ),
-        WidgetDtoKey.recentTransactions => TextButton(
+        DashboardWidgetKind.recentTransactions => TextButton(
           onPressed: () => context.go(AppRoutes.transactions),
           child: Text(
             l10n.actionSeeAll,

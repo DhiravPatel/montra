@@ -126,6 +126,132 @@
     --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.55);
   }
 
+  /*
+   * High contrast (account preference, data-contrast="high" on <html>):
+   * near-black/white text, stronger lines and darker (or lighter) status
+   * colors, in the light and the dark theme. These selectors outrank the
+   * theme rules above, so they win in either theme.
+   */
+  @media not (prefers-color-scheme: dark) {
+    :root[data-contrast='high']:not([data-theme='dark']) {
+      --color-canvas: #ffffff;
+      --color-surface: #ffffff;
+      --color-surface-muted: #e6ebee;
+      --color-line: #5c6b74;
+      --color-line-strong: #27333b;
+      --color-fg: #000000;
+      --color-fg-muted: #26323a;
+      --color-accent: #064541;
+      --color-accent-hover: #04302d;
+      --color-accent-soft: #d3ebe8;
+      --color-focus: #0a3ea8;
+      --color-danger: #7f150f;
+      --color-danger-hover: #5f0f0b;
+      --color-danger-soft: #f9dcda;
+      --color-success: #08482a;
+      --color-success-soft: #d6eee0;
+      --color-warning: #5c3500;
+      --color-warning-soft: #fbe8c6;
+      --color-info: #0f3f7a;
+      --color-info-soft: #d9e8f8;
+      --color-chart-1: #1b5fb0;
+      --color-chart-2: #b23f0d;
+      --color-chart-context: #4a5863;
+      --shadow-card: 0 0 0 1px rgb(0 0 0 / 0.5);
+    }
+  }
+
+  :root[data-contrast='high'][data-theme='light'] {
+    --color-canvas: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-muted: #e6ebee;
+    --color-line: #5c6b74;
+    --color-line-strong: #27333b;
+    --color-fg: #000000;
+    --color-fg-muted: #26323a;
+    --color-accent: #064541;
+    --color-accent-hover: #04302d;
+    --color-accent-soft: #d3ebe8;
+    --color-focus: #0a3ea8;
+    --color-danger: #7f150f;
+    --color-danger-hover: #5f0f0b;
+    --color-danger-soft: #f9dcda;
+    --color-success: #08482a;
+    --color-success-soft: #d6eee0;
+    --color-warning: #5c3500;
+    --color-warning-soft: #fbe8c6;
+    --color-info: #0f3f7a;
+    --color-info-soft: #d9e8f8;
+    --color-chart-1: #1b5fb0;
+    --color-chart-2: #b23f0d;
+    --color-chart-context: #4a5863;
+    --shadow-card: 0 0 0 1px rgb(0 0 0 / 0.5);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root[data-contrast='high']:not([data-theme='light']) {
+      --color-canvas: #000000;
+      --color-surface: #05090b;
+      --color-surface-muted: #141c21;
+      --color-line: #8a9ba4;
+      --color-line-strong: #c4d0d6;
+      --color-fg: #ffffff;
+      --color-fg-muted: #dbe4e8;
+      --color-accent: #8be3da;
+      --color-accent-hover: #b0eee8;
+      --color-accent-soft: #0b2c29;
+      --color-on-accent: #001513;
+      --color-focus: #c2d8ff;
+      --color-danger: #ffb4ab;
+      --color-danger-hover: #ffd0ca;
+      --color-danger-soft: #3a0f0b;
+      --color-on-danger: #1f0302;
+      --color-success: #9df0c4;
+      --color-success-soft: #0a2618;
+      --color-warning: #ffd88a;
+      --color-warning-soft: #2e2006;
+      --color-info: #bcdcff;
+      --color-info-soft: #0b2038;
+      --color-chart-1: #7fb3f2;
+      --color-chart-2: #ff9a6b;
+      --color-chart-context: #a2b1b9;
+      --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.45);
+    }
+  }
+
+  :root[data-contrast='high'][data-theme='dark'] {
+    --color-canvas: #000000;
+    --color-surface: #05090b;
+    --color-surface-muted: #141c21;
+    --color-line: #8a9ba4;
+    --color-line-strong: #c4d0d6;
+    --color-fg: #ffffff;
+    --color-fg-muted: #dbe4e8;
+    --color-accent: #8be3da;
+    --color-accent-hover: #b0eee8;
+    --color-accent-soft: #0b2c29;
+    --color-on-accent: #001513;
+    --color-focus: #c2d8ff;
+    --color-danger: #ffb4ab;
+    --color-danger-hover: #ffd0ca;
+    --color-danger-soft: #3a0f0b;
+    --color-on-danger: #1f0302;
+    --color-success: #9df0c4;
+    --color-success-soft: #0a2618;
+    --color-warning: #ffd88a;
+    --color-warning-soft: #2e2006;
+    --color-info: #bcdcff;
+    --color-info-soft: #0b2038;
+    --color-chart-1: #7fb3f2;
+    --color-chart-2: #ff9a6b;
+    --color-chart-context: #a2b1b9;
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.45);
+  }
+
+  :root[data-contrast='high'] :focus-visible {
+    outline-width: 4px;
+  }
+
   html {
     font-family: var(--font-sans);
     background-color: var(--color-canvas);
@@ -167,4 +293,21 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/*
+ * Reduce motion as an account preference (data-motion="reduce" on <html>),
+ * the same as the OS setting above.
+ */
+:root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before,
+:root[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-motion='reduce'] {
+  scroll-behavior: auto !important;
 }

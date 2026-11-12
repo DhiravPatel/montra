@@ -8,6 +8,7 @@ import 'package:montra_mobile/features/dashboard/data/dashboard_api.dart';
 import 'package:montra_mobile/features/labels/data/labels_api.dart';
 import 'package:montra_mobile/features/settings/data/preferences_api.dart';
 
+import '../../helpers/dashboard_fakes.dart';
 import '../../helpers/finance_fakes.dart';
 import '../../helpers/router_app.dart';
 
@@ -64,6 +65,8 @@ void main() {
     when(() => dashboard.summary(any()))
         .thenAnswer((_) async => summary(empty: true));
     when(() => dashboard.widgets()).thenAnswer((_) async => widgetLayout());
+    when(() => dashboard.planning())
+        .thenAnswer((_) async => dashboardPlanning(empty: true));
   });
 
   List<Override> overrides() => <Override>[

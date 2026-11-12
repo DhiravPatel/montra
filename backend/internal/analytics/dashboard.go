@@ -17,10 +17,10 @@ import (
 	"montra/backend/internal/platform/identity"
 )
 
-// Widget keys available today. Later modules (budgets, bills,
-// subscriptions, goals, groups, insights) register theirs when they ship.
-var widgetRegistry = []string{"balances", "cash_flow", "income_vs_expense", "cash_flow_trend", "category_breakdown",
-	"top_merchants", "recent_transactions", "data_coverage"}
+// Widget keys in default order. budgets, upcoming (bills, recurring and
+// renewals), goals and group_balances read GET /dashboard/planning.
+var widgetRegistry = []string{"balances", "cash_flow", "budgets", "upcoming", "income_vs_expense", "cash_flow_trend",
+	"category_breakdown", "top_merchants", "goals", "group_balances", "recent_transactions", "data_coverage"}
 
 // RegisterWidget adds a widget key (called by feature modules at startup).
 func RegisterWidget(key string) {
@@ -116,7 +116,7 @@ func (s *Service) Summary(ctx context.Context, f Filter, fin *finance.Service) (
 
 // WidgetDTO is one dashboard widget's layout.
 type WidgetDTO struct {
-	Key      string          `json:"key" enum:"balances,cash_flow,income_vs_expense,cash_flow_trend,category_breakdown,top_merchants,recent_transactions,data_coverage"`
+	Key      string          `json:"key" enum:"balances,cash_flow,budgets,upcoming,income_vs_expense,cash_flow_trend,category_breakdown,top_merchants,goals,group_balances,recent_transactions,data_coverage" doc:"New widgets may be added; clients skip keys they do not know"`
 	Position int16           `json:"position"`
 	Visible  bool            `json:"visible"`
 	Settings json.RawMessage `json:"settings" doc:"Widget-specific settings (e.g. default range)"`

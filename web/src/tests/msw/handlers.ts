@@ -97,6 +97,10 @@ export const handlers = [
     if (!testBackend.user) return unauthenticated();
     return HttpResponse.json(envelope(testBackend.widgets));
   }),
+  http.get(`${API}/dashboard/planning`, () => {
+    if (!testBackend.user) return unauthenticated();
+    return HttpResponse.json(envelope(testBackend.planning));
+  }),
   http.get(`${API}/analytics/accounts`, () => {
     if (!testBackend.user) return unauthenticated();
     return HttpResponse.json(envelope(testBackend.accountTotals));

@@ -660,6 +660,34 @@ func (s *Service) ListSchedules(ctx context.Context) ([]ScheduleDTO, error) {
 	return out, database.MapError(err)
 }
 
+// GetSchedule reads one of the caller's scheduled reports (404 for others').
+func (s *Service) GetSchedule(ctx context.Context, id uuid.UUID) (*ScheduleDTO, error) {
+	uid, err := identity.UserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var out *ScheduleDTO
+	err = s.DB.WithUserReadTx(ctx, uid, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `select `+scheduleCols+` from scheduled_reports where user_id = $1 and id = $2`, uid, id)
+		if err != nil {
+			return err
+		}
+		x, err := pgx.CollectExactlyOneRow(rows, func(r pgx.CollectableRow) (ScheduleDTO, error) {
+			v, err := scanSchedule(r)
+			if err != nil {
+				return ScheduleDTO{}, err
+			}
+			return *v, nil
+		})
+		if database.IsNoRows(err) {
+			return apperr.NotFound("scheduled report")
+		}
+		out = &x
+		return err
+	})
+	return out, database.MapError(err)
+}
+
 // DeleteSchedule removes a scheduled report.
 func (s *Service) DeleteSchedule(ctx context.Context, id uuid.UUID) error {
 	uid, err := identity.UserID(ctx)

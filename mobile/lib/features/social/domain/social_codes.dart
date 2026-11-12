@@ -9,5 +9,9 @@ String? socialDetailMessage(AppLocalizations l10n, Detail detail) =>
       'request_pending' => l10n.friendCodeRequestPending,
       'requests_closed' => l10n.friendCodeRequestsClosed,
       'username_taken' => l10n.usernameTaken,
+      'username_invalid' => l10n.codeUsernameInvalid,
+      'username_reserved' => l10n.codeUsernameReserved,
+      'avatar_file_invalid' => l10n.codeAvatarFileInvalid,
+      'query_too_short' => l10n.codeQueryTooShort(detail.params?['min'] ?? '3'),
       _ => null,
     };

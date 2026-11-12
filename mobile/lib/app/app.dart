@@ -5,9 +5,16 @@ import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/router/app_router.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/app/theme/theme_mode_controller.dart';
+import 'package:montra_mobile/core/finance/finance_refresh.dart';
+import 'package:montra_mobile/core/settings/app_preferences.dart';
 import 'package:montra_mobile/core/widgets/offline_banner.dart';
+import 'package:montra_mobile/features/settings/application/preferences_providers.dart';
 
 /// The Montra application.
+///
+/// Once a user is signed in, their preferences are loaded and applied app
+/// wide: the language (`locale`), reduced motion, high contrast and text
+/// size, on top of the device's own accessibility settings.
 class MontraApp extends ConsumerWidget {
   /// Creates the app.
   const MontraApp({super.key});
@@ -15,17 +22,31 @@ class MontraApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final GoRouter router = ref.watch(routerProvider);
+    if (ref.watch(currentUserIdProvider) != null) {
+      // Loads the preferences (and keeps them) while signed in; the answer
+      // fills `preferencesSnapshotProvider`. Failures only mean defaults.
+      ref.watch(preferencesProvider);
+    }
+    final AccessibilitySettings a11y = ref.watch(accessibilitySettingsProvider);
     return MaterialApp.router(
       onGenerateTitle: (BuildContext context) => context.l10n.appTitle,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(highContrast: a11y.highContrast),
+      darkTheme: AppTheme.dark(highContrast: a11y.highContrast),
+      highContrastTheme: AppTheme.light(highContrast: true),
+      highContrastDarkTheme: AppTheme.dark(highContrast: true),
       themeMode: ref.watch(themeModeProvider),
+      themeAnimationStyle: a11y.reducedMotion
+          ? AnimationStyle.noAnimation
+          : null,
+      locale: ref.watch(appLocaleProvider),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
-      builder: (BuildContext context, Widget? child) =>
-          ConnectivityBannerHost(child: child ?? const SizedBox.shrink()),
+      builder: (BuildContext context, Widget? child) => MediaQuery(
+        data: applyAccessibility(MediaQuery.of(context), a11y),
+        child: ConnectivityBannerHost(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }

@@ -768,6 +768,35 @@ void main() {
     });
   });
 
+  testWidgets("a new link uses the server's share_url when it sends one", (
+    WidgetTester tester,
+  ) async {
+    const String shareUrl = 'https://web.example/communities/join#token=$token';
+    when(() => api.get('com-1')).thenAnswer(
+      (_) async => community(myRole: 'moderator', canModerate: true),
+    );
+    when(
+      () => api.invitations(
+        'com-1',
+        includeInactive: any(named: 'includeInactive'),
+      ),
+    ).thenAnswer((_) async => <CommunityInvitationDto>[]);
+    when(() => api.createInvitation('com-1', any()))
+        .thenAnswer((_) async => invitation(token: token, shareUrl: shareUrl));
+    // Without a configured web address the app would share the code.
+    origin = null;
+    await pump(tester, '/communities/com-1/settings');
+    await scrollTo(tester, find.text('Create an invitation link'));
+    await tester.tap(find.text('Create an invitation link'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('7 days'));
+    await tester.pumpAndSettle();
+    expect(find.text(shareUrl), findsOneWidget);
+    await tester.tap(find.text('Share'));
+    await tester.pumpAndSettle();
+    expect(shared.single, shareUrl);
+  });
+
   group('members and moderation', () {
     testWidgets('moderators approve requests', (WidgetTester tester) async {
       when(

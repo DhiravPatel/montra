@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -98,6 +99,7 @@ type GroupInvitationDTO struct {
 	GroupName string       `json:"group_name"`
 	Kind      string       `json:"kind" enum:"link,username"`
 	Token     *string      `json:"token,omitempty" doc:"Shown once when a link is created"`
+	ShareURL  *string      `json:"share_url,omitempty" doc:"Shown once with token: the web join link (token in the URL fragment, never sent to servers)"`
 	InviteeID *uuid.UUID   `json:"invitee_user_id,omitempty"`
 	Invitee   *GroupPerson `json:"invitee,omitempty" doc:"Username invitations: the person invited (minimal profile as you may see it)"`
 	InvitedBy *GroupPerson `json:"invited_by,omitempty" doc:"Who created the invitation (minimal profile as you may see it; absent when their account was deleted)"`
@@ -138,7 +140,7 @@ func resolveInvitee(ctx context.Context, tx pgx.Tx, uid uuid.UUID, username stri
 	username = strings.ToLower(strings.TrimPrefix(strings.TrimSpace(username), "@"))
 	switch {
 	case userID != nil && username != "":
-		return uuid.Nil, apperr.FieldError("body.user_id", "Send a username or a friend's user ID, not both.")
+		return uuid.Nil, apperr.FieldCode("body.user_id", "username_or_user_id", "Send a username or a friend's user ID, not both.", nil)
 	case userID != nil:
 		if *userID == uid {
 			return uid, nil // the membership check answers already_member
@@ -161,7 +163,7 @@ func resolveInvitee(ctx context.Context, tx pgx.Tx, uid uuid.UUID, username stri
 		}
 		return *found, nil
 	default:
-		return uuid.Nil, apperr.FieldError("body.username", "Choose who to invite: a username, or one of your friends (user_id).")
+		return uuid.Nil, apperr.FieldCode("body.username", "username_or_user_id", "Choose who to invite: a username, or one of your friends (user_id).", nil)
 	}
 }
 
@@ -201,6 +203,10 @@ func (s *Service) Invite(ctx context.Context, groupID uuid.UUID, in GroupInvitat
 			}
 			tok := base64.RawURLEncoding.EncodeToString(raw)
 			out.Token = &tok
+			if s.WebAppURL != "" {
+				link := strings.TrimRight(s.WebAppURL, "/") + "/groups/join#token=" + url.QueryEscape(tok)
+				out.ShareURL = &link
+			}
 			if _, err := tx.Exec(ctx, `insert into group_invitations (id, group_id, invited_by, kind, token_hash, max_uses, expires_at)
 				values ($1,$2,$3,'link',$4,$5,$6)`, id, groupID, uid, crypto.HashToken(tok), in.MaxUses, exp); err != nil {
 				return err

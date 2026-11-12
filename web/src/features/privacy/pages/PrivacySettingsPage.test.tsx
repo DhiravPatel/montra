@@ -601,13 +601,81 @@ describe('PrivacySettingsPage: deactivation and deletion', () => {
     expect(screen.queryByRole('button', { name: 'Delete my account…' })).not.toBeInTheDocument();
   });
 
+  it('explains a deletion already scheduled elsewhere and a confirmation the API refused', async () => {
+    servePrivacy();
+    const answers = [
+      {
+        status: 422,
+        body: errorBody({
+          code: 'VALIDATION_ERROR',
+          details: [
+            {
+              field: 'body.confirm',
+              message: 'Type DELETE to confirm.',
+              code: 'confirm_word_mismatch',
+              params: { word: 'DELETE' },
+            },
+          ],
+        }),
+      },
+      {
+        status: 409,
+        body: errorBody({
+          code: 'CONFLICT',
+          message: 'A deletion request is already scheduled.',
+          details: [
+            {
+              message: 'A deletion request is already scheduled.',
+              code: 'deletion_already_scheduled',
+            },
+          ],
+        }),
+      },
+    ];
+    const posted: unknown[] = [];
+    server.use(
+      http.post(`${API}/me/deletion-request`, async ({ request }) => {
+        posted.push(await request.json());
+        const answer = answers[posted.length - 1] ?? answers[1];
+        return HttpResponse.json(answer?.body, { status: answer?.status });
+      }),
+    );
+    const { events } = await openPrivacy();
+    const card = screen.getByRole('region', { name: 'Delete your account' });
+    await events.click(await within(card).findByRole('button', { name: 'Delete my account…' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Delete your account?' });
+    const field = within(dialog).getByLabelText('Type DELETE to confirm');
+    await events.type(field, 'DELETE');
+    await events.click(within(dialog).getByRole('button', { name: 'Schedule deletion' }));
+    // 422 confirm_word_mismatch names the word to type ({word}).
+    await waitFor(() => {
+      expect(field).toHaveAccessibleDescription(/Type DELETE exactly as shown\./);
+    });
+
+    await events.click(within(dialog).getByRole('button', { name: 'Schedule deletion' }));
+    // 409 deletion_already_scheduled: the page shows the current state.
+    expect(
+      await within(dialog).findByText('A deletion is already scheduled. The page now shows it.'),
+    ).toBeVisible();
+    expect(posted).toEqual([{ confirm: 'DELETE' }, { confirm: 'DELETE' }]);
+  });
+
   it('explains a cancel that finds nothing to cancel', async () => {
     const state = servePrivacy({ deletion: scheduledDeletion() });
     server.use(
       http.delete(`${API}/me/deletion-request`, () => {
         state.deletion = makeDeletion();
         return HttpResponse.json(
-          errorBody({ code: 'CONFLICT', message: 'There is no scheduled deletion to cancel.' }),
+          errorBody({
+            code: 'CONFLICT',
+            message: 'There is no scheduled deletion to cancel.',
+            details: [
+              {
+                message: 'There is no scheduled deletion to cancel.',
+                code: 'no_deletion_scheduled',
+              },
+            ],
+          }),
           { status: 409 },
         );
       }),

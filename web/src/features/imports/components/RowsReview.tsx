@@ -17,6 +17,7 @@ import { importErrorMessage } from '../errors';
 import { importKeys } from '../keys';
 import { fieldHint, rowReason } from '../reasons';
 import { filterLabels } from '../rowFilters';
+import { isRemovedByUndo } from '../status';
 import type { ImportBatch, ImportRow, RowFilter } from '../types';
 import { RowStatusBadge } from './ImportBadges';
 import { RowFixDialog } from './RowFixDialog';
@@ -282,7 +283,7 @@ function RowItem({
             </TextLink>
           </p>
         ) : null}
-        {row.transaction_id ? (
+        {row.transaction_id && !isRemovedByUndo(row) ? (
           <p className="text-sm">
             <TextLink to={transactionPath(row.transaction_id)}>
               {t('imports.rows.viewTransaction')}

@@ -282,6 +282,57 @@ describe('ImportDetailPage', () => {
     expect(screen.getByText('Undone')).toBeInTheDocument();
   });
 
+  it('does not link transactions an undo removed, and still links the ones it kept', async () => {
+    const TX_KEPT = '77777777-7777-4777-8777-777777777712';
+    server.use(
+      serveRows(() => [
+        // Removed by the undo: the server keeps the transaction ID, but the
+        // transaction is gone (voided), so it is shown as removed, not linked.
+        makeRow({
+          status: 'skipped',
+          transaction_id: TX_IMPORTED,
+          error_code: 'rolled_back',
+          error_message: 'Removed by rolling back this import.',
+        }),
+        // Kept because it changed after the import: still in the ledger.
+        makeRow({
+          id: 'e0000000-0000-4000-8000-000000000011',
+          row_number: 5,
+          description: 'COFFEE',
+          status: 'imported',
+          transaction_id: TX_KEPT,
+        }),
+      ]),
+    );
+    serveBatch(
+      makeBatch({
+        status: 'cancelled',
+        version: 3,
+        imported_count: 1,
+        skipped_count: 1,
+        error_code: 'rolled_back',
+        error_params: { voided: '1', kept: '1' },
+        cancelled_at: '2026-11-05T09:00:00Z',
+      }),
+    );
+    renderRoute(path, { user: signedIn() });
+    await findPageHeading('Statement import');
+    expect(screen.getByText('Undone')).toBeInTheDocument();
+
+    const rows = screen.getByRole('region', { name: 'Statement rows' });
+    const removed = (await within(rows).findByText('Row 4')).closest('li')!;
+    expect(within(removed).getByText('Removed by undo')).toBeInTheDocument();
+    expect(within(removed).getByText('Removed when the import was undone.')).toBeInTheDocument();
+    expect(within(removed).queryByRole('link')).not.toBeInTheDocument();
+
+    const kept = within(rows).getByText('Row 5').closest('li')!;
+    expect(within(kept).getByRole('link', { name: 'View transaction' })).toHaveAttribute(
+      'href',
+      `/transactions/${TX_KEPT}`,
+    );
+    expect(within(rows).getAllByRole('link', { name: 'View transaction' })).toHaveLength(1);
+  });
+
   it('stops a running import after confirmation and stops polling once it has stopped', async () => {
     let cancels = 0;
     server.use(

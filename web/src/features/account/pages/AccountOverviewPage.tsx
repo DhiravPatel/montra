@@ -42,7 +42,14 @@ export function AccountOverviewPage() {
         description={t('account.greeting', { name: user.display_name })}
       />
       <div className="space-y-6">
-        <Card title={t('account.profile.title')}>
+        <Card
+          title={t('account.profile.title')}
+          actions={
+            <ButtonLink to={paths.profileSettings} variant="secondary" size="sm">
+              {t('account.profile.edit')}
+            </ButtonLink>
+          }
+        >
           <dl className="divide-y divide-line">
             <Fact label={t('account.profile.name')}>{user.display_name}</Fact>
             <Fact label={t('social.username.label')}>
@@ -80,6 +87,11 @@ export function AccountOverviewPage() {
         <Card
           title={t('account.preferences.title')}
           description={t('account.preferences.description')}
+          actions={
+            <ButtonLink to={paths.profileSettings} variant="secondary" size="sm">
+              {t('account.preferences.edit')}
+            </ButtonLink>
+          }
         >
           <dl className="divide-y divide-line">
             <Fact label={t('account.preferences.currency')}>

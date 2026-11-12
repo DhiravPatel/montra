@@ -20,7 +20,11 @@ abstract final class Insets {
 ///   accessible contrast in light and dark mode.
 /// * Every interactive control keeps a 48dp minimum touch target.
 /// * Text scales with the system setting (no clamping); layouts scroll.
-/// * Page transitions honor the system "reduce motion" setting.
+/// * Page transitions honor "reduce motion" (the system setting or the
+///   account's `reduced_motion`, applied through `MediaQuery`).
+/// * [highContrast] themes (the system setting or the account's
+///   `high_contrast`) use Material's highest contrast level, stronger
+///   borders and darker status colors.
 abstract final class AppTheme {
   /// Brand seed color.
   static const Color seed = Color(0xFF1F6F5C);
@@ -29,16 +33,21 @@ abstract final class AppTheme {
   static const Size minTouchTarget = Size(48, 48);
 
   /// Light theme.
-  static ThemeData light() => _build(Brightness.light);
+  static ThemeData light({bool highContrast = false}) =>
+      _build(Brightness.light, highContrast: highContrast);
 
   /// Dark theme.
-  static ThemeData dark() => _build(Brightness.dark);
+  static ThemeData dark({bool highContrast = false}) =>
+      _build(Brightness.dark, highContrast: highContrast);
 
-  static ThemeData _build(Brightness brightness) {
+  static ThemeData _build(Brightness brightness, {required bool highContrast}) {
     final ColorScheme scheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: brightness,
+      contrastLevel: highContrast ? 1 : 0,
     );
+    // Borders that separate controls and cards: stronger in high contrast.
+    final Color border = highContrast ? scheme.outline : scheme.outlineVariant;
     final BorderRadius radius = BorderRadius.circular(12);
     final ButtonStyle buttonShape = ButtonStyle(
       minimumSize: const WidgetStatePropertyAll<Size>(Size(64, 48)),
@@ -57,7 +66,9 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: scheme.surface,
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
-      extensions: <ThemeExtension<dynamic>>[StatusColors.forScheme(scheme)],
+      extensions: <ThemeExtension<dynamic>>[
+        StatusColors.forScheme(scheme, highContrast: highContrast),
+      ],
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: <TargetPlatform, PageTransitionsBuilder>{
           TargetPlatform.android: ReducedMotionPageTransitionsBuilder(
@@ -95,7 +106,7 @@ abstract final class AppTheme {
         color: scheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: scheme.outlineVariant),
+          side: BorderSide(color: border, width: highContrast ? 2 : 1),
         ),
       ),
       listTileTheme: const ListTileThemeData(
@@ -107,7 +118,7 @@ abstract final class AppTheme {
         behavior: SnackBarBehavior.floating,
         showCloseIcon: true,
       ),
-      dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
+      dividerTheme: DividerThemeData(color: border, space: 1),
     );
   }
 }
@@ -129,9 +140,34 @@ class StatusColors extends ThemeExtension<StatusColors> {
     required this.onWarningContainer,
   });
 
-  /// Palette tuned for [scheme]'s brightness.
-  factory StatusColors.forScheme(ColorScheme scheme) {
+  /// Palette tuned for [scheme]'s brightness; [highContrast] uses darker
+  /// (light theme) or lighter (dark theme) text and stronger containers.
+  factory StatusColors.forScheme(
+    ColorScheme scheme, {
+    bool highContrast = false,
+  }) {
     final bool dark = scheme.brightness == Brightness.dark;
+    if (highContrast) {
+      return dark
+          ? const StatusColors(
+              success: Color(0xFFB4F5D6),
+              onSuccess: Color(0xFF001A11),
+              successContainer: Color(0xFF9BF5CF),
+              onSuccessContainer: Color(0xFF001A11),
+              warning: Color(0xFFFFE0A8),
+              warningContainer: Color(0xFFFFDEA6),
+              onWarningContainer: Color(0xFF1C1200),
+            )
+          : const StatusColors(
+              success: Color(0xFF00402F),
+              onSuccess: Color(0xFFFFFFFF),
+              successContainer: Color(0xFF00402F),
+              onSuccessContainer: Color(0xFFFFFFFF),
+              warning: Color(0xFF4A3600),
+              warningContainer: Color(0xFF4A3600),
+              onWarningContainer: Color(0xFFFFFFFF),
+            );
+    }
     return dark
         ? const StatusColors(
             success: Color(0xFF7FD8B4),

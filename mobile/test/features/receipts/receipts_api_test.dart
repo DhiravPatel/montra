@@ -31,6 +31,9 @@ void main() {
   setUp(() {
     adapter = FakeHttpAdapter((RequestOptions o) async {
       final String path = o.uri.path;
+      if (o.method == 'DELETE') {
+        return jsonResponse(200, envelope(<String, Object?>{'ok': true}));
+      }
       if (o.method == 'GET' && path.endsWith('/receipts')) {
         return jsonResponse(
           200,
@@ -192,6 +195,13 @@ void main() {
     expect(adapter.requests[9].uri.queryParameters, <String, String>{
       'version': '5',
     });
+  });
+
+  test('a page that never became part of a receipt is deleted by its file '
+      'ID', () async {
+    await ReceiptsApi(client).deleteUpload('file-9');
+    final RequestOptions sent = adapter.requests.single;
+    expect('${sent.method} ${sent.uri.path}', 'DELETE /api/v1/files/file-9');
   });
 
   test('unknown warning codes keep the English text', () {

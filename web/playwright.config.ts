@@ -7,6 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
 const port = Number(process.env.E2E_PORT ?? 5199);
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
 const channel = process.env.PW_CHANNEL;
+const browser = channel ? { channel } : {};
 
 export default defineConfig({
   testDir: './e2e',
@@ -14,6 +15,9 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   workers: 1,
+  // Journeys sign in many throwaway users; the API allows ~10 sign-ins a
+  // minute per IP, so helpers wait out 429s and need the headroom.
+  timeout: 120_000,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL,
@@ -22,7 +26,22 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop-chromium',
-      use: { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) },
+      use: { ...devices['Desktop Chrome'], ...browser },
+    },
+    {
+      // Phone: bottom tab bar + "More" menu instead of the sidebar (< md).
+      name: 'phone-chromium',
+      use: { ...devices['Pixel 7'], ...browser },
+    },
+    {
+      // Tablet portrait: exactly the md breakpoint (768px), touch input.
+      name: 'tablet-chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        ...browser,
+        viewport: { width: 768, height: 1024 },
+        hasTouch: true,
+      },
     },
   ],
   webServer: process.env.E2E_BASE_URL

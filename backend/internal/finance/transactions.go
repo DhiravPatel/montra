@@ -74,6 +74,7 @@ type TransactionDTO struct {
 	RecurringRuleID       *uuid.UUID      `json:"recurring_rule_id,omitempty"`
 	GroupExpenseID        *uuid.UUID      `json:"group_expense_id,omitempty"`
 	SettlementID          *uuid.UUID      `json:"settlement_id,omitempty"`
+	GroupID               *uuid.UUID      `json:"group_id,omitempty" doc:"The group of a linked group expense or settlement, while you can see that group"`
 	ReceiptID             *uuid.UUID      `json:"receipt_id,omitempty"`
 	PersonalShare         *apitypes.Money `json:"personal_share,omitempty" doc:"For group expenses: the share counted as your spending"`
 	RefundedTotal         apitypes.Money  `json:"refunded_total" doc:"Sum of active refunds/reimbursements linked to this transaction"`
@@ -101,7 +102,9 @@ const txSelect = `select t.id, t.account_id, a.name, t.type, t.direction, t.stat
 	(select count(*) from transaction_attachments ta where ta.transaction_id = t.id)::int,
 	coalesce((select jsonb_agg(jsonb_build_object('id', tg.id, 'name', tg.name, 'color', tg.color) order by tg.name)
 	   from transaction_tags tt join tags tg on tg.id = tt.tag_id where tt.transaction_id = t.id), '[]'::jsonb),
-	t.version, t.created_at, t.updated_at, t.deleted_at, t.user_id
+	t.version, t.created_at, t.updated_at, t.deleted_at, t.user_id,
+	coalesce((select ge.group_id from group_expenses ge where ge.id = t.group_expense_id),
+	   (select st.group_id from settlements st where st.id = t.settlement_id))
 	from transactions t join financial_accounts a on a.id = t.account_id
 	left join categories c on c.id = t.category_id left join merchants mer on mer.id = t.merchant_id`
 
@@ -122,7 +125,7 @@ func scanTx(r pgx.Row, me uuid.UUID) (*TransactionDTO, error) {
 		&catID, &catName, &catIcon, &catColor, &catParent, &catKey, &merID, &merName, &t.PaymentMethodID, &t.Description, &t.Notes, &t.LocationText,
 		&t.OriginalTransactionID, &t.TransferID, &t.RecurringRuleID, &t.GroupExpenseID, &t.SettlementID, &t.ReceiptID,
 		&share, &t.Source, &t.ExternalID, &t.ReconciliationState, &t.IsCorrection, &refunded, &t.AttachmentCount, &tagsJSON,
-		&t.Version, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &owner); err != nil {
+		&t.Version, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &owner, &t.GroupID); err != nil {
 		return nil, err
 	}
 	t.Amount = m(amount, cur)

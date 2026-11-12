@@ -124,6 +124,7 @@ export function TransactionsPage() {
     else
       content = (
         <ErrorState
+          titleAs="h2"
           title={t('transactions.list.error')}
           error={list.error}
           description={
@@ -141,12 +142,14 @@ export function TransactionsPage() {
     content = filtered ? (
       <EmptyState
         icon="search"
+        titleAs="h2"
         title={t('transactions.list.noMatches')}
         description={t('transactions.list.noMatchesBody')}
       />
     ) : (
       <EmptyState
         icon="list"
+        titleAs="h2"
         title={t('transactions.list.empty.title')}
         description={t('transactions.list.empty.body')}
         action={

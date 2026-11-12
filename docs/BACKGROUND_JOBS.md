@@ -57,8 +57,11 @@ The same test fails if a periodic job has no handler.
 | `auth.send_verification` | on demand | 1m0s | default |
 | `budgets.evaluate` | on demand | 2m0s | 4 |
 | `challenges.notify_completed` | on demand | 1m0s | 2 |
+| `challenges.notify_milestone` | on demand | 1m0s | 2 |
 | `communities.notify_comment` | on demand | 1m0s | 4 |
+| `communities.notify_invitation` | on demand | 1m0s | 2 |
 | `communities.notify_membership` | on demand | 1m0s | 2 |
+| `communities.notify_mentions` | on demand | 1m0s | 4 |
 | `files.cleanup` | 1h0m0s | 10m0s | 1 |
 | `files.delete` | on demand | 2m0s | default |
 | `fx.refresh` | 6h0m0s | 1m0s | 1 |
@@ -69,6 +72,7 @@ The same test fails if a periodic job has no handler.
 | `groups.notify_activity` | on demand | 1m0s | 4 |
 | `groups.sync_expense` | on demand | 1m0s | 2 |
 | `groups.sync_settlement` | on demand | 1m0s | 2 |
+| `groups.trip_reminders` | 1h0m0s | 5m0s | 1 |
 | `imports.normalize` | on demand | 3m0s | 2 |
 | `imports.parse` | on demand | 3m0s | 2 |
 | `imports.process` | on demand | 15m0s | 2 |
@@ -96,6 +100,8 @@ The same test fails if a periodic job has no handler.
 | `subscriptions.detect` | on demand | 2m0s | 2 |
 | `subscriptions.detect_all` | 24h0m0s | 5m0s | 1 |
 | `subscriptions.renewals` | 1h0m0s | 5m0s | 1 |
+| `support.notify_reply` | on demand | 1m0s | 2 |
+| `support.notify_staff` | 1h0m0s | 1m0s | 1 |
 
 Outbox events with routes: `challenge.completed`, `challenge.milestone`, `community.comment_created`, `community.member_decided`, `community.member_pending`, `goal.changed`, `goal.member_added`, `group.activity`, `group.join_requested`, `group_expense.changed`, `group_expense.created`, `group_expense.deleted`, `group_expense.updated`, `moderation.actioned`, `moderation.appeal_decided`, `moderation.reported`, `settlement.changed`, `social.friend_request`, `transaction.created`, `transaction.restored`, `transaction.updated`, `transaction.voided`, `transactions.bulk_updated`, `transfer.created`.
 

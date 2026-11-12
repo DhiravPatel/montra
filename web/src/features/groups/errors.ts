@@ -88,6 +88,18 @@ export function groupErrorMessage(
 }
 
 /**
+ * An invitation named nobody, or both a username and a friend
+ * (`username_or_user_id` on body.username or body.user_id).
+ */
+export function isUsernameOrUserIdError(error: unknown): boolean {
+  return (
+    isApiError(error) &&
+    error.code === 'VALIDATION_ERROR' &&
+    error.details.some((detail) => detail.code === 'username_or_user_id')
+  );
+}
+
+/**
  * The group changed under the screen (role, status or membership): the
  * page reloads it so controls match what the server allows now.
  */

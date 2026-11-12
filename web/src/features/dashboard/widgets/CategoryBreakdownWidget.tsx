@@ -55,7 +55,10 @@ export function CategoryBreakdownWidget({ summary, title, drill }: WidgetProps) 
             const rows = slices.filter((slice) => slice.currency === currency);
             const top = rows[0];
             return (
-              <section key={currency} aria-label={t('dashboard.inCurrency', { currency })}>
+              <section
+                key={currency}
+                aria-label={t('dashboard.widgetInCurrency', { widget: title, currency })}
+              >
                 {currencies.length > 1 ? <CurrencyHeading currency={currency} /> : null}
                 <ChartFrame
                   label={t('dashboard.categories.chartLabel', { currency })}

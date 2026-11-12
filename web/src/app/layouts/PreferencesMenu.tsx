@@ -1,3 +1,7 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/shared/api/client';
+import { apiData } from '@/shared/api/request';
+import { useAuth } from '@/shared/auth/AuthContext';
 import { Icon } from '@/shared/components/Icon';
 import {
   Menu,
@@ -8,14 +12,47 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from '@/shared/components/Menu';
+import { useToast } from '@/shared/components/toast/ToastContext';
+import { preferencesQueryKey } from '@/shared/finance/keys';
+import { describeError } from '@/shared/i18n/describeError';
 import { useI18n } from '@/shared/i18n/I18nContext';
 import { isSupportedLanguage, languageEndonyms, supportedLanguages } from '@/shared/i18n/languages';
-import { isThemePreference, useTheme } from '@/shared/theme/ThemeContext';
+import { isThemePreference, type ThemePreference, useTheme } from '@/shared/theme/ThemeContext';
+
+/**
+ * Signed in, the theme is an account preference: save it so every device
+ * follows it (see AccountDisplayPreferences). Signed out, it stays on this
+ * device only.
+ */
+function useSaveTheme() {
+  const { t } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const { status } = useAuth();
+  const save = useMutation({
+    mutationFn: (theme: ThemePreference) =>
+      apiData(api.PATCH('/me/preferences', { body: { theme } })),
+    onSuccess: (preferences) => {
+      queryClient.setQueryData(preferencesQueryKey, preferences);
+    },
+    onError: (error) => {
+      toast.show({
+        tone: 'warning',
+        title: t('preferences.themeNotSaved'),
+        description: describeError(error, t),
+      });
+    },
+  });
+  return (theme: ThemePreference) => {
+    if (status === 'authenticated') save.mutate(theme);
+  };
+}
 
 /** Theme (system/light/dark) and interface language. */
 export function PreferencesMenu() {
   const { t, lang, setLanguage } = useI18n();
   const { preference, setPreference } = useTheme();
+  const saveTheme = useSaveTheme();
   return (
     <Menu>
       <MenuTrigger
@@ -29,7 +66,9 @@ export function PreferencesMenu() {
         <MenuRadioGroup
           value={preference}
           onValueChange={(value) => {
-            if (isThemePreference(value)) setPreference(value);
+            if (!isThemePreference(value) || value === preference) return;
+            setPreference(value);
+            saveTheme(value);
           }}
         >
           <MenuRadioItem value="system" icon="monitor">

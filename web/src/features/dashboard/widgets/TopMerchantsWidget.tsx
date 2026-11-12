@@ -33,7 +33,10 @@ export function TopMerchantsWidget({ summary, title, drill }: WidgetProps) {
             const rows = merchants.filter((merchant) => merchant.currency === currency);
             const top = rows[0];
             return (
-              <section key={currency} aria-label={t('dashboard.inCurrency', { currency })}>
+              <section
+                key={currency}
+                aria-label={t('dashboard.widgetInCurrency', { widget: title, currency })}
+              >
                 {currencies.length > 1 ? <CurrencyHeading currency={currency} /> : null}
                 <ChartFrame
                   label={t('dashboard.merchants.chartLabel', { currency })}

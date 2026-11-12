@@ -45,6 +45,14 @@ class InsightsApi {
     },
   );
 
+  /// `GET /insights/{id}`: one of the user's insights, in any status.
+  /// Throws `NOT_FOUND` for an unknown (or someone else's) insight.
+  Future<InsightDto> get(String id) => _client.send(
+    ApiEndpoints.getInsight,
+    pathParameters: <String, String>{'id': id},
+    decode: (Map<String, Object?> json) => decodeEnvelopeInsightDto(json).data,
+  );
+
   /// `POST /insights/{id}/actions`: dismiss, snooze ([snoozeDays]), mark
   /// expected or resolved, mute this kind, or reopen. Never changes the
   /// user's records.

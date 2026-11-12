@@ -278,4 +278,43 @@ describe('FriendsPage: find people', () => {
     expect(await screen.findByText('We couldn’t search right now')).toBeInTheDocument();
     expect(screen.getByText(/Too many attempts\. Try again in/)).toBeInTheDocument();
   });
+
+  it('explains at the field when the API wants a longer username (query_too_short)', async () => {
+    const state = createSocialState({ people: [makePerson()] });
+    const searched: string[] = [];
+    const user = userEvent.setup();
+    renderFriends(state, {
+      path: findPath,
+      overrides: [
+        http.get(`${API}/users/search`, ({ request }) => {
+          searched.push(new URL(request.url).searchParams.get('q') ?? '');
+          return HttpResponse.json(
+            errorBody({
+              code: 'VALIDATION_ERROR',
+              details: [
+                {
+                  field: 'query.q',
+                  message: 'Enter the full username (at least 4 characters).',
+                  code: 'query_too_short',
+                  params: { min: '4' },
+                },
+              ],
+            }),
+            { status: 422 },
+          );
+        }),
+      ],
+    });
+
+    await search(user, 'mee');
+    const field = screen.getByRole('textbox', { name: 'Username' });
+    await waitFor(() => {
+      expect(field).toHaveAccessibleDescription(
+        /Enter the full username \(at least 4 characters\)\./,
+      );
+    });
+    expect(field).toHaveFocus();
+    expect(searched).toEqual(['mee']);
+    expect(screen.queryByText('We couldn’t search right now')).not.toBeInTheDocument();
+  });
 });

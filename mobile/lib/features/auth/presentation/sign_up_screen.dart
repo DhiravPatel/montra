@@ -29,7 +29,11 @@ import 'package:url_launcher/url_launcher.dart';
 /// an existing email), so success always leads to the check-email screen.
 class SignUpScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
-  const SignUpScreen({super.key});
+  const SignUpScreen({this.next, super.key});
+
+  /// Where to go after signing in later (a safe in-app path), kept on the
+  /// way to the check-email and sign-in screens.
+  final String? next;
 
   @override
   ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
@@ -135,7 +139,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
         return;
       }
       TextInput.finishAutofillContext();
-      context.go(AppRoutes.checkEmail, extra: email);
+      context.go(
+        AppRoutes.withNext(AppRoutes.checkEmail, widget.next),
+        extra: email,
+      );
     } on ApiException catch (error) {
       if (!mounted) {
         return;
@@ -174,7 +181,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
           NoticeBanner(tone: NoticeTone.warning, message: l10n.signUpClosed),
           const SizedBox(height: Insets.lg),
           OutlinedButton(
-            onPressed: () => context.go(AppRoutes.signIn),
+            onPressed: () =>
+                context.go(AppRoutes.withNext(AppRoutes.signIn, widget.next)),
             child: Text(l10n.backToSignIn),
           ),
         ],
@@ -307,7 +315,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
           children: <Widget>[
             Text(l10n.haveAccountPrompt, style: theme.textTheme.bodyMedium),
             TextButton(
-              onPressed: () => context.go(AppRoutes.signIn),
+              onPressed: () =>
+                  context.go(AppRoutes.withNext(AppRoutes.signIn, widget.next)),
               child: Text(l10n.signInLink),
             ),
           ],

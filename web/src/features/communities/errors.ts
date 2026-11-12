@@ -41,6 +41,7 @@ const conflictRules: Readonly<Record<string, MessageKey>> = {
   invitation_used: 'communities.conflict.invitation_used',
   invitation_inactive: 'communities.conflict.invitation_inactive',
   slug_taken: 'communities.field.slugTaken',
+  already_reported: 'communities.report.already',
 };
 
 /** The reason code of a 409 CONFLICT, when the API gave one. */

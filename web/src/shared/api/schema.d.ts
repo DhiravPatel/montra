@@ -1986,6 +1986,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dashboard/planning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Budgets, upcoming bills and renewals, goals and group balances for the dashboard */
+        get: operations["dashboard-planning"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dashboard/summary": {
         parameters: {
             query?: never;
@@ -3536,6 +3553,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/insights/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One of your insights in any status (for links from notifications) */
+        get: operations["insights-get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/insights/{id}/actions": {
         parameters: {
             query?: never;
@@ -4995,7 +5029,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** One scheduled report */
+        get: operations["reports-schedules-get"];
         put?: never;
         post?: never;
         /** Delete a scheduled report */
@@ -7119,6 +7154,8 @@ export interface components {
             invitee_user_id?: string;
             /** @enum {string} */
             kind: "link" | "username";
+            /** @description Shown once with token: the web join link (token in the URL fragment, never sent to servers) */
+            share_url?: string;
             /** @enum {string} */
             status: "active" | "used" | "declined" | "revoked" | "expired";
             /** @description Shown once; send it in request bodies, never in URLs */
@@ -7540,6 +7577,44 @@ export interface components {
             /** Format: int64 */
             transactions: number;
         };
+        DashboardPlanning: {
+            /**
+             * Format: int64
+             * @description Active budgets
+             */
+            budget_count: number;
+            /** @description Active budgets, fullest first (percent of limit spent), up to 5 */
+            budgets: components["schemas"]["BudgetDTO"][];
+            /**
+             * Format: int64
+             * @description Active goals
+             */
+            goal_count: number;
+            /** @description Active goals, nearest target date first (goals without one last, then by priority), up to 4 */
+            goals: components["schemas"]["GoalDTO"][];
+            /** @description Active groups where you are owed or owe, largest amounts first within each currency, up to 5 */
+            group_balances: components["schemas"]["GroupBalance"][];
+            /**
+             * Format: int64
+             * @description Active groups with an open balance
+             */
+            group_count: number;
+            /** Format: int64 */
+            over_budget_count: number;
+            /** Format: int64 */
+            overdue_count: number;
+            /** @description Your local date (YYYY-MM-DD) */
+            today: string;
+            /** @description Overdue items first (oldest first), then items due from today through upcoming_through, up to 8. Bills, recurring transactions, shared recurring expenses, subscription renewals, trial ends and goal target dates */
+            upcoming: components["schemas"]["CalendarItem"][];
+            /**
+             * Format: int64
+             * @description All items the list was taken from
+             */
+            upcoming_count: number;
+            /** @description Last date the upcoming list covers (today + 14 days) */
+            upcoming_through: string;
+        };
         DashboardSummary: {
             /** @description Tracked balances of overview accounts, per currency */
             balances: components["schemas"]["BalanceTotals"][];
@@ -7886,6 +7961,10 @@ export interface components {
         };
         EnvelopeCreateResult: {
             data: components["schemas"]["CreateResult"];
+            meta: components["schemas"]["Meta"];
+        };
+        EnvelopeDashboardPlanning: {
+            data: components["schemas"]["DashboardPlanning"];
             meta: components["schemas"]["Meta"];
         };
         EnvelopeDashboardSummary: {
@@ -9021,6 +9100,14 @@ export interface components {
              */
             via?: "invitation" | "join_request";
         };
+        GroupBalance: {
+            group_id: string;
+            /** @enum {string} */
+            group_type: "household" | "roommates" | "trip" | "event" | "friends" | "custom";
+            /** @description Positive: you are owed; negative: you owe (group currency) */
+            my_net: components["schemas"]["Money"];
+            name: string;
+        };
         GroupBalancesDTO: {
             balances: components["schemas"]["GroupMemberBalance"][];
             /** Format: date-time */
@@ -9322,6 +9409,8 @@ export interface components {
             kind: "link" | "username";
             /** Format: int32 */
             max_uses?: number;
+            /** @description Shown once with token: the web join link (token in the URL fragment, never sent to servers) */
+            share_url?: string;
             /** @enum {string} */
             status: "active" | "accepted" | "declined" | "revoked" | "expired";
             /** @description Shown once when a link is created */
@@ -10652,10 +10741,13 @@ export interface components {
         ProfilePatch: {
             /** @enum {string} */
             allow_friend_requests?: "everyone" | "friends_of_friends" | "nobody";
+            /** @description A ready image you uploaded with purpose avatar (POST /files/upload-intent); empty string removes the avatar. The file is not deleted */
+            avatar_file_id?: string;
             bio?: string;
             coarse_location?: string;
             discoverable_by_username?: boolean;
             display_name?: string;
+            /** @description Up to 10, each up to 40 characters (422 too_long {max} on body.interests[i]); blank items are dropped */
             interests?: string[];
             /** @enum {string} */
             profile_visibility?: "private" | "connections" | "public";
@@ -12331,6 +12423,8 @@ export interface components {
             fx_rate_at?: string;
             fx_rate_source?: string;
             group_expense_id?: string;
+            /** @description The group of a linked group expense or settlement, while you can see that group */
+            group_id?: string;
             id: string;
             is_correction: boolean;
             local_date: string;
@@ -12633,8 +12727,11 @@ export interface components {
             status: "accepted" | "duplicate";
         };
         WidgetDTO: {
-            /** @enum {string} */
-            key: "balances" | "cash_flow" | "income_vs_expense" | "cash_flow_trend" | "category_breakdown" | "top_merchants" | "recent_transactions" | "data_coverage";
+            /**
+             * @description New widgets may be added; clients skip keys they do not know
+             * @enum {string}
+             */
+            key: "balances" | "cash_flow" | "budgets" | "upcoming" | "income_vs_expense" | "cash_flow_trend" | "category_breakdown" | "top_merchants" | "goals" | "group_balances" | "recent_transactions" | "data_coverage";
             /** Format: int32 */
             position: number;
             /** @description Widget-specific settings (e.g. default range) */
@@ -29297,6 +29394,114 @@ export interface operations {
             };
         };
     };
+    "dashboard-planning": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client kind. web uses HttpOnly cookies; android/ios receive tokens in the response body. */
+                "X-Montra-Client"?: components["parameters"]["MontraClient"];
+                /** @description Client application version (diagnostics and compatibility). */
+                "X-Client-Version"?: components["parameters"]["ClientVersion"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopeDashboardPlanning"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     "dashboard-summary": {
         parameters: {
             query?: {
@@ -42146,6 +42351,116 @@ export interface operations {
             };
         };
     };
+    "insights-get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client kind. web uses HttpOnly cookies; android/ios receive tokens in the response body. */
+                "X-Montra-Client"?: components["parameters"]["MontraClient"];
+                /** @description Client application version (diagnostics and compatibility). */
+                "X-Client-Version"?: components["parameters"]["ClientVersion"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopeInsightDTO"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     "insights-act": {
         parameters: {
             query?: never;
@@ -54423,6 +54738,116 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    "reports-schedules-get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client kind. web uses HttpOnly cookies; android/ios receive tokens in the response body. */
+                "X-Montra-Client"?: components["parameters"]["MontraClient"];
+                /** @description Client application version (diagnostics and compatibility). */
+                "X-Client-Version"?: components["parameters"]["ClientVersion"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopeScheduleDTO"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     "X-Request-ID": components["headers"]["RequestID"];
                     [name: string]: unknown;

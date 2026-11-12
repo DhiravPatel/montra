@@ -1,5 +1,5 @@
 import { hasErrorCode } from '@/shared/api/errors';
-import { domainRuleCode, domainRuleMessage } from '@/shared/finance/domainErrors';
+import { domainRuleCode, domainRuleMessage, errorDetailCode } from '@/shared/finance/domainErrors';
 import { formatMoney } from '@/shared/formatting/money';
 import { describeError } from '@/shared/i18n/describeError';
 import type { MessageKey, Translate } from '@/shared/i18n/types';
@@ -49,6 +49,13 @@ export function reconciliationErrorMessage(error: unknown, t: Translate, locale:
   }
   if (hasErrorCode(error, 'DOMAIN_RULE_VIOLATION')) {
     return domainRuleMessage(error, t, locale) ?? describeError(error, t);
+  }
+  // A transaction or statement row listed twice in one match (field code on VALIDATION_ERROR).
+  if (errorDetailCode(error, ['VALIDATION_ERROR']) === 'duplicate_item') {
+    return t('reconciliation.errors.duplicate_item');
+  }
+  if (errorDetailCode(error, ['CONFLICT']) === 'transaction_already_matched') {
+    return t('reconciliation.errors.transaction_already_matched');
   }
   if (hasErrorCode(error, 'DUPLICATE')) return t('reconciliation.errors.alreadyMatched');
   if (hasErrorCode(error, 'CONFLICT')) return t('reconciliation.errors.changed');

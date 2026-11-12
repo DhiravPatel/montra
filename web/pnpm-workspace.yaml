@@ -10,3 +10,8 @@ peerDependencyRules:
     # context.options/report/settings, which ESLint 10 still supports.
     # ESLint 9 is end-of-life, so we run ESLint 10. Re-check on upgrade.
     eslint-plugin-jsx-a11y>eslint: '10'
+
+overrides:
+  # Run the same axe-core rules in jsdom (jest-axe) as in the browser
+  # (@axe-core/playwright). Keep in step with the axe-core devDependency.
+  jest-axe>axe-core: 4.14.0

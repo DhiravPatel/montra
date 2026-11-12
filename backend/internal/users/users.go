@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -151,12 +152,13 @@ type ProfilePatch struct {
 	DisplayName            *string   `json:"display_name,omitempty" minLength:"1" maxLength:"80"`
 	Username               *string   `json:"username,omitempty" maxLength:"31" doc:"3-30 of a-z 0-9 _ . (empty string clears); a leading @ is ignored, as in search"`
 	Bio                    *string   `json:"bio,omitempty" maxLength:"280"`
-	Interests              *[]string `json:"interests,omitempty" maxItems:"10"`
+	Interests              *[]string `json:"interests,omitempty" maxItems:"10" doc:"Up to 10, each up to 40 characters (422 too_long {max} on body.interests[i]); blank items are dropped"`
 	CoarseLocation         *string   `json:"coarse_location,omitempty" maxLength:"80"`
 	ProfileVisibility      *string   `json:"profile_visibility,omitempty" enum:"private,connections,public"`
 	DiscoverableByUsername *bool     `json:"discoverable_by_username,omitempty"`
 	ShowAchievements       *bool     `json:"show_achievements,omitempty"`
 	AllowFriendRequests    *string   `json:"allow_friend_requests,omitempty" enum:"everyone,friends_of_friends,nobody"`
+	AvatarFileID           *string   `json:"avatar_file_id,omitempty" doc:"A ready image you uploaded with purpose avatar (POST /files/upload-intent); empty string removes the avatar. The file is not deleted"`
 }
 
 var usernameRe = regexp.MustCompile(`^[a-z0-9_.]{3,30}$`)
@@ -176,7 +178,7 @@ func (s *Service) UpdateProfile(ctx context.Context, in ProfilePatch) (*ProfileD
 	if in.DisplayName != nil {
 		n := strings.TrimSpace(*in.DisplayName)
 		if n == "" {
-			return nil, apperr.FieldError("body.display_name", "Display name cannot be blank.")
+			return nil, apperr.FieldCode("body.display_name", "required", "Display name cannot be blank.", nil)
 		}
 		params.DisplayName = &n
 	}
@@ -188,10 +190,10 @@ func (s *Service) UpdateProfile(ctx context.Context, in ProfilePatch) (*ProfileD
 		u := strings.ToLower(strings.TrimPrefix(raw, "@"))
 		if raw != "" {
 			if !usernameRe.MatchString(u) {
-				return nil, apperr.FieldError("body.username", "Use 3-30 lowercase letters, digits, '_' or '.'.")
+				return nil, apperr.FieldCode("body.username", "username_invalid", "Use 3-30 lowercase letters, digits, '_' or '.'.", nil)
 			}
 			if reservedUsernames[u] || strings.HasPrefix(u, "montra") {
-				return nil, apperr.FieldError("body.username", "This username is reserved.")
+				return nil, apperr.FieldCode("body.username", "username_reserved", "This username is reserved.", nil)
 			}
 			params.Username = &u
 		}
@@ -210,15 +212,46 @@ func (s *Service) UpdateProfile(ctx context.Context, in ProfilePatch) (*ProfileD
 	}
 	if in.Interests != nil {
 		clean := []string{}
-		for _, it := range *in.Interests {
-			if it = strings.TrimSpace(it); it != "" && len(it) <= 40 {
-				clean = append(clean, it)
+		for i, it := range *in.Interests {
+			if it = strings.TrimSpace(it); it == "" {
+				continue
 			}
+			// 40 characters (not bytes), so Hindi interests get the same room.
+			if utf8.RuneCountInString(it) > 40 {
+				return nil, apperr.FieldCode(fmt.Sprintf("body.interests[%d]", i), "too_long", "Keep each interest to 40 characters.",
+					map[string]string{"max": "40"})
+			}
+			clean = append(clean, it)
 		}
 		params.Interests = clean
 	}
+	var avatar *uuid.UUID
+	if in.AvatarFileID != nil && *in.AvatarFileID != "" {
+		id, perr := uuid.Parse(*in.AvatarFileID)
+		if perr != nil {
+			return nil, apperr.FieldError("body.avatar_file_id", "Send the ID of an uploaded avatar image.")
+		}
+		avatar = &id
+	}
 	var out ProfileDTO
 	err = s.DB.WithUserTx(ctx, uid, func(tx pgx.Tx) error {
+		if in.AvatarFileID != nil {
+			if avatar != nil {
+				// Only your own finished avatar upload (owner RLS hides others').
+				var ok bool
+				if err := tx.QueryRow(ctx, `select exists (select 1 from files where id = $1 and owner_user_id = $2 and purpose = 'avatar' and status = 'ready')`,
+					*avatar, uid).Scan(&ok); err != nil {
+					return err
+				}
+				if !ok {
+					return apperr.FieldCode("body.avatar_file_id", "avatar_file_invalid",
+						"Upload the image with purpose avatar and finish the upload first.", nil)
+				}
+			}
+			if _, err := tx.Exec(ctx, `update profiles set avatar_file_id = $2 where user_id = $1`, uid, avatar); err != nil {
+				return err
+			}
+		}
 		r, err := db.New(tx).UpdateProfile(ctx, params)
 		if err != nil {
 			return err
@@ -228,7 +261,8 @@ func (s *Service) UpdateProfile(ctx context.Context, in ProfilePatch) (*ProfileD
 			Changes: map[string]any{"fields": changedProfileFields(in)}})
 	})
 	if database.IsUniqueViolation(err, "profiles_username_key") {
-		return nil, apperr.New(apperr.CodeConflict, http.StatusConflict, "That username is taken.").WithDetails(apperr.Detail{Field: "body.username", Message: "That username is taken."})
+		return nil, apperr.New(apperr.CodeConflict, http.StatusConflict, "That username is taken.").WithDetails(apperr.Detail{Field: "body.username",
+			Code: "username_taken", Message: "That username is taken."})
 	}
 	return &out, database.MapError(err)
 }
@@ -249,6 +283,7 @@ func changedProfileFields(p ProfilePatch) []string {
 	add(p.DiscoverableByUsername != nil, "discoverable_by_username")
 	add(p.ShowAchievements != nil, "show_achievements")
 	add(p.AllowFriendRequests != nil, "allow_friend_requests")
+	add(p.AvatarFileID != nil, "avatar_file_id")
 	return f
 }
 

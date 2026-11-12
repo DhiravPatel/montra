@@ -87,6 +87,12 @@ export const navigationSections: readonly NavSection[] = [
     labelKey: 'nav.section.you',
     items: [
       { id: 'account', to: paths.account, labelKey: 'nav.account', icon: 'user' },
+      {
+        id: 'profile-settings',
+        to: paths.profileSettings,
+        labelKey: 'nav.profileSettings',
+        icon: 'sliders',
+      },
       { id: 'security', to: paths.securitySettings, labelKey: 'nav.security', icon: 'shield' },
       {
         id: 'exchange-rates',

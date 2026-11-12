@@ -299,6 +299,33 @@ describe('CommunitySettingsPage', () => {
     expect(screen.queryByDisplayValue(link)).not.toBeInTheDocument();
   });
 
+  it('shows the join link the API sends with a new invitation link', async () => {
+    const shareUrl = `https://app.montra.example/communities/join#token=${COMMUNITY_LINK_TOKEN}`;
+    serveSettings();
+    server.use(
+      http.post(`${API}/communities/:id/invitations`, () =>
+        HttpResponse.json(
+          envelope(
+            makeCommunityInvitation({
+              community_id: COMMUNITY_ID,
+              kind: 'link',
+              invitee: undefined,
+              invitee_user_id: undefined,
+              token: COMMUNITY_LINK_TOKEN,
+              share_url: shareUrl,
+              expires_at: '2026-11-19T09:00:00Z',
+            }),
+          ),
+          { status: 201 },
+        ),
+      ),
+    );
+    const { user } = await openSettings();
+    const invite = region('Invite people');
+    await user.click(within(invite).getByRole('button', { name: 'Create invitation link' }));
+    expect(await within(invite).findByLabelText('Invitation link')).toHaveValue(shareUrl);
+  });
+
   it('invites by username', async () => {
     const bodies: unknown[] = [];
     let calls = 0;

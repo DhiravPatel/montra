@@ -386,6 +386,50 @@ describe('GroupRecurringPage', () => {
     expect(await within(dates).findByText('Skipped')).toBeInTheDocument();
   });
 
+  it('explains pausing a schedule that was already paused elsewhere, and shows it paused', async () => {
+    serveMoneyGroup();
+    const state = serveRecurring([makeRecurring()]);
+    const actions: string[] = [];
+    server.use(
+      http.post(`${API}/groups/:id/recurring-expenses/:ruleId/:action`, ({ params }) => {
+        actions.push(String(params.action));
+        // Someone else paused it first.
+        state.list = withRule(state.list, (rule) => ({
+          ...rule,
+          rule: { ...rule.rule, status: 'paused', version: rule.rule.version + 1 },
+        }));
+        return HttpResponse.json(
+          errorBody({
+            code: 'DOMAIN_RULE_VIOLATION',
+            details: [
+              {
+                message: 'A recurring expense cannot move from paused to paused.',
+                code: 'invalid_status_transition',
+                params: { from: 'paused', to: 'paused' },
+              },
+            ],
+          }),
+          { status: 422 },
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute(PATH, { user: signedIn() });
+    await findPageHeading('Recurring expenses');
+    const card = await screen.findByRole('region', { name: 'Rent' });
+    const readsBefore = state.reads;
+    await user.click(within(card).getByRole('button', { name: 'Pause' }));
+    expect(
+      await screen.findByText(
+        'It’s already paused. It may have changed somewhere else, so we’ve loaded the latest version.',
+      ),
+    ).toBeInTheDocument();
+    expect(actions).toEqual(['pause']);
+    // The screen reloads the schedule, so its controls match the server again.
+    expect(await within(card).findByRole('button', { name: 'Resume' })).toBeInTheDocument();
+    expect(state.reads).toBeGreaterThan(readsBefore);
+  });
+
   it('explains a stopped schedule that cannot resume', async () => {
     serveMoneyGroup();
     serveRecurring([

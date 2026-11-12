@@ -14,7 +14,7 @@ import { FormAlert } from '@/shared/forms/FormAlert';
 import { describeError } from '@/shared/i18n/describeError';
 import { useT } from '@/shared/i18n/I18nContext';
 import { socialApi } from '../api';
-import { isUsernameTaken } from '../errors';
+import { usernameErrorMessage } from '../errors';
 import { useOwnProfile } from '../hooks';
 import { socialKeys } from '../keys';
 import { isValidUsername, normalizeUsername } from '../people';
@@ -78,7 +78,8 @@ function UsernameCard({ profile, focusOnMount }: { profile: OwnProfile; focusOnM
           void refreshUser();
         },
         onError: (failure) => {
-          if (isUsernameTaken(failure)) setError(t('social.username.taken'));
+          const problem = usernameErrorMessage(failure, t);
+          if (problem) setError(problem);
           else if (hasErrorCode(failure, 'VALIDATION_ERROR'))
             setError(t('social.username.unavailable'));
           else setFormError(describeError(failure, t));

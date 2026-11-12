@@ -3,21 +3,20 @@ import 'package:flutter_riverpod/misc.dart' show FutureProviderFamily;
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
 import 'package:montra_mobile/core/widgets/range_picker.dart';
+import 'package:montra_mobile/features/budgets/application/budgets_providers.dart';
 import 'package:montra_mobile/features/dashboard/data/dashboard_api.dart';
+import 'package:montra_mobile/features/dashboard/domain/widget_info.dart';
+import 'package:montra_mobile/features/goals/application/goals_providers.dart';
 import 'package:montra_mobile/features/settings/application/preferences_providers.dart';
 
-/// Widget keys the server registers today, in default order. Used when the
-/// layout cannot be loaded.
-const List<WidgetDtoKey> defaultWidgetKeys = <WidgetDtoKey>[
-  WidgetDtoKey.balances,
-  WidgetDtoKey.cashFlow,
-  WidgetDtoKey.incomeVsExpense,
-  WidgetDtoKey.cashFlowTrend,
-  WidgetDtoKey.categoryBreakdown,
-  WidgetDtoKey.topMerchants,
-  WidgetDtoKey.recentTransactions,
-  WidgetDtoKey.dataCoverage,
-];
+/// The default layout (every widget this version knows, in the server's
+/// default order). Used when the layout cannot be loaded.
+final List<DashboardWidget> defaultLayout = List<DashboardWidget>.unmodifiable(
+  <DashboardWidget>[
+    for (final DashboardWidgetKind kind in DashboardWidgetKind.values)
+      DashboardWidget(key: kind.key, position: kind.index, visible: true),
+  ],
+);
 
 /// The dashboard period chosen by the user; starts from the user's
 /// default range preference (or this month).
@@ -61,47 +60,62 @@ dashboardSummaryProvider = FutureProvider.autoDispose
       return ref.read(dashboardApiProvider).summary(range);
     });
 
+/// The planning cards (budgets, upcoming items, goals, group balances):
+/// one `GET /dashboard/planning` shared by all four cards; re-read after
+/// finance, budget or goal writes.
+final FutureProvider<DashboardPlanning> dashboardPlanningProvider =
+    FutureProvider.autoDispose<DashboardPlanning>((Ref ref) {
+      ref
+        ..watch(currentUserIdProvider)
+        ..watch(financeRevisionProvider)
+        ..watch(budgetRevisionProvider)
+        ..watch(goalsRevisionProvider);
+      return ref.read(dashboardApiProvider).planning();
+    });
+
 /// The widget layout (order and visibility), with save and reset.
-final AsyncNotifierProvider<DashboardLayoutController, List<WidgetDto>>
+final AsyncNotifierProvider<DashboardLayoutController, List<DashboardWidget>>
 dashboardLayoutProvider =
     AsyncNotifierProvider.autoDispose<
       DashboardLayoutController,
-      List<WidgetDto>
+      List<DashboardWidget>
     >(DashboardLayoutController.new);
 
 /// See [dashboardLayoutProvider].
-class DashboardLayoutController extends AsyncNotifier<List<WidgetDto>> {
+class DashboardLayoutController extends AsyncNotifier<List<DashboardWidget>> {
   DashboardApi get _api => ref.read(dashboardApiProvider);
 
   @override
-  Future<List<WidgetDto>> build() async {
+  Future<List<DashboardWidget>> build() async {
     ref.watch(currentUserIdProvider);
     return sortLayout(await _api.widgets());
   }
 
   /// Saves [layout] (list order becomes the position).
-  Future<void> save(List<WidgetDto> layout) async {
-    state = AsyncData<List<WidgetDto>>(
+  Future<void> save(List<DashboardWidget> layout) async {
+    state = AsyncData<List<DashboardWidget>>(
       sortLayout(await _api.saveWidgets(layout)),
     );
   }
 
   /// Restores the default layout.
   Future<void> reset() async {
-    state = AsyncData<List<WidgetDto>>(sortLayout(await _api.resetWidgets()));
+    state = AsyncData<List<DashboardWidget>>(
+      sortLayout(await _api.resetWidgets()),
+    );
   }
 
   /// Widgets by position (stable for equal positions).
-  static List<WidgetDto> sortLayout(List<WidgetDto> widgets) {
-    final List<(int, WidgetDto)> indexed =
-        <(int, WidgetDto)>[
+  static List<DashboardWidget> sortLayout(List<DashboardWidget> widgets) {
+    final List<(int, DashboardWidget)> indexed =
+        <(int, DashboardWidget)>[
           for (int i = 0; i < widgets.length; i++) (i, widgets[i]),
-        ]..sort(((int, WidgetDto) a, (int, WidgetDto) b) {
+        ]..sort(((int, DashboardWidget) a, (int, DashboardWidget) b) {
           final int p = a.$2.position.compareTo(b.$2.position);
           return p != 0 ? p : a.$1.compareTo(b.$1);
         });
-    return List<WidgetDto>.unmodifiable(<WidgetDto>[
-      for (final (int _, WidgetDto w) in indexed) w,
+    return List<DashboardWidget>.unmodifiable(<DashboardWidget>[
+      for (final (int _, DashboardWidget w) in indexed) w,
     ]);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart'
     show AsyncNotifierProviderFamily, FutureProviderFamily;
+import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/cursor_page.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
@@ -70,37 +71,25 @@ class InsightsController extends PagedListController<InsightDto> {
   String keyOf(InsightDto item) => item.id;
 }
 
-/// How many pages of 200 [insightProvider] reads at most.
-const int insightLookupPages = 5;
-
-/// One insight by ID. The contract has no `GET /insights/{id}`, so it is
-/// looked up in `GET /insights?all=true` (newest 1000 insights at most);
-/// a missing one reads as `null`.
+/// One insight by ID (`GET /insights/{id}`, any status); an insight that
+/// does not exist (or is not the user's) reads as `null`.
 final FutureProviderFamily<InsightDto?, String> insightProvider = FutureProvider
     .autoDispose
     .family<InsightDto?, String>((Ref ref, String id) async {
       ref
         ..watch(currentUserIdProvider)
         ..watch(insightsRevisionProvider);
-      final InsightsApi api = ref.read(insightsApiProvider);
-      String? cursor;
-      for (int page = 0; page < insightLookupPages; page++) {
-        final CursorPage<InsightDto> result = await api.list(
-          all: true,
-          cursor: cursor,
-          limit: 200,
-        );
-        for (final InsightDto insight in result.items) {
-          if (insight.id == id) {
-            return insight;
-          }
-        }
-        if (!result.hasMore) {
+      try {
+        return await ref.read(insightsApiProvider).get(id);
+      } on ApiException catch (error) {
+        // Unknown, someone else's, or not an ID at all (a mistyped link
+        // answers 422 on `path.id`).
+        if (error.code == ErrorObjectCode.notFound ||
+            error.details.any((Detail d) => d.field == 'path.id')) {
           return null;
         }
-        cursor = result.nextCursor;
+        rethrow;
       }
-      return null;
     });
 
 /// The kinds of insight the user muted.

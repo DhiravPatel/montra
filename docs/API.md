@@ -866,6 +866,52 @@ refresh.
   - An import that finishes with imported rows sets `last_import_at`.
   - These system fields do not change the account's `version`.
 
+## Dashboard, profile and shared-link notes
+
+- **`GET /dashboard/planning`** (the planning side of the dashboard): `today`
+  and `upcoming_through` (today + 14 days, your time zone); `budgets`
+  (active, fullest first, up to 5) with `budget_count` and
+  `over_budget_count`; `upcoming` (overdue items oldest first, then items
+  due through `upcoming_through`, up to 8: bills, recurring transactions,
+  shared recurring expenses, subscription renewals, trial ends, goal target
+  dates) with `upcoming_count` and `overdue_count`; `goals` (active, nearest
+  target date first, up to 4) with `goal_count`; `group_balances` (active
+  groups where you are owed or owe, largest first per currency, up to 5)
+  with `group_count`. `GET /dashboard/widgets` offers `budgets`,
+  `upcoming`, `goals` and `group_balances` next to the earlier widgets; a
+  saved layout gets new widgets at the end, visible.
+- **Avatar:** `PATCH /me {"avatar_file_id"}` takes a ready file you uploaded
+  with purpose `avatar` (anything else: 422 `avatar_file_invalid`); `""`
+  removes it (the file itself is kept). Read it with
+  `GET /files/{id}/access`.
+- **Single reads:** `GET /insights/{id}` (any status, your own) and
+  `GET /reports/schedules/{id}`.
+- **Transactions** linked to a group expense or settlement carry `group_id`
+  while you can still see that group.
+- **Invitation links:** creating a group or community link returns
+  `share_url` (the web join link with the token in the URL fragment) next
+  to `token`, once.
+- **Group budgets:** a member who can only view a members-visible group
+  budget sees it in `GET /budgets` and `GET /budgets/{id}` with the
+  owner's figures; viewers never write the budget's cached snapshots.
+- **Community invitations by username** notify the invitee
+  (`community_invitation`, category `community`, link `/communities`), and
+  while the invitation is open, inviter and invitee see each other's
+  minimal profile (name, username, avatar).
+- **Local end-to-end runs:** `AUTH_DEV_RATE_PER_MINUTE` relaxes the per-IP
+  sign-in/sign-up limit (default about 10 per minute); the API refuses to
+  start with it outside development and test.
+- **Codes added:** `required` on a blank `body.display_name`; `too_long`
+  {max: 40} on `body.interests[i]` (characters, not bytes); `username_invalid`, `username_reserved` (422) and
+  `username_taken` (409) on `body.username`; `query_too_short` {min} on
+  `query.q`; `username_or_user_id` on group invitations;
+  `confirm_word_mismatch` {word}, 409 `deletion_already_scheduled` /
+  `no_deletion_scheduled`; `duplicate_item` and 409
+  `transaction_already_matched` in reconciliation; 409 `sync_running`;
+  409 `already_reported`. Pausing a paused (or resuming an active) shared
+  recurring expense is 422 `invalid_status_transition` {from, to}, as for
+  personal rules.
+
 ## Domain rule codes
 
 Localize `DOMAIN_RULE_VIOLATION` by `error.details[0].code`. When the code
@@ -986,7 +1032,7 @@ fallback.
 | `withdrawal_exceeds_saved` | A withdrawal cannot exceed the amount saved … |
 | `zero_based_unallocated` | Zero-based budgets must allocate exactly the full limit. |
 
-### 409 `CONFLICT` (36 codes)
+### 409 `CONFLICT` (41 codes)
 
 Conflicts that depend on a record's current state carry a code too
 (`VERSION_CONFLICT` and the idempotency conflicts have their own
@@ -996,11 +1042,13 @@ top-level codes and no detail code).
 |---|---|
 | `already_friends` | You are already friends. |
 | `already_member` | This person is already a member. |
+| `already_reported` | You already reported this; moderators will review it. |
 | `appeal_already_decided` | This appeal was already decided. |
 | `appeal_pending` | You already appealed this action. |
 | `category_in_use` | This category is used by existing records. Merge it into another category or archive it instead. |
 | `contribution_not_planned` | This contribution is already … |
 | `contribution_voided` | This contribution was voided. |
+| `deletion_already_scheduled` | A deletion request is already scheduled. |
 | `detection_already_decided` | This detection was already … |
 | `detection_evidence_missing` | The supporting transactions no longer exist; dismiss this detection. |
 | `expense_already_recorded` | This expense is already recorded in your account. |
@@ -1012,6 +1060,7 @@ top-level codes and no detail code).
 | `invitation_used` | This invitation was already … |
 | `join_request_pending` | Your request to join is already waiting for the admins. |
 | `name_taken` | A category with this name already exists at this level. |
+| `no_deletion_scheduled` | There is no scheduled deletion to cancel. |
 | `no_open_occurrence` | There is no unpaid occurrence. |
 | `occurrence_already_handled` | This occurrence was already added or skipped. |
 | `occurrence_not_open` | That occurrence is already paid, skipped or not part of this bill. |
@@ -1030,5 +1079,7 @@ top-level codes and no detail code).
 | `settlement_not_disputable` | Only a reported or confirmed settlement can be disputed. |
 | `settlement_not_proposed` | Only a proposed settlement can be marked paid. |
 | `settlement_voided` | This settlement was voided. |
+| `sync_running` | A sync is already running. |
+| `transaction_already_matched` | A transaction is already matched or reconciled. |
 
 <!-- END GENERATED: error codes -->

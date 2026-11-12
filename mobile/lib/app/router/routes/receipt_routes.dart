@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:montra_mobile/app/router/app_routes.dart';
 import 'package:montra_mobile/app/router/route_page.dart';
+import 'package:montra_mobile/features/receipts/presentation/add_receipt_screen.dart';
 import 'package:montra_mobile/features/receipts/presentation/receipt_detail_screen.dart';
 import 'package:montra_mobile/features/receipts/presentation/receipt_match_screen.dart';
 import 'package:montra_mobile/features/receipts/presentation/receipt_record_screen.dart';
@@ -14,6 +15,11 @@ List<RouteBase> receiptRoutes() => <RouteBase>[
     path: AppRoutes.receipts,
     pageBuilder: (BuildContext context, GoRouterState state) =>
         routePage(state, const ReceiptsScreen()),
+  ),
+  GoRoute(
+    path: AppRoutes.newReceipt,
+    pageBuilder: (BuildContext context, GoRouterState state) =>
+        routePage(state, const AddReceiptScreen()),
   ),
   GoRoute(
     path: '/receipts/:id',

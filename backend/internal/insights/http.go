@@ -45,6 +45,17 @@ func (s *Service) Routes(api huma.API) {
 			}
 			return httpx.Page(ctx, l, next), nil
 		})
+	httpx.Protected(api, httpx.Op("insights-get", http.MethodGet, "/insights/{id}",
+		"One of your insights in any status (for links from notifications)", tag),
+		func(ctx context.Context, in *struct {
+			ID uuid.UUID `path:"id"`
+		}) (*httpx.Response[InsightDTO], error) {
+			r, err := s.Get(ctx, in.ID)
+			if err != nil {
+				return nil, err
+			}
+			return httpx.OK(ctx, *r), nil
+		})
 	httpx.Protected(api, httpx.Rate(httpx.Op("ai-insights-generate", http.MethodPost, "/ai/insights/generate",
 		"Check for unusual activity and savings opportunities now (deterministic rules; no AI provider needed)", tag), ratelimit.AI.Name),
 		func(ctx context.Context, _ *struct{}) (*httpx.Response[GenerateResult], error) {

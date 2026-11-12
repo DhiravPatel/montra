@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/files/file_export.dart';
 import 'package:montra_mobile/features/reports/data/reports_api.dart';
@@ -363,11 +364,10 @@ void main() {
       WidgetTester tester,
     ) async {
       int loads = 0;
-      when(() => api.schedules()).thenAnswer((_) async {
+      when(() => api.schedules()).thenAnswer((_) async => <ScheduleDto>[]);
+      when(() => api.schedule('sch-1')).thenAnswer((_) async {
         loads++;
-        return <ScheduleDto>[
-          if (loads == 1) schedule() else schedule(format: 'pdf', version: 2),
-        ];
+        return loads == 1 ? schedule() : schedule(format: 'pdf', version: 2);
       });
       int saves = 0;
       when(() => api.updateSchedule(any(), any())).thenAnswer((_) async {
@@ -401,6 +401,37 @@ void main() {
         'cadence': 'monthly',
         'version': 1,
       });
+    });
+
+    testWidgets('editing reads the one schedule; a deleted one is explained', (
+      WidgetTester tester,
+    ) async {
+      when(() => api.schedule('sch-gone'))
+          .thenThrow(serverError(ErrorObjectCode.notFound, status: 404));
+      await pump(tester, '/reports/schedules/sch-gone/edit');
+      expect(find.text('Edit schedule'), findsOneWidget);
+      expect(
+        find.text("This schedule doesn't exist any more."),
+        findsOneWidget,
+      );
+      verifyNever(() => api.schedules());
+    });
+
+    testWidgets('a schedule that fails to load can be retried', (
+      WidgetTester tester,
+    ) async {
+      int calls = 0;
+      when(() => api.schedule('sch-1')).thenAnswer((_) async {
+        if (calls++ == 0) {
+          throw const ApiException(kind: ApiErrorKind.network);
+        }
+        return schedule();
+      });
+      await pump(tester, '/reports/schedules/sch-1/edit');
+      expect(find.text("You're offline"), findsOneWidget);
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ChoiceChip, 'Every month'), findsOneWidget);
     });
 
     testWidgets('a report is deleted after confirming', (

@@ -46,6 +46,7 @@ void main() {
       (_) async =>
           report(id: 'rep-2', status: 'failed', errorCode: 'pdf_too_large'),
     );
+    when(() => api.schedule('sch-1')).thenAnswer((_) async => schedule());
     when(() => api.schedules()).thenAnswer(
       (_) async => <ScheduleDto>[
         schedule(),

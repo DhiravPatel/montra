@@ -273,7 +273,7 @@ func (s *Service) SetRecurringStatus(ctx context.Context, groupID, ruleID uuid.U
 		if _, err := manageRule(ctx, tx, uid, groupID, ruleID); err != nil {
 			return err
 		}
-		if err := s.Recurring.SetGroupRuleStatusInTx(ctx, tx, ruleID, action); err != nil {
+		if err := s.Recurring.SetGroupRuleStatusByUserInTx(ctx, tx, ruleID, action); err != nil {
 			return err
 		}
 		kind := map[string]string{"pause": "recurring_expense_paused", "resume": "recurring_expense_resumed", "stop": "recurring_expense_stopped"}[action]

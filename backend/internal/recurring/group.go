@@ -109,6 +109,16 @@ func (s *Service) SetGroupRuleStatusInTx(ctx context.Context, tx pgx.Tx, id uuid
 	return s.setStatus(ctx, tx, id, action)
 }
 
+// SetGroupRuleStatusByUserInTx is a member's pause/resume/stop: like
+// SetGroupRuleStatusInTx, but a move that changes nothing is 422
+// invalid_status_transition {from, to}.
+func (s *Service) SetGroupRuleStatusByUserInTx(ctx context.Context, tx pgx.Tx, id uuid.UUID, action string) error {
+	if err := checkMove(ctx, tx, id, action); err != nil {
+		return err
+	}
+	return s.setStatus(ctx, tx, id, action)
+}
+
 // GroupOccurrence is an occurrence locked for completion.
 type GroupOccurrence struct {
 	ID        uuid.UUID

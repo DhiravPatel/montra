@@ -1,5 +1,10 @@
 import { hasErrorCode } from '@/shared/api/errors';
-import { detailParam, errorDetail, financeErrorMessage } from '@/shared/finance/domainErrors';
+import {
+  detailParam,
+  errorDetail,
+  financeErrorMessage,
+  statusTransitionMessage,
+} from '@/shared/finance/domainErrors';
 import { formatLocalDate, isLocalDate } from '@/shared/formatting/dates';
 import type { MessageKey, Translate } from '@/shared/i18n/types';
 import { settlementStatusLook } from './labels';
@@ -34,6 +39,8 @@ const ruleMessages: Readonly<Record<string, MessageKey>> = {
   fx_rate_unavailable: 'groupMoney.rule.fx_rate_unavailable',
   recurring_member_inactive: 'groupMoney.rule.recurring_member_inactive',
   recurring_template_invalid: 'groupMoney.rule.recurring_template_invalid',
+  // Pausing a paused (or resuming an active) shared recurring expense: {from, to}.
+  invalid_status_transition: 'finance.rule.invalid_status_transition_generic',
 };
 
 /** Variants that name the settlement's current status (`params.status`). */
@@ -58,6 +65,7 @@ const STATE_CONFLICTS: ReadonlySet<string> = new Set([
   'occurrence_already_handled',
   'group_archived',
   'schedule_ended',
+  'invalid_status_transition',
 ]);
 
 /** The reason code of a coded group money error, when this feature knows it. */
@@ -131,6 +139,8 @@ function ruleMessage(
       if (name) return t('groupMoney.rule.recurring_member_inactive_named', { name });
       break;
     }
+    case 'invalid_status_transition':
+      return statusTransitionMessage(params, t);
     case 'recurring_template_invalid': {
       const field = detailParam(params, 'field');
       if (field) return t('groupMoney.rule.recurring_template_invalid_field', { field });

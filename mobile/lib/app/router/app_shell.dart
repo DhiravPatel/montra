@@ -101,7 +101,7 @@ class AppShell extends ConsumerWidget {
         // At large text sizes five labels do not fit and would break inside
         // words; then only the selected tab shows its label (every tab keeps
         // its tooltip and screen-reader label).
-        labelBehavior: MediaQuery.textScalerOf(context).scale(14) > 14 * 1.5
+        labelBehavior: MediaQuery.textScalerOf(context).scale(14) > 14 * 1.2
             ? NavigationDestinationLabelBehavior.onlyShowSelected
             : null,
         selectedIndex: navigationShell.currentIndex,

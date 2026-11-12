@@ -40,6 +40,8 @@ import 'package:montra_mobile/features/onboarding/presentation/onboarding_screen
 import 'package:montra_mobile/features/payment_methods/presentation/payment_method_form_screen.dart';
 import 'package:montra_mobile/features/payment_methods/presentation/payment_methods_screen.dart';
 import 'package:montra_mobile/features/settings/presentation/change_password_screen.dart';
+import 'package:montra_mobile/features/settings/presentation/edit_profile_screen.dart';
+import 'package:montra_mobile/features/settings/presentation/preferences_screen.dart';
 import 'package:montra_mobile/features/settings/presentation/profile_screen.dart';
 import 'package:montra_mobile/features/settings/presentation/security_screen.dart';
 import 'package:montra_mobile/features/settings/presentation/sessions_screen.dart';
@@ -102,17 +104,17 @@ List<RouteBase> buildAppRoutes() => <RouteBase>[
   GoRoute(
     path: AppRoutes.welcome,
     pageBuilder: (BuildContext context, GoRouterState state) =>
-        _page(state, const WelcomeScreen()),
+        _page(state, WelcomeScreen(next: AppRoutes.nextOf(state.uri))),
   ),
   GoRoute(
     path: AppRoutes.signIn,
     pageBuilder: (BuildContext context, GoRouterState state) =>
-        _page(state, const SignInScreen()),
+        _page(state, SignInScreen(next: AppRoutes.nextOf(state.uri))),
   ),
   GoRoute(
     path: AppRoutes.signUp,
     pageBuilder: (BuildContext context, GoRouterState state) =>
-        _page(state, const SignUpScreen()),
+        _page(state, SignUpScreen(next: AppRoutes.nextOf(state.uri))),
   ),
   GoRoute(
     path: AppRoutes.checkEmail,
@@ -120,6 +122,7 @@ List<RouteBase> buildAppRoutes() => <RouteBase>[
       state,
       CheckEmailScreen(
         email: state.extra is String ? state.extra! as String : null,
+        next: AppRoutes.nextOf(state.uri),
       ),
     ),
   ),
@@ -145,11 +148,22 @@ List<RouteBase> buildAppRoutes() => <RouteBase>[
   GoRoute(
     path: AppRoutes.onboarding,
     pageBuilder: (BuildContext context, GoRouterState state) =>
-        _page(state, const OnboardingScreen()),
+        _page(state, OnboardingScreen(next: AppRoutes.nextOf(state.uri))),
   ),
   // Detail and form screens open above the tab bar from any tab. They are
   // declared before the shell so `/transactions/<id>` never reaches the
   // Transactions tab route.
+  // Profile forms open above the tab bar (their sheets need the room).
+  GoRoute(
+    path: AppRoutes.editProfile,
+    pageBuilder: (BuildContext context, GoRouterState state) =>
+        _page(state, const EditProfileScreen()),
+  ),
+  GoRoute(
+    path: AppRoutes.preferences,
+    pageBuilder: (BuildContext context, GoRouterState state) =>
+        _page(state, const PreferencesScreen()),
+  ),
   GoRoute(
     path: AppRoutes.dashboardWidgets,
     pageBuilder: (BuildContext context, GoRouterState state) =>

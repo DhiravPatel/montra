@@ -9,7 +9,7 @@ import { useToast } from '@/shared/components/toast/ToastContext';
 import { FormAlert } from '@/shared/forms/FormAlert';
 import { useT } from '@/shared/i18n/I18nContext';
 import { communitiesApi } from '../api';
-import { fieldProblems, useCommunityError } from '../errors';
+import { conflictCode, fieldProblems, useCommunityError } from '../errors';
 import { REPORT_REASONS, reportReasonLabel } from '../labels';
 import { looksSecret } from '../text/userText';
 import type { ContentTarget, ReportReason } from '../types';
@@ -107,7 +107,12 @@ function ReportForm({
       },
       onError: (error) => {
         onPendingChange(false);
-        if (hasErrorCode(error, 'CONFLICT')) {
+        // 409 already_reported (or an uncoded 409 from an older server).
+        const conflict = conflictCode(error);
+        if (
+          conflict === 'already_reported' ||
+          (conflict === null && hasErrorCode(error, 'CONFLICT'))
+        ) {
           toast.show({ tone: 'info', title: t('communities.report.already') });
           onDone();
           return;

@@ -17556,4 +17556,767 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get moderationErrorAppealDecided =>
       'This appeal was already decided. Reload to see the outcome.';
+
+  @override
+  String codeQueryTooShort(String min) {
+    return 'Type at least $min characters of the username.';
+  }
+
+  @override
+  String get codeUsernameInvalid =>
+      'Use 3 to 30 lowercase letters, digits, “_” or “.”.';
+
+  @override
+  String get codeUsernameReserved =>
+      'This username is reserved. Choose another one.';
+
+  @override
+  String get codeAvatarFileInvalid =>
+      'This photo can\'t be used yet. Upload it again as your profile photo and wait until the upload finishes.';
+
+  @override
+  String get codeUsernameOrUserId =>
+      'Choose who to invite: type a username or pick a friend, not both.';
+
+  @override
+  String codeConfirmWordMismatch(String word) {
+    return 'Type $word exactly to confirm.';
+  }
+
+  @override
+  String get codeDeletionAlreadyScheduled =>
+      'Your account is already scheduled for deletion. You can cancel it on the Privacy & data screen.';
+
+  @override
+  String get codeNoDeletionScheduled =>
+      'There is no scheduled deletion to cancel.';
+
+  @override
+  String get codeDuplicateItem =>
+      'Each transaction or statement line can be chosen only once.';
+
+  @override
+  String get codeTransactionAlreadyMatched =>
+      'One of these transactions is already matched or reconciled. Reload to see where things stand.';
+
+  @override
+  String get codeSyncRunning =>
+      'A sync is already running. Wait for it to finish, then try again.';
+
+  @override
+  String get codeAlreadyReported =>
+      'You already reported this; moderators will review it.';
+
+  @override
+  String get widgetBudgets => 'Budgets';
+
+  @override
+  String get widgetBudgetsHelp =>
+      'Your fullest budgets and how they\'re pacing';
+
+  @override
+  String get widgetUpcoming => 'Coming up';
+
+  @override
+  String get widgetUpcomingHelp =>
+      'Overdue and upcoming bills, recurring payments, renewals and goal dates';
+
+  @override
+  String get widgetGoals => 'Goals';
+
+  @override
+  String get widgetGoalsHelp => 'Progress on your nearest goals';
+
+  @override
+  String get widgetGroupBalances => 'Group balances';
+
+  @override
+  String get widgetGroupBalancesHelp =>
+      'Groups where you\'re owed money or owe money';
+
+  @override
+  String get dashPlanLoading => 'Loading…';
+
+  @override
+  String dashPlanError(String reason) {
+    return 'This card couldn\'t be loaded. $reason';
+  }
+
+  @override
+  String dashPlanBudgetsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active budgets',
+      one: '1 active budget',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashPlanBudgetsOver(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count are over budget',
+      one: '1 is over budget',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanBudgetsNoneOver => 'None are over budget';
+
+  @override
+  String get dashPlanBudgetsEmpty =>
+      'No active budgets. A budget shows how much of a limit you\'ve spent.';
+
+  @override
+  String get dashPlanBudgetsCreate => 'Create a budget';
+
+  @override
+  String get dashPlanBudgetsSeeAll => 'See all budgets';
+
+  @override
+  String get dashPlanBudgetPaused => 'No figures for this period yet';
+
+  @override
+  String dashPlanUpcomingSummary(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items through $date',
+      one: '1 item through $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashPlanUpcomingOverdue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count are overdue',
+      one: '1 is overdue',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanUpcomingNoneOverdue => 'Nothing is overdue';
+
+  @override
+  String get dashPlanUpcomingEmpty =>
+      'Nothing is due in the next 14 days, and nothing is overdue.';
+
+  @override
+  String get dashPlanUpcomingAddBill => 'Add a bill';
+
+  @override
+  String get dashPlanUpcomingSeeAll => 'Open the calendar';
+
+  @override
+  String dashPlanUpcomingMore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more in the calendar',
+      one: '1 more in the calendar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashPlanDueOn(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get dashPlanDueToday => 'Due today';
+
+  @override
+  String dashPlanWasDue(String date) {
+    return 'Was due $date';
+  }
+
+  @override
+  String dashPlanGoalsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active goals',
+      one: '1 active goal',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanGoalsEmpty =>
+      'No active goals. Set one to save toward something.';
+
+  @override
+  String get dashPlanGoalsCreate => 'Create a goal';
+
+  @override
+  String get dashPlanGoalsSeeAll => 'See all goals';
+
+  @override
+  String get dashPlanGoalNoDate => 'No target date';
+
+  @override
+  String dashPlanGroupsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Open balances in $count groups',
+      one: 'Open balance in 1 group',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanGroupsEmpty => 'You\'re settled up in every group.';
+
+  @override
+  String get dashPlanGroupsSeeAll => 'See all groups';
+
+  @override
+  String get dashPlanGroupSettled => 'Settled up';
+
+  @override
+  String dashPlanShowingFirst(int shown, int total) {
+    return 'Showing $shown of $total';
+  }
+
+  @override
+  String get profileEditTitle => 'Edit profile';
+
+  @override
+  String get profileEditEntry => 'Edit profile';
+
+  @override
+  String get profileEditEntrySubtitle =>
+      'Name, photo, username, bio and who can see your profile';
+
+  @override
+  String get profileEditPhotoSection => 'Profile photo';
+
+  @override
+  String get profileEditPhotoNone =>
+      'No photo yet. People see your initials instead.';
+
+  @override
+  String get profileEditPhotoLabel => 'Your profile photo';
+
+  @override
+  String profileEditPhotoInitials(String name) {
+    return 'Initials for $name';
+  }
+
+  @override
+  String get profileEditPhotoChoose => 'Choose a photo';
+
+  @override
+  String get profileEditPhotoChange => 'Change photo';
+
+  @override
+  String get profileEditPhotoRemove => 'Remove photo';
+
+  @override
+  String get profileEditPhotoRemoveTitle => 'Remove your profile photo?';
+
+  @override
+  String get profileEditPhotoRemoveBody =>
+      'People will see your initials instead. You can add a photo again at any time.';
+
+  @override
+  String get profileEditPhotoSaved => 'Profile photo updated.';
+
+  @override
+  String get profileEditPhotoRemoved => 'Profile photo removed.';
+
+  @override
+  String get profileEditPhotoUnavailable =>
+      'The photo couldn\'t be shown right now.';
+
+  @override
+  String profileEditPhotoHelp(String size) {
+    return 'JPG, PNG or WEBP, up to $size. Your photo is shown where your profile is visible.';
+  }
+
+  @override
+  String get profileEditDetailsSection => 'About you';
+
+  @override
+  String get profileEditDisplayName => 'Display name';
+
+  @override
+  String get profileEditDisplayNameHelp =>
+      'Shown to friends, groups and communities.';
+
+  @override
+  String get profileEditBio => 'Bio';
+
+  @override
+  String get profileEditBioHelp =>
+      'A short line about you. Leave it empty to remove it.';
+
+  @override
+  String get profileEditLocation => 'Location';
+
+  @override
+  String get profileEditLocationHelp =>
+      'A city or region, never your address. Leave it empty to remove it.';
+
+  @override
+  String get profileEditInterests => 'Interests';
+
+  @override
+  String profileEditInterestsHelp(int max) {
+    return 'Up to $max short topics, for example cooking or cricket.';
+  }
+
+  @override
+  String get profileEditInterestAdd => 'Add interest';
+
+  @override
+  String get profileEditInterestNew => 'New interest';
+
+  @override
+  String profileEditInterestRemove(String name) {
+    return 'Remove interest $name';
+  }
+
+  @override
+  String get profileEditInterestTooLong =>
+      'Keep each interest short (up to 40 letters in English, fewer in Hindi).';
+
+  @override
+  String get profileEditInterestDuplicate => 'You already added this interest.';
+
+  @override
+  String profileEditInterestsFull(int max) {
+    return 'You can add up to $max interests.';
+  }
+
+  @override
+  String get profileEditInterestsNone => 'No interests added.';
+
+  @override
+  String get profileEditVisibility => 'Who can see your profile';
+
+  @override
+  String get profileEditVisibilityPrivate => 'Only you';
+
+  @override
+  String get profileEditVisibilityPrivateHelp =>
+      'Others see only your display name and photo where you take part.';
+
+  @override
+  String get profileEditVisibilityConnections => 'Friends and group members';
+
+  @override
+  String get profileEditVisibilityConnectionsHelp =>
+      'Your bio, location and interests are shown to people you\'re connected with.';
+
+  @override
+  String get profileEditVisibilityPublic => 'Everyone on Montra';
+
+  @override
+  String get profileEditVisibilityPublicHelp =>
+      'Anyone signed in to Montra can see your profile details.';
+
+  @override
+  String get profileEditUsernameHelp =>
+      '3 to 30 lowercase letters, digits, “_” or “.”. Leave it empty to remove it. Who can find you by it is set in Friends.';
+
+  @override
+  String get profileEditSaved => 'Profile saved.';
+
+  @override
+  String get profileEditFinanceNote =>
+      'Your profile never shows your accounts, amounts or transactions.';
+
+  @override
+  String get prefsTitle => 'Preferences';
+
+  @override
+  String get prefsEntrySubtitle =>
+      'Currency, region, formats, defaults, theme and accessibility';
+
+  @override
+  String get prefsSaved => 'Preferences saved.';
+
+  @override
+  String get prefsMoneySection => 'Money';
+
+  @override
+  String get prefsBaseCurrency => 'Base currency';
+
+  @override
+  String get prefsBaseCurrencyExplain =>
+      'Your base currency is the default for new accounts, budgets, goals, bills and receipts, and comes first on Home. Changing it converts nothing: existing accounts, transactions, budgets and goals keep their own currency, and amounts in different currencies are never added together.';
+
+  @override
+  String prefsBaseCurrencyChanged(String currency) {
+    return 'From now on new records default to $currency. Nothing you already recorded changes.';
+  }
+
+  @override
+  String get prefsDisplayCurrency => 'Second currency to show';
+
+  @override
+  String get prefsDisplayCurrencyHelp =>
+      'Optional. Where exchange rates are used, amounts can also be shown in this currency; your records keep their own currency.';
+
+  @override
+  String get prefsNone => 'None';
+
+  @override
+  String get prefsDefaultAccount => 'Default account';
+
+  @override
+  String get prefsDefaultAccountHelp =>
+      'Chosen first when you add an expense or income.';
+
+  @override
+  String get prefsDefaultAccountMissing =>
+      'An account that is no longer active';
+
+  @override
+  String get prefsDefaultRange => 'Default period';
+
+  @override
+  String get prefsDefaultRangeHelp => 'The period Home opens with.';
+
+  @override
+  String get prefsRegionSection => 'Region and language';
+
+  @override
+  String get prefsCountryHelp =>
+      'Two letters, for example IN. Leave it empty to remove it.';
+
+  @override
+  String get prefsTimezoneHelp =>
+      '\"Today\", budget periods and reminders follow this time zone. Changing it doesn\'t move anything you already recorded.';
+
+  @override
+  String get prefsTimezoneSearch => 'Search time zones';
+
+  @override
+  String prefsTimezoneUseTyped(String zone) {
+    return 'Use “$zone”';
+  }
+
+  @override
+  String prefsTimezoneDevice(String zone) {
+    return 'This device: $zone';
+  }
+
+  @override
+  String get prefsLocale => 'Language and region';
+
+  @override
+  String get prefsLocaleHelp => 'The app\'s language follows this setting.';
+
+  @override
+  String get prefsLocaleEnIn => 'English (India)';
+
+  @override
+  String get prefsLocaleEnUs => 'English (United States)';
+
+  @override
+  String get prefsLocaleEnGb => 'English (United Kingdom)';
+
+  @override
+  String get prefsLocaleHiIn => 'हिन्दी (भारत)';
+
+  @override
+  String get prefsFormatsSection => 'Formats';
+
+  @override
+  String get prefsDateFormat => 'Date format';
+
+  @override
+  String get prefsDateFormatLocale => 'Follow the language';
+
+  @override
+  String get prefsDateFormatDmy => 'Day, month, year (31/12/2026)';
+
+  @override
+  String get prefsDateFormatMdy => 'Month, day, year (12/31/2026)';
+
+  @override
+  String get prefsDateFormatYmd => 'Year, month, day (2026-12-31)';
+
+  @override
+  String get prefsDateFormatHelp => 'Used in exports, reports and emails.';
+
+  @override
+  String get prefsNumberFormat => 'Number format';
+
+  @override
+  String get prefsNumberFormatLocale => 'Follow the language and region';
+
+  @override
+  String prefsNumberFormatIndian(String example) {
+    return 'Lakh and crore ($example)';
+  }
+
+  @override
+  String prefsNumberFormatInternational(String example) {
+    return 'Thousands and millions ($example)';
+  }
+
+  @override
+  String prefsNumberFormatHelp(String example) {
+    return 'How amounts are grouped in the app, for example $example.';
+  }
+
+  @override
+  String get prefsWeekStart => 'Week starts on';
+
+  @override
+  String get prefsWeekStartHelp =>
+      'Used for weekly budgets, reports and weekly totals.';
+
+  @override
+  String get prefsMonthStart => 'Month starts on day';
+
+  @override
+  String get prefsMonthStartHelp =>
+      'For example 25 if your salary arrives on the 25th. Days 1 to 28.';
+
+  @override
+  String prefsMonthStartDay(int day) {
+    return 'Day $day';
+  }
+
+  @override
+  String get prefsAppearanceSection => 'Theme';
+
+  @override
+  String get prefsThemeHelp => 'Saved to your account and used on this device.';
+
+  @override
+  String get a11yTitle => 'Accessibility';
+
+  @override
+  String get a11yIntro =>
+      'These settings apply in the app as soon as you save, on top of your phone\'s own accessibility settings.';
+
+  @override
+  String get a11yReducedMotion => 'Reduce motion';
+
+  @override
+  String get a11yReducedMotionHelp =>
+      'Turns off screen transitions and other animations.';
+
+  @override
+  String get a11yHighContrast => 'High contrast';
+
+  @override
+  String get a11yHighContrastHelp =>
+      'Stronger colors and borders that are easier to tell apart.';
+
+  @override
+  String get a11yTextSize => 'Text size';
+
+  @override
+  String a11yTextSizeValue(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get a11yTextSizeHelp =>
+      'Multiplies your phone\'s text size, from 80% to 200%.';
+
+  @override
+  String get a11yTextSizeSmaller => 'Smaller text';
+
+  @override
+  String get a11yTextSizeLarger => 'Larger text';
+
+  @override
+  String get a11yTextSizePreview =>
+      'Preview: ₹1,250.50 spent on groceries this week.';
+
+  @override
+  String get prefsUnsavedTitle => 'Discard your changes?';
+
+  @override
+  String get prefsUnsavedBody =>
+      'You changed some settings but didn\'t save them.';
+
+  @override
+  String get prefsDiscard => 'Discard';
+
+  @override
+  String get receiptPagesAddTitle => 'Add receipt';
+
+  @override
+  String receiptPagesIntro(int max) {
+    return 'Add each photo or PDF of the receipt, in order. A long receipt can have up to $max pages. Nothing is read automatically: you enter the details next.';
+  }
+
+  @override
+  String get receiptPagesNoneTitle => 'No pages yet';
+
+  @override
+  String get receiptPagesNoneBody =>
+      'Take a photo, or choose photos or files. Each one becomes a page.';
+
+  @override
+  String get receiptPagesTakePhoto => 'Take a photo';
+
+  @override
+  String get receiptPagesChoosePhotos => 'Choose photos';
+
+  @override
+  String get receiptPagesChooseFiles => 'Choose files';
+
+  @override
+  String receiptPagesPage(int position, int total) {
+    return 'Page $position of $total';
+  }
+
+  @override
+  String receiptPagesFile(int position, int total) {
+    return 'File $position of $total';
+  }
+
+  @override
+  String receiptPagesMoveUp(String name) {
+    return 'Move $name up';
+  }
+
+  @override
+  String receiptPagesMoveDown(String name) {
+    return 'Move $name down';
+  }
+
+  @override
+  String receiptPagesRemove(String name) {
+    return 'Remove $name';
+  }
+
+  @override
+  String get receiptPagesStateWaiting => 'Ready to upload';
+
+  @override
+  String get receiptPagesStateUploaded => 'Uploaded';
+
+  @override
+  String get receiptPagesStateCreating => 'Adding the receipt…';
+
+  @override
+  String receiptPagesStateFailed(String reason) {
+    return 'Not added: $reason';
+  }
+
+  @override
+  String get receiptPagesStateDone => 'Added';
+
+  @override
+  String get receiptPagesModeTitle => 'These files are';
+
+  @override
+  String get receiptPagesModePages => 'Pages of one receipt';
+
+  @override
+  String get receiptPagesModePagesHelp => 'In the order shown above.';
+
+  @override
+  String get receiptPagesModeSeparate => 'Separate receipts';
+
+  @override
+  String get receiptPagesModeSeparateHelp =>
+      'Each file becomes its own receipt.';
+
+  @override
+  String get receiptPagesNotes => 'Note';
+
+  @override
+  String get receiptPagesNotesHelp =>
+      'For example who it was for. Kept with the receipt.';
+
+  @override
+  String receiptPagesSave(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add receipt with $count pages',
+      one: 'Add receipt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receiptPagesSaveSeparate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count receipts',
+      one: 'Add 1 receipt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get receiptPagesStop => 'Stop uploading';
+
+  @override
+  String get receiptPagesStopped =>
+      'Stopped. Nothing was added; uploaded pages are kept until you leave this screen.';
+
+  @override
+  String receiptPagesTooMany(int max) {
+    return 'A receipt can have up to $max pages.';
+  }
+
+  @override
+  String receiptPagesAlreadyAdded(String name) {
+    return '$name is already in the list.';
+  }
+
+  @override
+  String receiptPagesRefused(String name, String reason) {
+    return '$name wasn\'t added: $reason';
+  }
+
+  @override
+  String get receiptPagesUploadFailed =>
+      'Some pages couldn\'t be uploaded. Try again to upload the rest; uploaded pages aren\'t sent twice.';
+
+  @override
+  String receiptPagesSomeFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count receipts weren\'t added. Try again to add them.',
+      one: '1 receipt wasn\'t added. Try again to add it.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receiptPagesAddedMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count receipts added. Enter their details next.',
+      one: '1 receipt added. Enter its details next.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get receiptPagesLeaveTitle => 'Leave without adding?';
+
+  @override
+  String get receiptPagesLeaveBody =>
+      'The pages you chose won\'t be added, and uploaded ones are deleted.';
+
+  @override
+  String get receiptPagesLeave => 'Leave';
 }

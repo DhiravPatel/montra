@@ -50,36 +50,30 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
       appBar: AppBar(title: Text(l10n.scheduleEditTitle)),
       body: body,
     );
-    // There is no single-schedule GET; the list holds every schedule.
     return ref
-        .watch(reportSchedulesProvider)
+        .watch(reportScheduleProvider(id))
         .when(
           skipLoadingOnReload: true,
           loading: () => frame(const LoadingStateView()),
           error: (Object error, StackTrace _) => frame(
             ErrorStateView(
               error: error,
-              onRetry: () => ref.invalidate(reportSchedulesProvider),
+              onRetry: () => ref.invalidate(reportScheduleProvider(id)),
             ),
           ),
-          data: (List<ScheduleDto> list) {
-            for (final ScheduleDto s in list) {
-              if (s.id == id) {
-                return _ScheduleForm(
+          data: (ScheduleDto? s) => s == null
+              ? frame(
+                  MessageStateView(
+                    icon: Icons.search_off,
+                    title: l10n.scheduleNotFound,
+                  ),
+                )
+              : _ScheduleForm(
                   key: ValueKey<int>(s.version),
                   original: s,
                   conflict: _conflict,
                   onConflict: () => setState(() => _conflict = true),
-                );
-              }
-            }
-            return frame(
-              MessageStateView(
-                icon: Icons.search_off,
-                title: l10n.scheduleNotFound,
-              ),
-            );
-          },
+                ),
         );
   }
 }
@@ -192,6 +186,9 @@ class _ScheduleFormState extends ConsumerState<_ScheduleForm> {
             .updateSchedule(original.id, SchedulePatch.fromJson(body));
       }
       ref.invalidate(reportSchedulesProvider);
+      if (original != null) {
+        ref.invalidate(reportScheduleProvider(original.id));
+      }
       if (!mounted) {
         return;
       }
@@ -203,7 +200,9 @@ class _ScheduleFormState extends ConsumerState<_ScheduleForm> {
       }
       if (error.code == ErrorObjectCode.versionConflict && _editing) {
         widget.onConflict?.call();
-        ref.invalidate(reportSchedulesProvider);
+        ref
+          ..invalidate(reportSchedulesProvider)
+          ..invalidate(reportScheduleProvider(widget.original!.id));
         return;
       }
       setState(

@@ -54,6 +54,8 @@ const TRANSLATED_PREFIXES = [
   'calendar.',
   'subscriptions.',
   'goals.',
+  // Round 6.
+  'profileSettings.',
 ];
 
 describe('Hindi catalog coverage', () => {

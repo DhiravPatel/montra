@@ -22,6 +22,7 @@ import 'package:montra_mobile/features/group_money/data/group_money_api.dart';
 import 'package:montra_mobile/features/group_money/domain/group_money_display.dart';
 import 'package:montra_mobile/features/group_money/presentation/group_money_paths.dart';
 import 'package:montra_mobile/features/group_money/presentation/group_money_widgets.dart';
+import 'package:montra_mobile/features/recurring/domain/lifecycle.dart';
 import 'package:montra_mobile/features/recurring/domain/recurring_display.dart';
 import 'package:montra_mobile/features/recurring/domain/schedule.dart';
 
@@ -74,8 +75,11 @@ class _GroupRecurringDetailScreenState
       }
       return result;
     } on ApiException catch (error) {
+      // Changed elsewhere (also a pause of a rule paused meanwhile,
+      // `invalid_status_transition`): show where it stands now.
       if (error.code == ErrorObjectCode.conflict ||
-          error.code == ErrorObjectCode.versionConflict) {
+          error.code == ErrorObjectCode.versionConflict ||
+          isStaleStatus(error)) {
         ref.invalidate(groupRecurringProvider(_record));
       }
       if (mounted) {

@@ -75,7 +75,11 @@ String incomeRangeLabel(
 /// and skipped steps (`POST /me/onboarding`) and opens Home.
 class OnboardingScreen extends ConsumerWidget {
   /// Creates the screen.
-  const OnboardingScreen({super.key});
+  const OnboardingScreen({this.next, super.key});
+
+  /// Where to go when setup is finished or skipped (a safe in-app path
+  /// that waited for sign-in); Home otherwise.
+  final String? next;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,15 +108,16 @@ class OnboardingScreen extends ConsumerWidget {
         body: const LoadingStateView(),
       );
     }
-    return _Wizard(preferences: p, saved: progress);
+    return _Wizard(preferences: p, saved: progress, next: next);
   }
 }
 
 class _Wizard extends ConsumerStatefulWidget {
-  const _Wizard({required this.preferences, required this.saved});
+  const _Wizard({required this.preferences, required this.saved, this.next});
 
   final PreferencesDto preferences;
   final OnboardingDto saved;
+  final String? next;
 
   @override
   ConsumerState<_Wizard> createState() => _WizardState();
@@ -205,7 +210,7 @@ class _WizardState extends ConsumerState<_Wizard> {
         remaining: skipRest ? _remaining() : const <String>[],
       );
       if (mounted) {
-        context.go(AppRoutes.home);
+        context.go(AppRoutes.safeNext(widget.next) ?? AppRoutes.home);
       }
     } on ApiException catch (error) {
       if (mounted) {

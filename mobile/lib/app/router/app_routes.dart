@@ -21,6 +21,12 @@ abstract final class AppRoutes {
   static const String changePassword = '/profile/security/password';
   static const String twoStep = '/profile/security/two-step';
 
+  /// Profile details and photo (`PATCH /me`).
+  static const String editProfile = '/profile/edit';
+
+  /// Preferences and accessibility (`PATCH /me/preferences`).
+  static const String preferences = '/profile/preferences';
+
   /// Post-sign-up setup (every step can be skipped).
   static const String onboarding = '/onboarding';
 
@@ -108,6 +114,9 @@ abstract final class AppRoutes {
 
   // Round 3: receipts (reviewed by hand; nothing is read automatically).
   static const String receipts = '/receipts';
+
+  /// Add receipts from photos and files (several pages or receipts).
+  static const String newReceipt = '/receipts/new';
   static String receiptDetail(String id) => '/receipts/${_seg(id)}';
   static String reviewReceipt(String id) => '/receipts/${_seg(id)}/review';
   static String matchReceipt(String id) => '/receipts/${_seg(id)}/match';
@@ -335,8 +344,10 @@ abstract final class AppRoutes {
   /// Query parameter carrying where to go after signing in.
   static const String nextParam = 'next';
 
-  /// A safe in-app location from a `next` value: must be an absolute app
-  /// path (no scheme or host), otherwise null.
+  /// A safe in-app location from a `next` value: an absolute app path (no
+  /// scheme or host, not `//…`) that is not an auth screen (sign-in,
+  /// welcome, splash, onboarding, emailed-link screens, …), so following it
+  /// can never leave the app or loop back to authentication. Otherwise null.
   static String? safeNext(String? value) {
     if (value == null || !value.startsWith('/') || value.startsWith('//')) {
       return null;
@@ -345,22 +356,81 @@ abstract final class AppRoutes {
     if (uri == null || uri.hasScheme || uri.hasAuthority) {
       return null;
     }
+    if (_notANextTarget.contains(_normalizePath(uri.path))) {
+      return null;
+    }
     return value;
+  }
+
+  /// Screens that are never a `next` destination.
+  static const Set<String> _notANextTarget = <String>{
+    ...signedOutOnly,
+    ...linkRoutes,
+    root,
+    splash,
+    onboarding,
+  };
+
+  /// Whether [path] is a screen that needs a signed-in user and is worth
+  /// returning to after signing in.
+  static bool isProtected(String path) {
+    final String p = _normalizePath(path);
+    return !_notANextTarget.contains(p) && !publicRoutes.contains(p);
+  }
+
+  /// [path] with `next` in its query when [next] is a safe destination
+  /// (otherwise [path] unchanged).
+  static String withNext(String path, String? next) {
+    final String? safe = safeNext(next);
+    if (safe == null) {
+      return path;
+    }
+    return Uri(
+      path: path,
+      queryParameters: <String, String>{nextParam: safe},
+    ).toString();
+  }
+
+  /// The safe `next` carried by [location], if any.
+  static String? nextOf(Uri location) =>
+      safeNext(location.queryParameters[nextParam]);
+
+  static String _normalizePath(String path) {
+    if (path.isEmpty) {
+      return root;
+    }
+    if (path.length > 1 && path.endsWith('/')) {
+      return path.substring(0, path.length - 1);
+    }
+    return path;
   }
 }
 
 /// The auth guard used by the router's top-level `redirect`.
 ///
 /// Returns the location to redirect to, or null to stay on [location].
+///
+/// A protected location opened while signed out (or while the session is
+/// being restored) is kept as `next` and opened after signing in, or after
+/// the (skippable) setup for a new account. `next` is always an in-app path
+/// and never an auth screen ([AppRoutes.safeNext]).
 String? authRedirect(AuthState auth, Uri location) {
   final String path = _normalize(location.path);
   if (AppRoutes.linkRoutes.contains(path) ||
       AppRoutes.publicRoutes.contains(path)) {
     return null;
   }
+  // Where to return to: this location when it is a protected screen,
+  // otherwise the `next` it already carries (sign-in, splash, …).
+  final String? next = AppRoutes.isProtected(path)
+      ? AppRoutes.safeNext(_inApp(location))
+      : AppRoutes.nextOf(location);
   switch (auth) {
     case AuthRestoring() || AuthRestoreFailed():
-      return path == AppRoutes.splash ? null : AppRoutes.splash;
+      if (path == AppRoutes.splash) {
+        return null;
+      }
+      return AppRoutes.withNext(AppRoutes.splash, next);
     case SignedOut(:final SessionEndReason? reason):
       if (AppRoutes.signedOutOnly.contains(path)) {
         return null;
@@ -368,42 +438,43 @@ String? authRedirect(AuthState auth, Uri location) {
       // An invitation link needs an account: sign in (or up) first and
       // come back to it. The token stays in the fragment of `next`.
       if (AppRoutes.joinRoutes.contains(path)) {
-        return Uri(
-          path: AppRoutes.signIn,
-          queryParameters: <String, String>{
-            AppRoutes.nextParam: location.toString(),
-          },
-        ).toString();
+        return AppRoutes.withNext(AppRoutes.signIn, next);
+      }
+      // A voluntary sign-out starts over; nothing to return to.
+      if (reason == SessionEndReason.signedOut) {
+        return AppRoutes.welcome;
       }
       // After an involuntary or account-wide sign-out, go straight to the
       // sign-in form (which explains what happened).
-      final bool explain =
-          reason != null && reason != SessionEndReason.signedOut;
-      return explain ? AppRoutes.signIn : AppRoutes.welcome;
+      return AppRoutes.withNext(
+        reason != null ? AppRoutes.signIn : AppRoutes.welcome,
+        next,
+      );
     case SignedIn(:final UserDto user):
-      // New accounts start with the (skippable) setup; afterwards the setup
-      // screen is no longer offered.
-      final String landing = user.onboardingCompleted
-          ? AppRoutes.signedInHome
-          : AppRoutes.onboarding;
       if (AppRoutes.signedOutOnly.contains(path) ||
           path == AppRoutes.splash ||
           path == AppRoutes.root) {
-        // A link that waited for sign-in (see `joinRoutes`) is opened now.
-        final String? next = AppRoutes.safeNext(
-          location.queryParameters[AppRoutes.nextParam],
-        );
-        if (next != null && user.onboardingCompleted) {
-          return next;
+        // New accounts start with the (skippable) setup and continue to
+        // the waiting link afterwards.
+        if (!user.onboardingCompleted) {
+          return AppRoutes.withNext(AppRoutes.onboarding, next);
         }
-        return landing;
+        return next ?? AppRoutes.signedInHome;
       }
       if (path == AppRoutes.onboarding && user.onboardingCompleted) {
-        return AppRoutes.signedInHome;
+        return next ?? AppRoutes.signedInHome;
       }
       return null;
   }
 }
+
+/// [location] as an in-app path with its query and fragment (a full URL
+/// opened through an App Link keeps only those parts).
+String _inApp(Uri location) => Uri(
+  path: location.path.isEmpty ? AppRoutes.root : location.path,
+  query: location.hasQuery ? location.query : null,
+  fragment: location.hasFragment ? location.fragment : null,
+).toString();
 
 String _normalize(String path) {
   if (path.isEmpty) {

@@ -10,7 +10,10 @@ import 'package:montra_mobile/features/auth/presentation/widgets/resend_verifica
 /// `extra`), never in the URL.
 class CheckEmailScreen extends StatelessWidget {
   /// Creates the screen.
-  const CheckEmailScreen({this.email, super.key});
+  const CheckEmailScreen({this.email, this.next, super.key});
+
+  /// Where to go after signing in (a safe in-app path).
+  final String? next;
 
   /// The address the link was sent to, when known.
   final String? email;
@@ -52,7 +55,8 @@ class CheckEmailScreen extends StatelessWidget {
         ],
         const SizedBox(height: Insets.sm),
         TextButton(
-          onPressed: () => context.go(AppRoutes.signIn),
+          onPressed: () =>
+              context.go(AppRoutes.withNext(AppRoutes.signIn, next)),
           child: Text(l10n.backToSignIn),
         ),
       ],

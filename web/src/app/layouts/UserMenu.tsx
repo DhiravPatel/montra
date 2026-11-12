@@ -19,7 +19,7 @@ function initials(name: string): string {
   return letters.toUpperCase() || '?';
 }
 
-/** Account menu: security settings and sign out. */
+/** Account menu: profile and preferences, security settings and sign out. */
 export function UserMenu({ compact = false }: { compact?: boolean }) {
   const t = useT();
   const toast = useToast();
@@ -46,21 +46,26 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
   return (
     <Menu>
       <MenuTrigger
-        aria-label={t('userMenu.label')}
+        // With the name and email shown, they must be part of the accessible
+        // name (WCAG 2.5.3 Label in Name): "Account menu: Asha Rao asha@…".
+        aria-label={compact ? t('userMenu.label') : undefined}
         className={cx(
           'inline-flex min-h-11 items-center gap-3 rounded-md border border-transparent text-start hover:bg-surface-muted',
           compact ? 'px-1.5' : 'w-full px-2 py-1.5',
         )}
       >
+        {/* Decorative initials, drawn by CSS so they are not text content: the
+            compact button is named only "Account menu", and visible text that
+            is missing from a control's name fails WCAG 2.5.3 Label in Name. */}
         <span
           aria-hidden="true"
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent"
-        >
-          {initials(user.display_name)}
-        </span>
+          data-initials={initials(user.display_name)}
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent before:content-[attr(data-initials)]"
+        />
         {compact ? null : (
           <>
             <span className="min-w-0 flex-1">
+              <span className="sr-only">{t('userMenu.label')}: </span>
               <span className="block truncate text-sm font-medium text-fg">
                 {user.display_name}
               </span>
@@ -71,6 +76,12 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
         )}
       </MenuTrigger>
       <MenuContent label={t('userMenu.label')}>
+        <MenuItem asChild>
+          <Link to={paths.profileSettings}>
+            <Icon name="user" className="size-4" />
+            {t('userMenu.profileSettings')}
+          </Link>
+        </MenuItem>
         <MenuItem asChild>
           <Link to={paths.securitySettings}>
             <Icon name="shield" className="size-4" />

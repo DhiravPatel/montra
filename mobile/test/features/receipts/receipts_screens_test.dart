@@ -118,23 +118,6 @@ void main() {
     ).thenAnswer((_) async => receiptPage(items));
   }
 
-  void stubUpload(String fileId) {
-    when(
-      () => uploader.upload(
-        any(),
-        any(),
-        onStage: any(named: 'onStage'),
-        onProgress: any(named: 'onProgress'),
-        cancelToken: any(named: 'cancelToken'),
-      ),
-    ).thenAnswer((Invocation i) async {
-      final void Function(UploadStage)? onStage =
-          i.namedArguments[#onStage] as void Function(UploadStage)?;
-      onStage?.call(UploadStage.sending);
-      return fileDto(id: fileId);
-    });
-  }
-
   group('inbox', () {
     testWidgets('lists receipts with their details and status in words; '
         'filters by status', (WidgetTester tester) async {
@@ -236,32 +219,90 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Details needed'), findsOneWidget);
     });
+  });
 
-    testWidgets('adding a receipt uploads the file, creates it for manual '
-        'entry with an idempotency key and opens it', (
+  group('adding receipts', () {
+    /// Uploads answer with `f-<file name without extension>`.
+    void stubUploads({Set<String> failing = const <String>{}}) {
+      when(
+        () => uploader.upload(
+          any(),
+          any(),
+          onStage: any(named: 'onStage'),
+          onProgress: any(named: 'onProgress'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((Invocation i) async {
+        final PickedFile file = i.positionalArguments.first as PickedFile;
+        final void Function(UploadStage)? onStage =
+            i.namedArguments[#onStage] as void Function(UploadStage)?;
+        onStage?.call(UploadStage.sending);
+        if (failing.contains(file.name)) {
+          throw offline;
+        }
+        return fileDto(id: 'f-${file.name.split('.').first}', name: file.name);
+      });
+    }
+
+    void stubCreate(ReceiptDto Function(List<String> ids) answer) {
+      when(
+        () => api.create(
+          any(),
+          notes: any(named: 'notes'),
+          key: any(named: 'key'),
+        ),
+      ).thenAnswer(
+        (Invocation i) async =>
+            answer(i.positionalArguments.first as List<String>),
+      );
+    }
+
+    Finder saveButton(String label) => find.widgetWithText(FilledButton, label);
+
+    /// A tall phone, so every page of the list is laid out.
+    void tall(WidgetTester tester) {
+      tester.view
+        ..physicalSize = const Size(1080, 4200)
+        ..devicePixelRatio = 2.5;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('Add receipt opens an empty list; one photo becomes a '
+        'receipt for manual entry with an idempotency key', (
       WidgetTester tester,
     ) async {
+      tall(tester);
       stubInbox(<ReceiptDto>[]);
       source.enqueue(pickedFile());
-      stubUpload('file-9');
-      when(() => api.create(<String>['file-9'], key: any(named: 'key')))
-          .thenAnswer((_) async => receipt(id: 'rc-9'));
+      stubUploads();
+      stubCreate((List<String> ids) => receipt(id: 'rc-9'));
       when(() => api.get('rc-9'))
           .thenAnswer((_) async => receiptView(id: 'rc-9'));
       final GoRouter router = await pump(tester, '/receipts');
 
       await tester.tap(find.text('Add receipt'));
       await tester.pumpAndSettle();
+      expect(locationOf(router), '/receipts/new');
+      expect(find.text('No pages yet'), findsOneWidget);
       expect(find.text('Take a photo'), findsOneWidget);
-      expect(find.text('Choose a photo'), findsOneWidget);
-      await tester.tap(find.text('Choose a file'));
-      await tester.pumpAndSettle();
+      expect(find.text('Choose photos'), findsOneWidget);
 
-      expect(source.requests.single, (FileOrigin.files, UploadPurpose.receipt));
+      await tester.tap(find.text('Choose files'));
+      await tester.pumpAndSettle();
+      expect(source.manyRequests.single, (
+        FileOrigin.files,
+        UploadPurpose.receipt,
+        20,
+      ));
+      expect(find.text('Page 1 of 1'), findsOneWidget);
+      expect(find.text('Ready to upload'), findsOneWidget);
+
+      await tester.tap(saveButton('Add receipt'));
+      await tester.pumpAndSettle();
       final String key =
           verify(
                 () => api.create(<String>[
-                  'file-9',
+                  'f-receipt',
                 ], key: captureAny(named: 'key')),
               ).captured.single
               as String;
@@ -270,38 +311,119 @@ void main() {
       expect(find.text('Enter details'), findsWidgets);
     });
 
-    testWidgets('a receipt that could not be created is retried with the '
-        'same file and key, without uploading again', (
-      WidgetTester tester,
-    ) async {
-      stubInbox(<ReceiptDto>[]);
-      source.enqueue(pickedFile());
-      stubUpload('file-9');
-      final List<String> keys = <String>[];
-      when(() => api.create(<String>['file-9'], key: any(named: 'key')))
-          .thenAnswer((Invocation i) async {
-            keys.add(i.namedArguments[#key]! as String);
-            if (keys.length == 1) {
-              throw offline;
-            }
-            return receipt(id: 'rc-9');
-          });
+    testWidgets('several files are pages of one receipt in the order shown, '
+        'with a note', (WidgetTester tester) async {
+      tall(tester);
+      source.enqueue(<PickedFile>[
+        pickedFile(name: 'top.jpg', text: 'a'),
+        pickedFile(name: 'bottom.pdf', text: 'b', mimeType: 'application/pdf'),
+        pickedFile(name: 'middle.png', text: 'c', mimeType: 'image/png'),
+      ]);
+      stubUploads();
+      stubCreate((List<String> ids) => receipt(id: 'rc-9'));
       when(() => api.get('rc-9'))
           .thenAnswer((_) async => receiptView(id: 'rc-9'));
-      final GoRouter router = await pump(tester, '/receipts');
+      final GoRouter router = await pump(tester, '/receipts/new');
 
+      await tester.tap(find.text('Choose files'));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 3 of 3'), findsOneWidget);
+      await tapVisible(tester, find.byTooltip('Move middle.png up'));
+      expect(find.text('Pages of one receipt'), findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Note (optional)'),
+        'Team lunch',
+      );
+      await tapVisible(tester, saveButton('Add receipt with 3 pages'));
+
+      final List<Object?> captured = verify(
+        () => api.create(
+          captureAny(),
+          notes: captureAny(named: 'notes'),
+          key: any(named: 'key'),
+        ),
+      ).captured;
+      expect(captured, <Object?>[
+        <String>['f-top', 'f-middle', 'f-bottom'],
+        'Team lunch',
+      ]);
+      expect(locationOf(router), '/receipts/rc-9');
+      verifyNever(() => api.deleteUpload(any()));
+    });
+
+    testWidgets('separate receipts: each file becomes its own receipt', (
+      WidgetTester tester,
+    ) async {
+      tall(tester);
+      stubInbox(<ReceiptDto>[]);
+      source.enqueue(<PickedFile>[
+        pickedFile(name: 'a.jpg', text: 'a'),
+        pickedFile(name: 'b.jpg', text: 'b'),
+      ]);
+      stubUploads();
+      final List<List<String>> creates = <List<String>>[];
+      stubCreate((List<String> ids) {
+        creates.add(ids);
+        return receipt(id: 'rc-${creates.length}');
+      });
+      final GoRouter router = await pump(tester, '/receipts');
       await tester.tap(find.text('Add receipt'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Choose a file'));
+      await tester.tap(find.text('Choose photos'));
+      await tester.pumpAndSettle();
+      expect(source.manyRequests.single.$1, FileOrigin.photos);
+      await tapVisible(tester, find.text('Separate receipts'));
+      expect(find.text('File 1 of 2'), findsOneWidget);
+      await tapVisible(tester, saveButton('Add 2 receipts'));
+
+      expect(creates, <List<String>>[
+        <String>['f-a'],
+        <String>['f-b'],
+      ]);
+      expect(locationOf(router), '/receipts');
+      expect(
+        find.text('2 receipts added. Enter their details next.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a receipt that could not be created is retried with the '
+        'same pages and key, without uploading again', (
+      WidgetTester tester,
+    ) async {
+      tall(tester);
+      source.enqueue(pickedFile());
+      stubUploads();
+      final List<String> keys = <String>[];
+      when(
+        () => api.create(
+          <String>['f-receipt'],
+          notes: any(named: 'notes'),
+          key: any(named: 'key'),
+        ),
+      ).thenAnswer((Invocation i) async {
+        keys.add(i.namedArguments[#key]! as String);
+        if (keys.length == 1) {
+          throw offline;
+        }
+        return receipt(id: 'rc-9');
+      });
+      when(() => api.get('rc-9'))
+          .thenAnswer((_) async => receiptView(id: 'rc-9'));
+      final GoRouter router = await pump(tester, '/receipts/new');
+      await tester.tap(find.text('Choose files'));
+      await tester.pumpAndSettle();
+      await tester.tap(saveButton('Add receipt'));
       await tester.pumpAndSettle();
       expect(find.text("The receipt wasn't added"), findsOneWidget);
       expect(
         find.textContaining('Check your internet connection'),
-        findsOneWidget,
+        findsWidgets,
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Try again'));
-      await tester.pumpAndSettle();
+      expect(find.textContaining('Not added:'), findsOneWidget);
 
+      await tester.tap(saveButton('Add receipt'));
+      await tester.pumpAndSettle();
       expect(keys, hasLength(2));
       expect(keys.first, keys.last);
       verify(
@@ -316,20 +438,80 @@ void main() {
       expect(locationOf(router), '/receipts/rc-9');
     });
 
-    testWidgets('a file of the wrong type is refused before uploading', (
-      WidgetTester tester,
-    ) async {
-      stubInbox(<ReceiptDto>[]);
-      source.enqueue(pickedFile(name: 'notes.txt'));
-      await pump(tester, '/receipts');
-      await tester.tap(find.text('Add receipt'));
+    testWidgets('a failed upload is shown on its page; trying again uploads '
+        'only what is missing', (WidgetTester tester) async {
+      tall(tester);
+      source.enqueue(<PickedFile>[
+        pickedFile(name: 'one.jpg', text: '1'),
+        pickedFile(name: 'two.jpg', text: '2'),
+      ]);
+      stubUploads(failing: <String>{'two.jpg'});
+      stubCreate((List<String> ids) => receipt(id: 'rc-9'));
+      when(() => api.get('rc-9'))
+          .thenAnswer((_) async => receiptView(id: 'rc-9'));
+      await pump(tester, '/receipts/new');
+      await tester.tap(find.text('Choose files'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Choose a file'));
+      await tapVisible(tester, saveButton('Add receipt with 2 pages'));
+      expect(find.text('Uploaded'), findsOneWidget);
+      expect(find.textContaining('Not added:'), findsOneWidget);
+      expect(find.textContaining('Some pages couldn'), findsOneWidget);
+      verifyNever(
+        () => api.create(
+          any(),
+          notes: any(named: 'notes'),
+          key: any(named: 'key'),
+        ),
+      );
+
+      stubUploads();
+      await tapVisible(tester, saveButton('Add receipt with 2 pages'));
+      final List<String> names = <String>[
+        for (final Object? f in verify(
+          () => uploader.upload(
+            captureAny(),
+            any(),
+            onStage: any(named: 'onStage'),
+            onProgress: any(named: 'onProgress'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).captured)
+          (f! as PickedFile).name,
+      ];
+      // one.jpg was uploaded once; only two.jpg was sent again.
+      expect(names, <String>['one.jpg', 'two.jpg', 'two.jpg']);
+      verify(
+        () => api.create(
+          <String>['f-one', 'f-two'],
+          notes: any(named: 'notes'),
+          key: any(named: 'key'),
+        ),
+      ).called(1);
+    });
+
+    testWidgets('files of the wrong type or already in the list are refused '
+        'before uploading', (WidgetTester tester) async {
+      tall(tester);
+      source
+        ..enqueue(<PickedFile>[
+          pickedFile(name: 'notes.txt', mimeType: 'text/plain'),
+          pickedFile(),
+        ])
+        ..enqueue(pickedFile());
+      await pump(tester, '/receipts/new');
+      await tester.tap(find.text('Choose files'));
       await tester.pumpAndSettle();
       expect(
-        find.textContaining("This file type isn't accepted"),
+        find.textContaining(
+          "notes.txt wasn't added: This file type isn't "
+          'accepted',
+        ),
         findsOneWidget,
       );
+      expect(find.text('Page 1 of 1'), findsOneWidget);
+      await tester.tap(find.text('Take a photo'));
+      await tester.pumpAndSettle();
+      expect(find.text('receipt.jpg is already in the list.'), findsOneWidget);
       verifyNever(
         () => uploader.upload(
           any(),
@@ -340,6 +522,105 @@ void main() {
         ),
       );
     });
+
+    testWidgets('stopping an upload creates nothing; leaving deletes the '
+        'pages already uploaded', (WidgetTester tester) async {
+      tall(tester);
+      stubInbox(<ReceiptDto>[]);
+      source.enqueue(<PickedFile>[
+        pickedFile(name: 'one.jpg', text: '1'),
+        pickedFile(name: 'two.jpg', text: '2'),
+      ]);
+      when(() => api.deleteUpload(any())).thenAnswer((_) async {});
+      when(
+        () => uploader.upload(
+          any(),
+          any(),
+          onStage: any(named: 'onStage'),
+          onProgress: any(named: 'onProgress'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((Invocation i) async {
+        final PickedFile file = i.positionalArguments.first as PickedFile;
+        if (file.name == 'one.jpg') {
+          return fileDto(id: 'f-one');
+        }
+        final CancelToken token =
+            i.namedArguments[#cancelToken]! as CancelToken;
+        await token.whenCancel;
+        throw const ApiException(kind: ApiErrorKind.cancelled);
+      });
+      final GoRouter router = await pump(tester, '/receipts');
+      await tester.tap(find.text('Add receipt'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Choose files'));
+      await tester.pumpAndSettle();
+      await tester.tap(saveButton('Add receipt with 2 pages'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Stop uploading'), findsOneWidget);
+      await tester.tap(find.text('Stop uploading'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Stopped. Nothing was added'), findsOneWidget);
+      verifyNever(
+        () => api.create(
+          any(),
+          notes: any(named: 'notes'),
+          key: any(named: 'key'),
+        ),
+      );
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Leave without adding?'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Leave'));
+      await tester.pumpAndSettle();
+      expect(locationOf(router), '/receipts');
+      verify(() => api.deleteUpload('f-one')).called(1);
+    });
+
+    for (final Locale locale in <Locale>[
+      const Locale('en'),
+      const Locale('hi'),
+    ]) {
+      testWidgets('the add screen fits at 200% text ($locale)', (
+        WidgetTester tester,
+      ) async {
+        tester.view
+          ..physicalSize = const Size(1080, 2340)
+          ..devicePixelRatio = 3;
+        tester.platformDispatcher.textScaleFactorTestValue = 2;
+        addTearDown(tester.view.reset);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        source.enqueue(<PickedFile>[
+          pickedFile(name: 'a-rather-long-receipt-photo-name.jpg', text: 'a'),
+          pickedFile(name: 'b.pdf', text: 'b', mimeType: 'application/pdf'),
+        ]);
+        final ({Widget app, GoRouter router}) r = routedApp(
+          '/receipts/new',
+          overrides: overrides(),
+          locale: locale,
+        );
+        await tester.pumpWidget(r.app);
+        await tester.pumpAndSettle();
+        final Finder list = find.byType(Scrollable).first;
+        await tester.scrollUntilVisible(
+          find.byIcon(Icons.upload_file_outlined),
+          200,
+          scrollable: list,
+        );
+        await tester.ensureVisible(find.byIcon(Icons.upload_file_outlined));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.upload_file_outlined));
+        await tester.pumpAndSettle();
+        expect(source.manyRequests, hasLength(1));
+        for (int i = 0; i < 10; i++) {
+          await tester.drag(list, const Offset(0, -400));
+          await tester.pumpAndSettle();
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 
   group('detail and review', () {
@@ -744,38 +1025,6 @@ void main() {
   });
 
   group('other states', () {
-    testWidgets('an upload can be cancelled; nothing is created', (
-      WidgetTester tester,
-    ) async {
-      stubInbox(<ReceiptDto>[]);
-      source.enqueue(pickedFile());
-      when(
-        () => uploader.upload(
-          any(),
-          any(),
-          onStage: any(named: 'onStage'),
-          onProgress: any(named: 'onProgress'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((Invocation i) async {
-        final CancelToken token =
-            i.namedArguments[#cancelToken]! as CancelToken;
-        await token.whenCancel;
-        throw const ApiException(kind: ApiErrorKind.cancelled);
-      });
-      await pump(tester, '/receipts');
-      await tester.tap(find.text('Add receipt'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Choose a file'));
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('Checking the file…'), findsOneWidget);
-      await tester.tap(find.text('Cancel upload'));
-      await tester.pumpAndSettle();
-      expect(find.text('Upload cancelled.'), findsOneWidget);
-      verifyNever(() => api.create(any(), key: any(named: 'key')));
-    });
-
     testWidgets('suggestions that fail to load can be retried', (
       WidgetTester tester,
     ) async {

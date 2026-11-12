@@ -396,15 +396,13 @@ class _Links extends StatelessWidget {
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push(AppRoutes.receiptDetail(receiptId)),
         ),
-      if (t.groupExpenseId != null || t.settlementId != null)
+      if (groupRecordLocation(t) case final String location)
         ListTile(
           leading: const Icon(Icons.groups_outlined),
           title: Text(l10n.groupLinkedRecord),
           subtitle: Text(l10n.groupLinkedRecordHelp),
-          // TransactionDTO names the group expense or settlement but not its
-          // group, so this opens the groups list (contract note).
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push(AppRoutes.groups),
+          onTap: () => context.push(location),
         ),
     ];
     if (links.isEmpty) {
@@ -864,4 +862,24 @@ class _History extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// Where a transaction linked to a group expense or settlement leads: that
+/// expense or settlement in its group (`group_id` is sent while the user
+/// can still see the group), otherwise the groups list. Null when the
+/// transaction is not linked to a group.
+String? groupRecordLocation(TransactionDto t) {
+  final String? expenseId = t.groupExpenseId;
+  final String? settlementId = t.settlementId;
+  if (expenseId == null && settlementId == null) {
+    return null;
+  }
+  final String? groupId = t.groupId;
+  if (groupId == null || groupId.isEmpty) {
+    return AppRoutes.groups;
+  }
+  if (expenseId != null) {
+    return AppRoutes.groupExpenseDetail(groupId, expenseId);
+  }
+  return AppRoutes.groupSettlementDetail(groupId, settlementId!);
 }

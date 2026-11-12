@@ -105,7 +105,11 @@ type AuthConfig struct {
 	RequireEmailVerified bool
 	// DevAutoVerifyEmail marks accounts verified without an email
 	// (APP_ENV=development only; refused anywhere else).
-	DevAutoVerifyEmail   bool
+	DevAutoVerifyEmail bool
+	// DevAuthRatePerMinute relaxes the per-IP auth rate limit (normally
+	// ~10/min) for local end-to-end runs. 0 keeps the default; only
+	// allowed when APP_ENV is development or test.
+	DevAuthRatePerMinute int
 	TurnstileSecretKey   string
 	LoginMaxFailures     int
 	LoginFailureWindow   time.Duration
@@ -362,6 +366,7 @@ func LoadFrom(lookup LookupFunc) (*Config, error) {
 		CookieSecure:         l.boolean("AUTH_COOKIE_SECURE", true),
 		RequireEmailVerified: l.boolean("AUTH_REQUIRE_EMAIL_VERIFIED", true),
 		DevAutoVerifyEmail:   l.boolean("AUTH_DEV_AUTO_VERIFY_EMAIL", false),
+		DevAuthRatePerMinute: l.integer("AUTH_DEV_RATE_PER_MINUTE", 0),
 		TurnstileSecretKey:   l.str("TURNSTILE_SECRET_KEY", ""),
 		LoginMaxFailures:     l.integer("AUTH_LOGIN_MAX_FAILURES", 5),
 		LoginFailureWindow:   l.duration("AUTH_LOGIN_FAILURE_WINDOW", 15*time.Minute),
@@ -517,6 +522,12 @@ func (c *Config) validate(l *loader) {
 	}
 	if len(c.Security.URLSigningKey) == 0 {
 		l.errs = append(l.errs, errors.New("URL_SIGNING_KEY is required (base64, 32 bytes)"))
+	}
+	if c.Auth.DevAuthRatePerMinute != 0 && !c.IsDevelopmentLike() {
+		l.errs = append(l.errs, errors.New("AUTH_DEV_RATE_PER_MINUTE is only allowed when APP_ENV is development or test"))
+	}
+	if c.Auth.DevAuthRatePerMinute < 0 || c.Auth.DevAuthRatePerMinute > 6000 {
+		l.errs = append(l.errs, errors.New("AUTH_DEV_RATE_PER_MINUTE must be between 0 and 6000"))
 	}
 	if c.Auth.DevAutoVerifyEmail && c.Env != EnvDevelopment {
 		l.errs = append(l.errs, errors.New("AUTH_DEV_AUTO_VERIFY_EMAIL=true is only allowed when APP_ENV=development"))

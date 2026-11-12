@@ -79,7 +79,7 @@ func (s *Service) Search(ctx context.Context, q string) ([]PublicProfile, error)
 	}
 	q = strings.ToLower(strings.TrimPrefix(strings.TrimSpace(q), "@"))
 	if len(q) < 3 {
-		return nil, apperr.FieldError("query.q", "Enter the full username (at least 3 characters).")
+		return nil, apperr.FieldCode("query.q", "query_too_short", "Enter the full username (at least 3 characters).", map[string]string{"min": "3"})
 	}
 	out := []PublicProfile{}
 	err = s.DB.WithUserReadTx(ctx, uid, func(tx pgx.Tx) error {
