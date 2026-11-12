@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Universal Links template (NOT yet referenced by the Xcode project).
+  Enable it in Xcode: Runner target > Signing & Capabilities > + Associated
+  Domains, then replace montra.example with the production web domain and
+  host /.well-known/apple-app-site-association there (see README). It is not
+  wired by default because free/personal signing teams cannot use the
+  Associated Domains capability and device builds would fail to sign.
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:montra.example</string>
+	</array>
+</dict>
+</plist>

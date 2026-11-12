@@ -1,0 +1,50 @@
+name: montra_mobile
+description: "Montra: privacy-first personal and social finance (Flutter client for Android and iOS)."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.3
+  flutter: ">=3.47.0"
+
+# Dependency policy (see README "Dependencies"): only stable releases that
+# have been public for at least ~14 days. Exact pins mark packages whose
+# newest release is still inside that window; relax them after review.
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  connectivity_plus: ^7.3.2
+  device_info_plus: ^13.3.0
+  dio: ^5.11.1
+  # 13.2.0–13.3.2 were published 2026-10-24 … 11-02 (inside the 14-day
+  # window). Picks statement files and documents (receipts, attachments).
+  file_picker: 13.1.0
+  flutter_riverpod: ^3.4.3
+  flutter_secure_storage: ^11.2.0
+  flutter_timezone: ^5.1.1
+  # 18.1.2 was published 2026-10-29 (inside the 14-day window).
+  go_router: 18.1.1
+  # Camera capture and photo library for receipts and attachments.
+  image_picker: ^1.2.4
+  intl: ^0.20.2
+  meta: ^1.18.3
+  package_info_plus: ^10.2.2
+  qr_flutter: ^4.1.0
+  shared_preferences: ^2.5.6
+  # Share or save downloaded reports, receipts and attachments.
+  share_plus: ^13.3.1
+  url_launcher: ^6.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mocktail: ^1.0.5
+
+flutter:
+  uses-material-design: true
+  generate: true

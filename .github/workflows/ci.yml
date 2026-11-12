@@ -1,0 +1,149 @@
+# Montra CI: validation only. This workflow NEVER deploys (spec §15).
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.f.outputs.backend }}
+      web: ${{ steps.f.outputs.web }}
+      mobile: ${{ steps.f.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: f
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend: ['backend/**', 'supabase/**', 'contracts/**']
+            web: ['web/**', 'contracts/**']
+            mobile: ['mobile/**', 'contracts/**']
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  no-paywall:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject paid-tier code paths (spec §17)
+        run: |
+          ! grep -rniE "premium(_|-)?(plan|tier|only)|paywall|upgrade to pro|subscription checkout|billing portal" \
+            --include=*.go --include=*.ts --include=*.tsx --include=*.dart backend web/src mobile/lib 2>/dev/null
+
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: backend/go.mod, cache-dependency-path: backend/go.sum }
+      - name: Create CI roles and database (mirrors scripts/db/bootstrap.sh)
+        run: |
+          psql -h localhost -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create role montra_owner login password 'ci';
+          create role montra_app login password 'ci';
+          create role montra_worker login password 'ci';
+          create database montra_test owner montra_owner;
+          SQL
+      - name: gofmt
+        working-directory: backend
+        run: test -z "$(gofmt -l ./cmd ./internal ./tests)"
+      - name: vet
+        working-directory: backend
+        run: go vet ./...
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with: { working-directory: backend, version: v2.14.0 }
+      - name: sqlc generated code is current
+        working-directory: backend
+        run: go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 diff
+      - name: Contract drift check
+        working-directory: backend
+        run: go run ./cmd/openapi -check -out ../contracts/openapi/montra.v1.json
+      - name: Error-code tables in docs/API.md are current
+        run: python3 scripts/docs/gen_error_codes.py --check
+      - name: Unit tests (race)
+        working-directory: backend
+        run: go test -race ./internal/...
+      - name: Integration + RLS + API tests
+        working-directory: backend
+        env:
+          TEST_DATABASE_MIGRATION_URL: postgres://montra_owner:ci@localhost:5432/montra_test?sslmode=disable
+          TEST_DATABASE_APP_URL: postgres://montra_app:ci@localhost:5432/montra_test?sslmode=disable
+          TEST_DATABASE_WORKER_URL: postgres://montra_worker:ci@localhost:5432/montra_test?sslmode=disable
+        run: go test -p 1 -count=1 ./tests/...
+      - name: Short fuzz
+        working-directory: backend
+        run: |
+          go test ./internal/domain/money -run=^$ -fuzz=FuzzParseFormatRoundTrip -fuzztime=15s
+          go test ./internal/domain/split -run=^$ -fuzz=FuzzByWeights -fuzztime=15s
+      - name: govulncheck
+        working-directory: backend
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+      - name: Build binaries
+        working-directory: backend
+        run: CGO_ENABLED=0 go build -trimpath ./cmd/...
+      - name: Build container image (local only, never pushed)
+        working-directory: .
+        run: docker build -f backend/Dockerfile -t montra-backend:ci --build-arg APP_VERSION=ci .
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm gen:api && git diff --exit-code src/shared/api
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm audit --prod --audit-level high
+
+  mobile:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: mobile } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: dart run tool/gen_api.dart && git diff --exit-code lib/core/api/generated
+      - run: flutter analyze
+      - run: flutter test

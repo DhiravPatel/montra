@@ -1,0 +1,243 @@
+# Montra — Implementation Status
+
+Last updated: 2026-11-04 (P10 notifications and integrations backend).
+
+> Continuation rule: a new session reads this file first, then
+> `docs/IMPLEMENTATION_PLAN.md` and `docs/REQUIREMENTS_TRACEABILITY.md`,
+> and resumes at **Next actions** below without redoing completed work.
+
+## Phase summary
+
+| Phase | Status | Notes |
+|---|---|---|
+| P0 Audit + planning | IMPLEMENTED | Environment audited; ADRs, plan, matrix written |
+| P1 Foundation | IMPLEMENTED | Backend foundation (config, logging, errors, Huma/chi API, DB+RLS helpers, migrator, jobs/outbox/scheduler, storage, email, OpenAPI export, CI, Makefile). Web foundation (Vite/React 19/TS strict, typed client, refresh/CSRF/re-auth handling, design system, i18n en/hi) and Flutter foundation (Dio client, secure refresh storage, generated models, theme, l10n, router) done and verified against the current contract |
+| P2 Schema + RLS | IMPLEMENTED | 11 migrations, 111 tables, RLS on all (tested); domain: money, split, settlement, ledger, period, recurrence, budgetcalc, subdetect done; fx/forecast/reconcile with their phases |
+| P3 Auth + lifecycle | IN_PROGRESS | Backend complete + tested (auth, MFA, sessions, profile/preferences/onboarding/consents, export, deactivate, deletion). Web + mobile auth and security screens done (sign-up/verify/sign-in/MFA/reset, sessions, password, two-step); profile/preferences/privacy screens and the contract fixes in **Open contract issues** pending |
+| P4 Personal finance | IN_PROGRESS | Backend complete + tested: accounts (types, opening balance ledger event, adjustments, archive/restore/close, credit liability, balance history), payment methods, categories (hierarchy, merge+preview, rules preview/apply, delete-if-unused), tags, merchants (aliases, merge, spend history), transactions (create/edit/void/restore/duplicate/bulk/refund caps/attachments/audit/search/cursor pagination), transfers (fees, FX, unit void), analytics layer + dashboard + widgets. Clients pending |
+| P5 Budgets/planning | IN_PROGRESS | Backend complete + tested: budgets (types/periods/allocations/rollover/members/alerts), recurring rules + occurrences (durable idempotent scheduler, missed-run recovery, bounded retries, DST/month-end, pause/resume/skip/postpone/edit-future/delete), bills (state, reminders, overdue, mark paid by linking or recording, payment candidates), subscriptions (manual, explainable detection, confirm/dismiss, price history, normalized cost, duplicates, confirmed cancellation, renewal/trial reminders), goals (planned/recorded/verified contributions, no double counting, milestones, forecast, sharing with visibility, CSV export), planning calendar. Clients pending |
+| P6 Receipts/imports | IN_PROGRESS | Backend complete + tested: statement imports (CSV/XLSX/OFX parsing under limits, mapping suggestion, fingerprints, exact/possible duplicates, totals and balance checks, idempotent confirm, background processing, corrections, retry, cancel, rollback), receipts (inbox, extraction pipeline with versions, review, duplicates, match/create/unlink/discard), reconciliation (candidates, confirmed matches with recorded effects, unmatch, account balance reconciliation). Real receipt extraction provider and PDF statements wait for P9; client screens pending |
+| P7 Analytics/reports | IN_PROGRESS | Backend complete + tested: FX (manual overrides, append-only provider rates with ECB adapter off by default, historical/current policies, exact conversions with disclosed rates), display-currency conversion in analytics, planning analytics (budgets, recurring commitments, subscriptions, goals), merchant/tag filters, reports in CSV/XLSX/PDF/JSON with snapshots, durable jobs, signed downloads, expiry and weekly/monthly schedules; docs/METRICS.md. Group/trip/household analytics and reports wait for P8; client chart/report screens pending |
+| P8 Social/community | IN_PROGRESS | **P8a backend complete + tested:** social graph (opt-in username discovery through minimal-profile helpers, friend requests with the profile's request control, remove, block, mute), groups (six types, link/username invitations, join requests, roles, ownership transfer, leave/remove with balance rules, archive/delete), shared expenses (equal/exact/percentage/shares/itemized, multiple payers, exclusions, original-currency metadata, comments, disputes, revisions), balances (derived per read; original + simplified debts), settlements (propose → reported → confirmed, dispute, void with reason, correction, idempotent create), payers' and parties' linked personal records kept in sync by the worker, activity log with preference-aware notifications, group report + CSV export. recurring shared bills (auto-added by the scheduler or added by members). **P8b backend complete + tested:** communities (public/private/invite-only, approvals, roles, invitations), posts/comments/replies/reactions/polls with plain-text cleaning, secret detection, link rules and spam caps; moderation (reports, queues, auto-hide, actions with reversal, platform sanctions, appeals); challenges (opt-in progress, streaks, consent leaderboards). Guard triggers close self-promotion/unban paths (000014). Clients pending |
+| P9 AI/intelligence | IN_PROGRESS | **Backend complete + tested (provider off locally):** Claude adapter on the official Go SDK (Messages API beta surface with the default server-side refusal fallback, structured outputs, strict read-only tools, cached system prompt, cost estimation; default model `claude-opus-5-5`), consent-gated preferences and disclosure, grounded Q&A with fact/number verification and advice boundaries, deterministic fallback, conversations with deletion, category suggestions, duplicate check, subscription detection, forecast with range, period summaries, AI receipt reader and PDF statement reader behind explicit consent, rule-based insights (7 rules) with suppression and a daily job. Live-model evaluation needs an owner-provided API key; clients pending |
+| P10 Notifications/integrations | IN_PROGRESS | **Backend complete + tested (providers off locally):** Web Push (RFC 8291 encryption, RFC 8292 VAPID, push-service host allowlist, gone-endpoint cleanup, retries), FCM HTTP v1 adapter, email digests (daily/weekly at 08:00 local) and signed one-click unsubscribe, security alerts in the notification center, integration framework (registry, consent, single-use OAuth state, encrypted tokens, cursor syncs with dedupe/pending/reversal handling, scheduled syncs, consent expiry, abandoned-run recovery, signed/replay-protected webhooks with quarantine, disconnect with data deletion). No provider adapter is enabled (ADR-016); live channel delivery needs owner credentials; client screens pending |
+| P11 Client completion | IN_PROGRESS | Round 1 done on web and mobile (onboarding, dashboard + widget settings, accounts, payment methods, transactions with refunds/duplicates/bulk/audit/attachments list, transfers). Round 2 next: categories/tags/merchants management, budgets, recurring + bills + calendar, subscriptions, goals |
+| P12 Security/ops | IN_PROGRESS | RLS narrowed for shared transactions (000016) with explicit service checks; retention windows enforced (AI history, raw import cells, abandoned uploads, webhook events, sync runs); provider revoke on account deletion; job and authorization inventory tests (public-operation allowlist); container image + CI build; docs: DATA_MODEL, RLS/AUTHORIZATION matrices (generated), BACKGROUND_JOBS (generated), THREAT_MODEL, PRIVACY, DEPLOYMENT, RUNBOOKS, INCIDENT_RESPONSE, DISASTER_RECOVERY, INTEGRATIONS, CHANGELOG, README. Log-redaction test; metrics wired (RLS denials, provider calls, AI cost, import rows, deletion backlog) with alert rules (ops/prometheus/alerts.yml); local load tool + baseline. Open: DAST/pentest plan, staging load test, restore drill (need a hosted environment), tracing |
+| P13 Final verification | NOT_STARTED | |
+
+## Environment audit (2026-11-04)
+
+| Tool | Found | Notes |
+|---|---|---|
+| Go | 1.26.2 darwin/arm64 (`/opt/homebrew/bin/go`) | GOPATH `~/go`; `~/go/bin` not on PATH |
+| golangci-lint | 2.14.0 (`~/go/bin`) | |
+| sqlc | 1.31.1 (`~/go/bin`) | available, not required (ADR-003) |
+| air | present (`~/go/bin`) | live reload for API |
+| Flutter / Dart | 3.47.4 stable / 3.13.3 | `/Users/dhiravpatel/Documents/flutter` |
+| Android SDK | 36.0.0 at `~/Library/Android/sdk` | **cmdline-tools missing; licenses not accepted** |
+| Xcode | **not installed** (Command Line Tools only) | iOS builds cannot be verified locally |
+| CocoaPods | **not installed** | needed for iOS plugins |
+| Java | OpenJDK 21.0.11 | |
+| Node.js | 22.21.1 | npm 10.9.4, pnpm 10.33.2, yarn 4.11.0 |
+| Git | 2.52.0 | |
+| Docker CLI | present | not used for databases (spec §1.3A.1) |
+| Supabase / Appwrite / Vercel CLIs | not installed | not required locally; owner-controlled |
+
+### Local PostgreSQL (read-only inspection)
+
+| Item | Value |
+|---|---|
+| Running service | Homebrew `postgresql@18` (launchd), server **18.3** |
+| Listen | `localhost` (127.0.0.1 and ::1) port **5432** |
+| Client on PATH | `psql` 14.21 (from `postgresql@14`, not running) — scripts use `/opt/homebrew/opt/postgresql@18/bin` |
+| Auth (`pg_hba`) | `trust` for local socket and loopback — passwords are not enforced locally; unchanged by Montra |
+| Server timezone | Asia/Kolkata; `password_encryption=scram-sha-256`; `max_connections=100` |
+| Existing databases | `memora_dev`, `memora_migrate`, `memory_test`, `petpooja_finance`, `postgres`, `spendly`, `spendly_test` (+ templates) — **never touched** |
+| Existing roles | `dhiravpatel` (superuser), `postgres`, `root` — **never modified** |
+| Montra objects | none existed before bootstrap (no name collisions) |
+| Extensions available | pgcrypto, pg_trgm, btree_gist, citext, uuid-ossp, pg_stat_statements |
+
+Montra creates only: roles `montra_owner`, `montra_app`, `montra_worker`;
+databases `montra_dev`, `montra_test` (see `scripts/db/bootstrap.sh`).
+
+## Blockers and owner actions
+
+| ID | Blocker | Impact | Minimum owner action |
+|---|---|---|---|
+| B-1 | Xcode + CocoaPods missing | iOS build/run unverifiable locally | Install Xcode, `sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer`, install CocoaPods |
+| B-2 | Android cmdline-tools/licenses | `flutter build apk` may fail | Android Studio → SDK Manager → install "Command-line Tools"; run `flutter doctor --android-licenses` |
+| B-3 | No Appwrite project | Live storage verification pending | Create buckets per `docs/DEPLOYMENT.md` §2 in a hosted env |
+| B-4 | No SMTP/VAPID/Firebase credentials | Email/push delivery unverified | Provide in hosted env |
+| B-5 | No AI provider key | AI runs in provider-off (deterministic) mode | Set `ANTHROPIC_API_KEY` in hosted env (optional locally) |
+| B-6 | Bank/AA providers | Integrations disabled pending legal review | Legal/compliance review + provider agreement |
+
+## Parity table (feature × layer)
+
+Legend: ✅ done+tested, 🟡 in progress, ⬜ not started, — not applicable.
+
+Mobile rounds 4–5 done 2026-11-12: `dart format --set-exit-if-changed` 0 changed, `gen_api.dart --check` up to date, `flutter analyze` no issues, `flutter test` +1938 all passed, `flutter build apk --debug` built. Mobile tests are widget/unit tests against mocked APIs; emulator runs were manual and iOS is unverified (no Xcode). Row-level client status: `docs/REQUIREMENTS_TRACEABILITY.md` (P13 client pass).
+
+| Feature | DB | Go API | Web | Mobile | Tests |
+|---|---|---|---|---|---|
+| Foundation | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Auth & sessions & MFA | ✅ | ✅ | ✅ | ✅ | ✅ (backend API, web unit + e2e, mobile widget/unit) |
+| Profile/preferences/onboarding | ✅ | ✅ | ✅ (username on account page) | ✅ onboarding | ✅ |
+| Files & storage (upload helper, attachments) | ✅ | ✅ | ✅ | ✅ | ✅ (backend, web helper + attachment tests) |
+| Notifications center, preferences, web push, unsubscribe | ✅ | ✅ | ✅ | ✅ round 5 (2026-11-12): center, bell, preferences incl. quiet hours; no push (needs owner Firebase/APNs) | ✅ (backend, web 51 tests incl. bell + unsubscribe) |
+| Integrations settings + OAuth callback | ✅ | ✅ | ✅ (honest "not configured" states) | ✅ round 5 (2026-11-12) | ✅ (backend, web) |
+| Privacy: consents, export, deactivate, deletion; fair-use limits | ✅ | ✅ | ✅ | ✅ round 5 (2026-11-12) | ✅ (backend, web 78 tests with help/admin) |
+| Accounts / payment methods | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Transactions / transfers / refunds / search | ✅ | ✅ | ✅ (attachment upload added) | ✅ | ✅ |
+| Categories / rules / tags / merchants | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Budgets + alerts | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Recurring rules + occurrences, bills, calendar | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Subscriptions + detection | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Goals + contributions + sharing | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Statement imports (CSV/XLSX/OFX) | ✅ | ✅ | ✅ wizard + history | ✅ | ✅ (backend, web 63 tests with reconciliation) |
+| Receipts inbox + manual review | ✅ | ✅ | ✅ (no automatic reading) | ✅ (no automatic reading) | ✅ (backend, web 33 tests) |
+| Reconciliation | ✅ | ✅ | ✅ | ✅ (server suggestions only) | ✅ |
+| FX rates + conversion | ✅ | ✅ | ✅ | ✅ | ✅ (ECB via test double only) |
+| Analytics (cash flow, categories, merchants, compare, accounts, plans) | — | ✅ | ✅ | ✅ | ✅ (backend, web 70 tests with reports/fx) |
+| Reports + downloads + schedules | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Friends / blocks / mutes / discovery | ✅ | ✅ | ✅ | ✅ round 4 (2026-11-12) | ✅ (backend API + RLS, web 45 tests) |
+| Groups / invitations / roles / activity / trips | ✅ | ✅ | ✅ | ✅ round 4 (2026-11-12) | ✅ (backend, web 73 tests) |
+| Shared expenses, balances, settlements, recurring shared bills, group reports | ✅ | ✅ | ✅ | ✅ round 4 (2026-11-12) | ✅ (backend, web 55 tests) |
+| Communities / posts / polls | ✅ | ✅ | ✅ (7 page test files, 2026-11-12) | ✅ round 5 (2026-11-12) | ✅ (backend API + RLS) |
+| Moderation (own decisions + appeals; staff queue) | ✅ | ✅ | ✅ | ✅ round 5 (2026-11-12): own decisions + appeals; staff queue web-only by choice | ✅ (backend, web 52 tests with challenges) |
+| Challenges / leaderboards | ✅ | ✅ | ✅ | ✅ round 5 (2026-11-12) | ✅ |
+| Global search | — | ✅ | ✅ | ✅ round 5 (2026-11-12) | ✅ (backend, web 42 tests with insights) |
+| Rule-based insights | ✅ | ✅ | ✅ | ✅ round 5 (2026-11-12) | ✅ |
+| Help & support (+ staff queue), admin usage | ✅ | ✅ | ✅ | ✅ round 5 (2026-11-12): help, requests, contact; staff queue and admin usage web-only by choice | ✅ |
+| AI assistant / suggestions / AI receipts / PDF statements | ✅ | ✅ (disabled by default) | — not built (owner decision 2026-11-05) | — not built | ✅ (backend; fake model only) |
+
+## Test results log
+
+| Date | Command (from `backend/`) | Result |
+|---|---|---|
+| 2026-11-04 | `go test ./internal/...` (domain money/split/settlement, crypto incl. RFC 6238 vectors, storage adapters) | PASS |
+| 2026-11-04 | `go test -fuzz=FuzzParseFormatRoundTrip -fuzztime=10s` / `FuzzByWeights` | PASS (~4.8M / ~4.4M execs, 0 failures) |
+| 2026-11-04 | `go test -p 1 -count=1 ./tests/...` against local PostgreSQL 18.3 `montra_test` (migrations from empty + no-op re-run asserted) | PASS — 13 API tests (auth, MFA, sessions, throttling, CSRF, rate limit, files, export, deletion) + 7 RLS tests |
+| 2026-11-04 | `go test -p 1 -count=1 ./...` after P4 (adds 5 finance suites: accounts/idempotency, edit/void/restore/audit, refund caps + analytics reconciliation, FX transfers, search/categories/rules/bulk/merge) | PASS — 18 API + 7 RLS + 9 unit packages |
+| 2026-11-04 | `golangci-lint run ./...` (v2.14, gosec/depguard/errorlint/noctx…) | 0 issues |
+| 2026-11-04 | Manual smoke: `bin/api` + `bin/worker` on `montra_dev` — register → dev mailbox → verify → login (mobile + web cookies/CSRF) → refresh rotation → logout | PASS |
+| 2026-11-04 | `go test -p 1 -count=1 ./...` after P5 (budgets 3 suites; planning 5 suites: recurring auto-post/month ends/4-month outage recovery/retries, pause/resume/skip/edit-future/confirm idempotency, bills link/overdue/reminders, subscriptions manual/detection/cancellation, goals contributions/forecast/sharing/export + calendar) | PASS — 26 API + 7 RLS tests, 10 unit packages (incl. new `domain/subdetect`) |
+| 2026-11-04 | `golangci-lint run ./...` after P5 | 0 issues |
+| 2026-11-04 | `go run ./cmd/openapi -out ../contracts/openapi/montra.v1.json` then `-check` | Regenerated: 137 paths, 178 operations, 229 schemas; drift check passes |
+| 2026-11-04 | Web (`web/`): `pnpm gen:api`, `check:api`, `typecheck`, `lint`, `format:check`, `test`, `build` against the regenerated contract | PASS — 95/95 tests; build OK |
+| 2026-11-04 | Mobile (`mobile/`): `dart run tool/gen_api.dart` (+`--check`), `flutter analyze`, `flutter test` against the regenerated contract | PASS — no analyzer issues; 137/137 tests |
+| 2026-11-04 | Reported by the client agents (not re-run in this session): web `PW_CHANNEL=chrome pnpm e2e` 8/8 against the live local API; `flutter build apk --debug` succeeded | Agent reports |
+| 2026-11-04 | After contract fixes: `go test -p 1 -count=1 ./...` (adds contract regression suites), `golangci-lint`, contract regenerated (138 paths, 179 operations, 231 schemas) | PASS — 28 API + 7 RLS tests; 0 lint issues |
+| 2026-11-04 | Reminder-job suites (TestSubscriptionTrialAndRenewalRemindersOnce, TestGoalContributionRemindersOncePerPeriod) + full `./tests/...` | PASS — 30 API + 7 RLS tests |
+| 2026-11-04 | P6: `go test ./internal/domain/{statement,reconcile}`; fuzz `FuzzParseCSV`, `FuzzParseAmount`, `FuzzParseXLSXAndOFX` (15 s each) | PASS — 0 crashes |
+| 2026-11-04 | P6 + contract round 2: `go test -p 1 -count=1 ./...` | PASS — 34 API + 7 RLS tests, 13 unit packages |
+| 2026-11-04 | `golangci-lint run ./...`; contract regenerated (161 paths, 206 operations, 274 schemas) | 0 issues |
+| 2026-11-04 | Client agents' adaptation round (reported): web `check:api`/`typecheck`/`lint`/`format:check`/`test` 109/109/`build`/e2e 9/9; mobile `gen --check`/`analyze`/`test` 182/182/`build apk --debug` | Agent reports |
+| 2026-11-04 | Re-verified after contract round 2 (this session): web typecheck/lint/format/test 109/109/build; mobile gen `--check` (exit 0)/analyze/test 182/182 — 2 web and 5 mobile null-fallback sites updated for non-null list data | PASS |
+| 2026-11-04 | P7: `go test ./internal/reports/render` (CSV/XLSX round-trip through the import parser, PDF pagination, JSON) + `go test -p 1 -count=1 ./...` (adds FX, reports, planning analytics suites) | PASS — 37 API + 7 RLS tests |
+| 2026-11-04 | `golangci-lint`; contract regenerated (173 paths, 221 operations, 299 schemas); web `check:api`/typecheck/lint/test 109/109/build | PASS |
+| 2026-11-04 | Mobile after P7 contract: `gen_api.dart` then `flutter analyze` | FAIL — 39 errors: generator emits colliding enum member names (enum value `json`); handed to the mobile agent |
+| 2026-11-04 | Web against the fixed contract: `gen:api`, `check:api`, `typecheck`, `lint`, `test` | PASS (95/95) |
+| 2026-11-04 | Mobile against the fixed contract: `gen_api.dart`, `flutter analyze` | FAIL — 1 error (`ErrorObjectCode` enum in `api_exception.dart:147`); handed to the mobile agent |
+| 2026-11-04 | Mobile generator fix (collision-safe naming + 7 generator tests), reported by the mobile agent: `gen_api.dart --check`, `flutter analyze`, `flutter test` | Agent report: PASS — 0 issues, 189/189 |
+| 2026-11-04 | P8a: `go test -p 1 -count=1 ./internal/... ./tests/...` (adds TestSocialGraphRequestsControlsBlocksAndMutes, TestGroupMembershipInvitationsRolesAndIsolation, TestGroupSplitsBalancesAndSettlementLifecycle, TestGroupLinkedPersonalRecordsStayInSync, RLS TestDiscoveryHelpersExposeOnlyMinimalProfiles) | PASS — 41 API + 8 RLS tests, 13 unit packages |
+| 2026-11-04 | P8a: `golangci-lint run ./...`; contract regenerated (219 paths, 279 operations, 369 schemas) and `-check` | 0 issues; up to date |
+| 2026-11-04 | P8a clients re-verified in this session: web `gen:api`/typecheck/lint/test; mobile `gen_api.dart` + `--check`/`flutter analyze`/`flutter test` | PASS — web 109/109; mobile 0 issues, 189/189 |
+| 2026-11-04 | P8a recurring shared bills + FX metadata (TestGroupRecurringSharedBillsAndForeignCurrency): full `go test -p 1 -count=1 ./internal/... ./tests/...`, `golangci-lint` | PASS — 42 API + 8 RLS tests, 13 unit packages; 0 lint issues |
+| 2026-11-04 | Contract regenerated (226 paths, 288 operations, 375 schemas) + `-check`; web `gen:api`/`check:api`/typecheck/lint/`format:check`/test; mobile gen + `--check`/analyze/test | PASS — web 109/109; mobile 0 issues, 189/189 |
+| 2026-11-04 | P8b: `go test ./internal/domain/textsafe` (+ `FuzzClean` 10 s, ~520k execs), `./internal/challenges` (streaks); full `go test -p 1 -count=1 ./internal/... ./tests/...` (adds TestCommunitiesMembershipPostsPollsAndSafety, TestModerationReportsActionsSanctionsAndAppeals, TestChallengesOptInProgressAndLeaderboard, RLS TestCommunityAndGroupGuards); `golangci-lint` | PASS — 45 API + 9 RLS tests, 15 unit packages; 0 lint issues |
+| 2026-11-04 | P8b contract regenerated (271 paths, 342 operations, 431 schemas) + `-check`; web `gen:api`/`check:api`/typecheck/lint/`format:check`/test; mobile gen + `--check`/analyze/test | PASS — web 109/109; mobile 0 issues, 189/189 |
+| 2026-11-04 | P9: `go test ./internal/ai/llm` (adapter against a local httptest fake: request shape, fallbacks header, strict tools, tool loop replay, media order, error classification, cost); full `go test -p 1 -count=1 ./internal/... ./tests/...` (adds 4 AI/insights suites using a scripted fake model; no network); `golangci-lint` | PASS — 49 API + 9 RLS tests, 16 unit packages; 0 lint issues |
+| 2026-11-04 | P9 contract regenerated (285 paths, 359 operations, 470 schemas) + `-check`; web `gen:api`/`check:api`/typecheck/lint/test; mobile gen + `--check`/analyze/test | PASS — web 109/109; mobile 0 issues, 189/189 |
+| 2026-11-04 | P10: `go test ./internal/notifications` (RFC 8291 encryption round trip, VAPID JWT, host allowlist, gone/retry, FCM token exchange + send, digest rules); full `go test -p 1 -count=1 ./tests/... ./internal/...` (adds TestIntegrationConsentOAuthSyncWebhooksAndDisconnect, TestIntegrationFailedExchangeAndAbandonedRuns, TestWebPushEncryptedDeliveryRetriesAndGoneEndpoints, TestEmailDigestAndOneClickUnsubscribe, TestWebhookInboxIsWriteOnlyAndQueuingIsNarrow; security alert assertions in TestMFAEnrollmentLoginReplayAndRecovery); `golangci-lint run ./...` | PASS — 53 API + 10 RLS tests, 17 unit packages; 0 lint issues |
+| 2026-11-04 | P10 contract regenerated (293 paths, 367 operations, 489 schemas) + `-check`; web `gen:api`/typecheck/lint/test/build; mobile `gen_api.dart`/analyze/test | PASS — web 109/109; mobile 0 issues, 189/189 |
+| 2026-11-04 | P12: `go test -race ./internal/...` (adds TestJobInventory, TestAuthorizationInventory); `go test -p 1 -count=1 ./tests/...` (adds TestRetentionCleanupEnforcesConfiguredWindows, TestAccountDeletionRevokesIntegrationsAtTheProvider; household RLS + include_shared assertions); `golangci-lint`; contract `-check` | PASS — 56 API + 10 RLS tests (incl. TestLogsNeverContainPersonalValues), 19 unit packages (race); 0 lint issues; contract up to date. Container image not built locally (Docker daemon not running); CI builds it |
+| 2026-11-04 | P12 load baseline: `go run ./cmd/loadtest -users 10 -duration 60s -rate 2` against the local dev API | PASS — 1190 requests, read p95 13 ms, write p95 12 ms, 0 errors (local only) |
+| 2026-11-05 | Search, support and insight rules: `go test -p 1 -count=1 ./tests/...` (adds TestGlobalSearchIsScopedToAuthorizedData, TestSupportRequestsContactAndStaffQueue, TestInsightFrequencyRecurringDriftAndRepeatedOverspend), `go test -race ./internal/...`, `golangci-lint` | PASS — 59 API + 10 RLS tests, 19 unit packages; contract regeneration pending until client round 1 finishes |
+| 2026-11-05 | P11 round 1 verified by me after the agents: web `check:api`, typecheck, lint, format:check, test 204/204, build; mobile `gen_api.dart --check`, `flutter analyze` (0), `flutter test` 405/405 | PASS |
+| 2026-11-05 | Contract fixes C-22…C-32 + dev verification bypass (ADR-049): `go test -race ./internal/...` (20 packages), `go test -p 1 -count=1 ./tests/...` (adds TestClientContractFixes, TestDevelopmentEmailVerificationBypass; config TestEmailVerificationBypassIsDevelopmentOnly), `golangci-lint`, contract regenerated + `-check`; web regenerated + typecheck/lint/format/test 204/204/build + Playwright `PW_CHANNEL=chrome pnpm e2e` 10/10 against the live dev API; mobile regenerated + analyze 0 + test 405/405 | PASS |
+| 2026-11-05 | Non-AI backend completions: fair-use limits + storage allowance, admin usage dashboard (migration 000018), community @mentions, trip reminders, challenge halfway milestone, period comparison, coded planning rules, notification text guard: `go test -race ./internal/...` (21 packages), `go test -p 1 -count=1 ./tests/...` (67 API + 10 RLS), `golangci-lint` 0 | PASS — contract regeneration deferred until client round 2 finishes |
+| 2026-11-05 | P11 round 2 (reported by the mobile agent): `dart format --set-exit-if-changed`, `gen_api.dart --check`, `flutter analyze` 0, `flutter test` 752/752, `flutter build apk --debug` | Agent report (emulator not run) |
+| 2026-11-05 | Round-2 contract fixes C-33…C-46 (budgets/bills/recurring, categories/rules/tags/merchants, subscriptions/goals; migrations 000019–000021): `go build`, `go vet`, `golangci-lint` 0, `go test -race ./internal/...` (22 packages), `go test -count=1 ./tests/...` (88 API + 10 RLS = 98 tests), `gen_error_codes.py --check`, contract regenerated + `-check`; RLS matrix (113 tables, 327 policies) and authorization matrix (397 operations) regenerated | PASS (verified by me after the agents); client adoption in progress |
+| 2026-11-05 | P11 web rounds 3–5 (receipts, imports, reconciliation, analytics, reports, fx, friends, groups, group money, communities, challenges, moderation, notifications, integrations, search, insights, help/support, privacy, limits, admin usage) verified by me after the agents: `pnpm exec vitest run` 120 files / 1096 tests, `eslint .` 0, `tsc` 0, `prettier --check` clean, `pnpm build` OK, `check:api` up to date; Hindi coverage enforced for every new prefix | PASS |
+| 2026-11-06 | P11 mobile round 3 (round-2 adoption + receipts, attachments, imports, reconciliation, analytics, reports, fx) verified by me after the agent: `dart format` 0 changed, `gen_api.dart --check` up to date, `flutter analyze` 0, `flutter test` 1168/1168; the agent reports `flutter build apk --debug` OK and an emulator run (Pixel_10_Pro) on the APK built before its last receipts merge | PASS (APK/emulator per agent report) |
+| 2026-11-06 | Backend round 3 (client findings from web rounds 3–5 and mobile round 3; migrations 000022–000027; seven agents + coordinator fixes) verified by me: `go build`, `go vet`, `golangci-lint` 0, `gen_error_codes.py --check`, `go test -count=1 ./...` all packages, `go test -v ./tests/...` 139 passing integration tests (API + RLS), `go test -race ./internal/...` 28 packages; contract regenerated + `-check`; `montra_dev` migrated to 27 and dev API/worker restarted (`/health/ready` 200); RLS matrix (114 tables, 331 policies, 51 definer functions) and authorization matrix (453 operations) regenerated | PASS — web/mobile adoption in progress |
+| 2026-11-12 | P13 client verification pass (main session evidence after the last code change): web `pnpm exec vitest run` 121 files / 1186 tests, `tsc -p tsconfig.app.json --noEmit` 0, `eslint` 0 warnings, `prettier --check` clean, `pnpm check:api` up to date, `pnpm build` OK, Playwright `E2E_PORT=5199 PW_CHANNEL=chrome pnpm e2e` 11/11 against the live local API; mobile `dart format --set-exit-if-changed` 0 changed, `gen_api.dart --check` up to date, `flutter analyze` 0, `flutter test` +1938, `flutter build apk --debug` built; backend `go test ./...` ok, golangci-lint 0. Test assertions read for the 67 client rows of the matrix: 15 VERIFIED, 36 TESTED, 3 IMPLEMENTED, 2 BLOCKED (MOB-005, PRIV-005), 10 IN_PROGRESS, 1 NOT_STARTED (details in REQUIREMENTS_TRACEABILITY.md and FEATURE_COVERAGE.md) | PASS (no mobile on-device tests; emulator runs manual; iOS unverified) |
+
+## Contract issues found by the web and mobile foundations
+
+Backend fixes are covered by `tests/api/contract_test.go` (TestAuthContractBehaviors, TestCurrenciesAndRetiredCurrencies); client adaptations are in progress.
+
+| ID | Issue | Resolution | Status |
+|---|---|---|---|
+| C-1 | Error responses not declared per operation; `ErrorObject.code` a free string | Errors declared per operation (`httpx.Errs`, 409 on writes); `code` published as a 30-value enum; docs/API.md table | FIXED (backend) |
+| C-2 | `REAUTH_REQUIRED` / `MFA_REQUIRED` share HTTP 401 with `UNAUTHENTICATED` | Kept by design; docs/API.md: only `UNAUTHENTICATED` triggers refresh | DOCUMENTED |
+| C-3 | Contract `minLength: 8` vs server 10 | Schema 10; config refuses `AUTH_PASSWORD_MIN_LENGTH` < 10 | FIXED |
+| C-4 | Policy errors always `body.password` | Field passed explicitly (`body.new_password` on reset/change) | FIXED |
+| C-5 | `/auth/refresh` required a JSON body | Body optional | FIXED |
+| C-6 | Headers undeclared; `LOGIN_THROTTLED` lacked `Retry-After` | Header components referenced by every operation; `apperr.Error.RetryAfter` → `Retry-After` | FIXED |
+| C-7 | `/auth/session` `created_at` = zero time | Reads the stored session row | FIXED |
+| C-8 | MFA verify used `UNAUTHENTICATED` for wrong code and expired attempt | `MFA_CODE_INVALID` / `MFA_CHALLENGE_EXPIRED` | FIXED (backend; clients adapting) |
+| C-9 | Re-auth did not accept recovery codes | `recovery_code` accepted (single use) | FIXED (backend; clients adapting) |
+| C-10 | No currency endpoint; BGN still selectable | `GET /currencies`; retired currencies `selectable: false`, rejected for new records | FIXED (backend; clients adapting) |
+| C-11 | ADR-005 named a non-existent `cmd/contractgen` | ADR-005 corrected | FIXED |
+| C-12 | No captcha widget on clients | Keep `TURNSTILE_SECRET_KEY` unset until P11 | OPEN (P11) |
+| C-13 | No operation declared 503 | 503 added to the common error set | FIXED |
+| C-14 | `recovery_code` max length 32 on re-auth vs 20 elsewhere | 20 everywhere (codes are 11 characters) | FIXED |
+| C-15 | `CurrencyDTO` loosely typed | `retired_on` format date, `replaced_by` pattern, `exponent` 0–4 | FIXED |
+| C-16 | List envelopes allowed `data: null` | `data` non-nullable; `httpx.OK` turns nil slices into `[]` | FIXED (clients adapted) |
+| C-17 | Terms/privacy versions not discoverable | `GET /legal` | FIXED |
+| C-18 | Re-auth and TOTP disable answered `MFA_REQUIRED` for a wrong code | `MFA_REQUIRED` = missing, `MFA_CODE_INVALID` = wrong or used | FIXED |
+| C-19 | Turning TOTP off needed a second code after a strong re-auth | Not needed when the session proved the second factor (a strong re-auth now marks the session MFA-verified) | FIXED |
+| C-20 | `LOGIN_THROTTLED` Retry-After was the whole window | Time until enough failures expire | FIXED |
+| C-21 | No per-operation list of error codes | Possible `x-error-codes` extension | OPEN (low priority) |
+| C-22 | Repeated list parameters silently kept the first value | Repeated keys answer 422 `repeated_parameter`; lists are comma-separated (documented) | FIXED |
+| C-23 | Transaction cursor exposed the last row's date/amount | Cursors are AES-GCM encrypted and authenticated (tampering → 422) | FIXED |
+| C-24 | Onboarding progress not readable; POST replaced lists | `GET /me/onboarding`; POST merges (completed wins over skipped) | FIXED |
+| C-25 | Dashboard trend had gaps and no bucket size | Zero-filled buckets per currency + `trend_granularity` / `series_granularity` | FIXED |
+| C-26 | English-only notes, hint reasons, "Uncategorized" | `note_codes`, duplicate `reason_codes` + `days_apart`, `system_key` on CategoryRef/CategorySlice (`uncategorized`) | FIXED |
+| C-27 | DOMAIN_RULE_VIOLATION had no reason or values | `apperr.Rule`: `details[0].code` + `params` (refund cap with remaining amount, currency mismatch, inactive account, linked records) | FIXED (all modules; code list in docs/API.md) |
+| C-28 | Payment method PATCH replaced the record, no version/get/restore, delete result unknown | Partial PATCH (`clear_account`, empty strings clear) with optional `version`, `GET /payment-methods/{id}`, `POST …/restore`, DELETE returns `{deleted, archived}` (migration 000017) | FIXED |
+| C-29 | Transfers lacked date/description/notes and their own delete/restore | Fields added; `DELETE /transactions/transfers/{id}` and `POST …/restore` (legs + fee together) | FIXED |
+| C-30 | Refunds did not carry the original merchant | Refunds inherit the original merchant (category precedence unchanged) | FIXED |
+| C-31 | Response enums were plain strings | `account_type`, payment `network`, widget `key`, audit `action`/`actor_kind`, `income_range` are enums | FIXED (clients adapted) |
+| C-32 | Smaller gaps | 0 clears account statement/due day; `?version=` on archive/restore/close; `uncategorized=true` filter; income range documented as monthly INR; audit `changes` documented | FIXED |
+| C-33 | PATCH on budgets, bills and recurring rules replaced the whole record (omitted merchant, reminders, notes, allocations were lost) | Partial PATCH: only sent fields change; lists replace; text cleared with `""`, other optional fields through `clear`; value + clear of one field → 422. Editing a bill or rule keeps postponed/own-amount occurrences when the dates do not change (tests/api/planning_fixes_test.go) | FIXED (backend); clients adapting |
+| C-34 | No lifecycle endpoints or transition rules for bills; budgets could be "paused" while archived; no budget restore | `POST /bills/{id}/pause\|resume\|archive\|restore`, `POST /budgets/{id}/restore`; invalid moves → 422 `invalid_status_transition` {from,to}; lifecycle actions on bills, budgets and rules accept `?version=` | FIXED |
+| C-35 | Bill and rule creates could duplicate on retry | `Idempotency-Key` required on `POST /bills` and `POST /recurring-rules` (replay returns the first record) | FIXED; clients adapting |
+| C-36 | Untranslatable or uncoded responses in planning | `reason_codes` + `days_from_due` on bill payment candidates; `note_code` on `/analytics/recurring`; `note_codes` enum; coded 409s (`schedule_ended`, `rule_in_use`, `no_open_occurrence`, `occurrence_not_open`, `occurrence_not_skipped`, `occurrence_already_handled`); `explanation_items` and allocation `overspent` on budgets; error-code tables in docs/API.md generated from code (`make docs`) | FIXED |
+| C-37 | Planning shape gaps | Rules carry `merchant {id,name}` and `bill_id`; enums on `frequency`, `interval_unit`, occurrence `kind`/`status` (never-produced `postponed`/`cancelled` removed: a moved occurrence keeps `postponed_to`), calendar `status`; budgets carry `owner_display_name`; alert thresholds published as an enum, `[]` turns them off; empty candidates instead of a 409 when nothing is unpaid | FIXED |
+| C-38 | Budget editors got "not found" for the owner's categories; group budgets silently ignored type, filters and non-member allocations | Owner references valid for editors (`montra.budget_owner_ref_count`); group budgets accept total/envelope/zero-based split between current members (coded `group_budget_*` rules); personal budgets reject member allocations, merchant limits outside merchant budgets and account budgets without accounts | FIXED |
+| C-39 | Budget drill-down silently capped at 200 and listed transactions the total did not count; alerts capped at 200 | `/budgets/{id}/transactions` lists exactly the counted transactions (shared selection with the total) with cursor pages; `/budget-alerts` cursor pages; bills and rules lists bounded by fair-use caps shown in `/limits` (`record_limit_reached`) | FIXED |
+| C-40 | Category merge counts were an untyped map; no merchant merge preview; merges missed rule merchants, budget filter arrays and pending detections | Typed `MergeAffected` / `MerchantMergeAffected` (incl. `budget_filters`); `POST /merchants/merge/preview`; merges move `category_rules.set_merchant_id`, budget `excluded_category_ids` / `merchant_ids`, detections; `merged_into_id` stays one hop; transaction filters on a merged ID resolve to its target | FIXED (tests/api/organize_test.go, planning_fixes_test.go) |
+| C-41 | Rules lost the currency of their amount bounds and matched any currency; no versions on rules, tags, merchants; uncoded name clashes; wrong error field names | `amount_currency` stored (migration 000019) and matched per currency; `version` on rules/tags/merchants (sent → checked); `name_taken` {name[, merchant_id]}, `category_in_use` with reference counts; `body.set_category_id`, `body.rule.<field>`, `body.default_category_id`; `priority` optional (default 100) | FIXED |
+| C-42 | Missing organize endpoints | `GET /categories/{id}`, `POST /category-rules/{id}/apply`, `POST /merchants/aliases/remove`; `GET /merchants` cursor pages + `status` (default active); colour/icon clearing | FIXED |
+| C-43 | `POST /subscriptions/{id}/payments` with `update_price` returned 500 | Links moved to `subscription_payments` (one subscription per transaction; migration 000020), unique event index dropped; regression test | FIXED |
+| C-44 | Subscriptions/goals: whole-record PATCH, no create idempotency, uncoded or 409 transitions, missing enums and codes | Partial PATCH with `clear`; `Idempotency-Key` on `POST /subscriptions` and `POST /goals`; `invalid_status_transition` 422 {from,to}; enums (`billing_frequency`, `interval_unit`, event `kind`, `goal_type`); `confidence_bp`, evidence `reason_codes`, duplicate `reason_code`, forecast `assumption_codes`, event `note_code`; `?version=` on actions | FIXED; clients adapting |
+| C-45 | Subscription gaps | `GET /subscriptions/{id}/payment-candidates`, `DELETE /subscriptions/{id}/payments/{transactionId}`, `PATCH /subscriptions/{id}/cancellation-checklist/{index}`, `cancelled_on`; at most 500 open subscriptions (`record_limit_reached`, shared `internal/platform/caps`) | FIXED |
+| C-46 | Goal gaps | Owner in `members` (role `owner`) + `owner`/`owner_user_id`; `POST /goals/{id}/contributions/{contributionId}/record`; export declared `text/csv` and always complete (it was cut at 500 rows); contributions page with a cursor; at most 200 open goals (`record_limit_reached`); `goal_inactive` {status} | FIXED |
+| C-47 | Receipts: no paging, no create idempotency, automatic reading unless opted out, uncoded 409s, no restore, card numbers with spaces stored unmasked | Cursor pages; `Idempotency-Key` on `POST /receipts`; `read_automatically` (default false; `skip_extraction` deprecated); coded 409s (`file_in_use`, `page_not_ready`, `receipt_*`); `POST /receipts/{id}/restore`; `reason_codes`/`warning_codes`; masking of digit runs across spaces/dashes (DB trigger too) | FIXED (tests/api/receipts_social_fixes_test.go) |
+| C-48 | Social: prefix username search, discovery on by default, no block/mute lists, uncoded request conflicts | Exact-username search; `discoverable_by_username` default false; `GET /blocks`, `GET /mutes`; `already_friends`/`request_pending`; `@` stripped; requests tab deep link | FIXED |
+| C-49 | Imports/reconciliation: generic failure reasons, counts never stored, account reconcile/import fields never set, no manual matching, caps without cursors | `error_code`/`error_field`/`error_params`, `mapping_note_codes`, `to_import_rows`, Money totals; stored reconciliation counts; `last_reconciled_*`/`last_import_at` maintained; `GET /accounts/{id}/statement-lines` + manual `POST /reconciliation/matches`; cursor pages; `Idempotency-Key` on `POST /imports`; already-imported rows no longer loop in processing | FIXED (tests/api/imports_recon_fixes_test.go) |
+| C-50 | Reports/analytics/FX: no report delete, income/expense reports identical to cash flow, bare `as_of` pinned to UTC noon, stuck `running`/`completed` reports, no resolved window, cross-currency merchant ranking | `DELETE /reports/{id}`; type sets per report; `as_of` in the user's zone; `failed` on last attempt + derived `expired`; `ReportDTO.window`; per-currency ranking; `PATCH /reports/schedules/{id}`; comparison `change`/`note_codes`; `previous_window`; `rate_policy_code`; `kind=income` categories | FIXED (tests/api/reports_fx_fixes_test.go) |
+| C-51 | Groups: full-replace PATCH, join approval never enforced, ordinary members got 500 adding a recurring occurrence, uncoded 409s, no invitation people, FX amount not derived, 500-row expense cap, 1-paisa mismatch between balance views | `GroupPatch`; approval → 202 join request (default off, existing groups set off); definer helpers for occurrence completion; coded conflicts; `invitee`/`invited_by`, preview fields, `my_net`; `fx_rate_source` + derived amount; cursor pages + filters; controlled-rounding `PairwiseDebts`; typed activity summaries; `text/csv` export | FIXED (tests/api/groups_fixes_test.go; ADR-035/038 amended) |
+| C-52 | Notifications/privacy: VAPID key not served, push endpoints survived sign-out, preferences reset omitted digests, weekly digest not honoured, English-only deletion/limits text, no consent versions or export list | `GET /notifications/push-config`, `GET /me/push-endpoints`, endpoints bound to the session (trigger on revoke); partial preference items; per-category weekly digest; `GET /legal` consents; `GET /me/exports`; deletion codes; `note_code` | FIXED (tests/api/notifications_fixes_test.go, privacy_fixes_test.go) |
+| C-53 | Insights/search/support: no mute list, unmute left insights muted, non-idempotent feedback, 200-item cap, search saved history on every keystroke, no support thread, uncoded secret/cap refusals | `GET /insights/mutes`, `UnmuteResult`, idempotent feedback + `my_feedback`, cursor pages, `message_code`/Money evidence; `save` default false, new sections + `sort`; `GET/POST /support/requests/{id}/messages`; `contains_secret`, `daily_cap` + Retry-After | FIXED (tests/api/insights_fixes_test.go, search_support_test.go) |
+| C-54 | Communities/challenges/moderation: `GET /challenges?scope=mine` 500, full-replace PATCHes without versions, leaderboard opt-in only client-enforced, no invitation preview/decline/revoke, appellants blind to outcomes, group reports unresolvable, raw schema messages | Query fixed; `ChallengePatch`/`CommunityPatch` with `version`; `leaderboard_opt_in_required`; invitation preview/decline/list/revoke; `appeal` state + `appeal_until` + decision notifications; `GET /moderation/actions`; `group` target for `dismiss_report`; detail codes on every field error (framework schema codes too); `daily_cap` + Retry-After | FIXED (tests/api/community_moderation_fixes_test.go) |
+| C-55 | Budget alert re-evaluation deduped against completed jobs (a change within the same minute after an evaluation finished never re-evaluated) | `jobs.Spec.CoalesceQueued`: coalesce only with a still-queued job; budgets use it; clock-controlled forecast test | FIXED (tests/api/budgets_test.go TestBudgetForecastAlertFollowsTheClock) |
+| C-56 | Client adoption B findings: a member reusing a spent community link got 410; second appeal / re-decision 409 uncoded; appellants could not be told apart from moderators' view; consent version and empty preference item 422 uncoded; dispute activity had no target type; a single foreign-currency payer still needed a client-computed amount (the only client money calculation) | Membership checked before the spent-link 410 (`already_member`); `appeal_pending` / `appeal_already_decided`; `ModerationActionSummary.moderator_id` for moderators/staff only; `consent_version_outdated` {version}; `required` on body.items[i]; `GroupActivitySummary.target_type`; `ExpensePayerInput.amount` optional for one payer (server derives it) + `converted_too_small` {currency}; web dropped `convertWithRate` | FIXED (tests/api/community_moderation_fixes_test.go, groups_test.go, groups_fixes_test.go TestGroupExpensePagesFiltersAndForeignCurrency, privacy_fixes_test.go, notifications_fixes_test.go; web GroupExpenseForms.test.tsx, groups/helpers.test.ts) |
+| C-57 | Client pass findings: mobile `safeLink` opened http(s) links with `user:password@` credentials (host disguise); web onboarding said optional analytics "helps us see which screens work well" though nothing is collected | `uri.userInfo` refused; copy now says no usage statistics are collected (en, hi) | FIXED (mobile community_domain_test.dart; web i18n + onboarding tests) |
+
+## Local environment notes
+
+- An unrelated Vite server (`~/Documents/Project/track/marketplacenewadmin`) listens on `[::1]:5173`; `pnpm dev` in `web/` is pinned to 5173 (email links point there) and fails until that server is stopped. Montra never stops other projects' processes.
+- Web e2e runs created throwaway `e2e.<timestamp>@example.com` accounts in `montra_dev` (local only).
+- `montra_dev` has all 27 migrations applied (latest `20261104000027_community_moderation_fixes`, 2026-11-06, `make migrate`); `bin/api` and `bin/worker` were rebuilt with the round-3 fixes and restarted on it (logs in `/tmp/claude-501/montra-*.log`); `/health/ready` 200. Throwaway `e2e.<timestamp>.*@example.com` users from the client agents' live checks remain in `montra_dev` (local only).
+
+## Next actions
+
+1. P11 clients (finance, budgets, planning, imports, receipts, reports, groups, communities, AI screens, notification center/preferences/push opt-in, the web `/unsubscribe` page that posts the fragment token, Integrations settings with the `/integrations/{provider}/callback` page) → P12 security/ops → P13 verification.
+   P9 follow-ups: live-model evaluation with an owner-provided API key (the unusual-frequency, recurring-amount-change and repeated-overspend rules were added 2026-11-05).
+   P10 follow-ups:  live SMTP/VAPID/FCM delivery once the owner provides credentials; any bank/AA adapter only after legal and security review (ADR-016).
+2. Docs: all required docs written except FEATURE_COVERAGE.md (P13). Regenerate the RLS matrix with `scripts/docs/gen_rls_matrix.sh`, the job and authorization tables with `MONTRA_PRINT_JOBS=1` / `MONTRA_PRINT_AUTHZ=1 go test ./internal/app -v`.
+3. Known limitation to address with P7/P11: transfers between own accounts imported from two statements arrive as income + expense; a "convert to transfer" reconciliation action is planned.

@@ -1,0 +1,16 @@
+# Keep secrets, local data and unrelated sources out of the build context.
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+.git
+.data
+backend/.data
+backend/bin
+web
+mobile
+docs
+contracts
+scripts
+**/node_modules
