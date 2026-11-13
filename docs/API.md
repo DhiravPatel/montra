@@ -358,7 +358,7 @@ refresh.
   `GET /me/moderation/appeals`; the appellant is notified when an appeal
   is decided (`moderation_appeal_upheld` / `moderation_appeal_overturned`;
   `upheld` means the action stands, `overturned` that it was reversed).
-- Challenges: `POST /challenges` (scope private / group / community),
+- Challenges: `POST /challenges` (scope private / group / community; `public` only for staff),
   `join` with `share_progress` / `show_on_leaderboard`, daily
   `POST /challenges/{id}/progress` (re-sending a date corrects it).
   `ChallengeDTO` carries `group {id, name}` / `community {id, name}` (the
@@ -877,9 +877,28 @@ refresh.
   dates) with `upcoming_count` and `overdue_count`; `goals` (active, nearest
   target date first, up to 4) with `goal_count`; `group_balances` (active
   groups where you are owed or owe, largest first per currency, up to 5)
-  with `group_count`. `GET /dashboard/widgets` offers `budgets`,
-  `upcoming`, `goals` and `group_balances` next to the earlier widgets; a
-  saved layout gets new widgets at the end, visible.
+  with `group_count`; `alerts` (active budget alerts, newest first, up to
+  5) with `alert_count`; `renewals` (subscription renewals and trial ends
+  from today through `renewals_through`, today + 30 days, soonest first,
+  up to 6) with `renewal_count`; `recurring` (monthly equivalents per kind
+  and currency, as `GET /analytics/recurring`) with `recurring_note_code`.
+  `GET /dashboard/widgets` offers `alerts`, `budgets`, `upcoming`,
+  `renewals`, `recurring`, `goals` and `group_balances` next to the earlier
+  widgets (15 in all, in the enum's order); a saved layout gets new widgets
+  at the end, visible.
+- **Profile visibility** is enforced by the database: `private` shows your
+  profile (and avatar) only to you, people in an active group with you and
+  people in a pending friend request with you; `connections` adds your
+  friends; `public` shows it to anyone signed in. Blocks hide it both ways.
+  `show_achievements` is stored for a future achievements display; nothing
+  shows achievements today.
+- **Recurring commitments** include active subscriptions (kind
+  `subscription`: monthly equivalent and renewals due in the next 30 days);
+  trials count once they convert. A trial whose first charge falls on its
+  end date appears once in the calendar, as `trial_end` with that charge's
+  amount.
+- **Weekly analytics buckets** (`series_granularity`/`trend_granularity`
+  `week`) start on your `week_start` preference.
 - **Avatar:** `PATCH /me {"avatar_file_id"}` takes a ready file you uploaded
   with purpose `avatar` (anything else: 422 `avatar_file_invalid`); `""`
   removes it (the file itself is kept). Read it with

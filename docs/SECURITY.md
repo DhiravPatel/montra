@@ -107,7 +107,11 @@ public issues for vulnerabilities.
 - Request body limit (default 1 MiB JSON; uploads limited per file kind),
   read/write/idle timeouts, per-request context timeout.
 - Rate limiting: per-IP and per-user token buckets; stricter limits on
-  auth, AI, OCR, import and export endpoints.
+  auth, AI, OCR, import and export endpoints. The buckets live in memory in
+  each API process (separate instances do not share them); durable
+  brute-force defenses (failed sign-in counters) are stored in PostgreSQL.
+  `AUTH_DEV_RATE_PER_MINUTE` relaxes the auth bucket for local e2e runs and
+  is refused outside development and test.
 
 ## Data protection
 

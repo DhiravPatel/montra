@@ -1,6 +1,7 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/tests/axe';
 import { API, envelope, makeSession, makeUser } from '@/tests/fixtures';
 import { currentSession, testBackend } from '@/tests/msw/backend';
@@ -12,7 +13,9 @@ import {
   makeLimits,
   requiredConsents,
 } from '@/tests/privacyFixtures';
+import { previewHandlers, UPLOAD_FILE } from '@/tests/receiptsFixtures';
 import { findPageHeading, renderRoute } from '@/tests/render';
+import { makeOwnProfile } from '@/tests/socialFixtures';
 import { REQUEST_ID_2, makeSupportRequest } from '@/tests/supportFixtures';
 
 const signedIn = () => makeUser({ onboarding_completed: true });
@@ -69,6 +72,45 @@ describe('axe: settings and help pages', () => {
     await findPageHeading('Help & support');
     const mine = screen.getByRole('region', { name: 'Your requests' });
     await within(mine).findByText('Delete old data');
+    await expectNoAxeViolations();
+  });
+
+  it('profile and preferences, with the photo in the account menu', async () => {
+    const user = makeUser({ onboarding_completed: true, avatar_file_id: UPLOAD_FILE });
+    server.use(
+      http.get(`${API}/me`, () =>
+        HttpResponse.json(
+          envelope({
+            account: user,
+            profile: makeOwnProfile({ avatar_file_id: UPLOAD_FILE }),
+            preferences: testBackend.preferences,
+          }),
+        ),
+      ),
+      ...previewHandlers(),
+    );
+    renderRoute('/settings/profile', { user });
+    await findPageHeading('Profile and preferences');
+    await screen.findByRole('button', { name: 'Save profile' });
+    await screen.findByRole('img', { name: 'Your profile photo' });
+    await screen.findByRole('group', { name: 'Who can see your profile' });
+    await waitFor(() => {
+      expect(document.querySelector('header img, aside img, nav img')).not.toBeNull();
+    });
+    await expectNoAxeViolations();
+  });
+
+  it('onboarding goal step with field errors', async () => {
+    testBackend.onboarding = {
+      completed_steps: ['welcome', 'privacy', 'country', 'currency', 'timezone', 'income'],
+      skipped_steps: [],
+    };
+    const person = userEvent.setup();
+    renderRoute('/onboarding', { user: makeUser() });
+    await findPageHeading('Set up Montra');
+    await screen.findByRole('heading', { level: 2, name: 'A first goal (optional)' });
+    await person.click(await screen.findByRole('button', { name: 'Add goal and continue' }));
+    await screen.findByText('Enter a name.');
     await expectNoAxeViolations();
   });
 });

@@ -165,8 +165,11 @@ class DashboardWidgetCard extends StatelessWidget {
       DashboardWidgetKind.topMerchants => _Merchants(data: data),
       DashboardWidgetKind.recentTransactions => _Recent(data: data),
       DashboardWidgetKind.dataCoverage => _Coverage(data: data),
+      DashboardWidgetKind.alerts ||
       DashboardWidgetKind.budgets ||
       DashboardWidgetKind.upcoming ||
+      DashboardWidgetKind.renewals ||
+      DashboardWidgetKind.recurring ||
       DashboardWidgetKind.goals ||
       DashboardWidgetKind.groupBalances => const SizedBox.shrink(),
     };

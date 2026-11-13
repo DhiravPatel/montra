@@ -17906,25 +17906,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileEditVisibility => 'Who can see your profile';
 
   @override
-  String get profileEditVisibilityPrivate => 'Only you';
+  String get profileEditVisibilityPrivate => 'Private';
 
   @override
   String get profileEditVisibilityPrivateHelp =>
-      'Others see only your display name and photo where you take part.';
+      'Only you, people in an active group with you, and people with a pending friend request between you can see your profile and photo.';
 
   @override
-  String get profileEditVisibilityConnections => 'Friends and group members';
+  String get profileEditVisibilityConnections => 'Friends';
 
   @override
   String get profileEditVisibilityConnectionsHelp =>
-      'Your bio, location and interests are shown to people you\'re connected with.';
+      'Your friends can see your profile and photo, as well as you, people in an active group with you, and people with a pending friend request between you.';
 
   @override
   String get profileEditVisibilityPublic => 'Everyone on Montra';
 
   @override
   String get profileEditVisibilityPublicHelp =>
-      'Anyone signed in to Montra can see your profile details.';
+      'Anyone signed in to Montra can see your profile and photo.';
 
   @override
   String get profileEditUsernameHelp =>
@@ -18050,7 +18050,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prefsDateFormatYmd => 'Year, month, day (2026-12-31)';
 
   @override
-  String get prefsDateFormatHelp => 'Used in exports, reports and emails.';
+  String get prefsDateFormatHelp =>
+      'How dates are written in the app, exports, reports and emails.';
 
   @override
   String get prefsNumberFormat => 'Number format';
@@ -18078,7 +18079,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prefsWeekStartHelp =>
-      'Used for weekly budgets, reports and weekly totals.';
+      'Used for weekly budgets, reports, weekly totals and the calendars where you pick dates.';
 
   @override
   String get prefsMonthStart => 'Month starts on day';
@@ -18319,4 +18320,146 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get receiptPagesLeave => 'Leave';
+
+  @override
+  String get widgetAlerts => 'Budget alerts';
+
+  @override
+  String get widgetAlertsHelp =>
+      'Budgets that reached a limit you set, to snooze or dismiss';
+
+  @override
+  String get widgetRenewals => 'Renewals';
+
+  @override
+  String get widgetRenewalsHelp =>
+      'Subscription renewals and trial ends in the next 30 days';
+
+  @override
+  String get widgetRecurring => 'Recurring commitments';
+
+  @override
+  String get widgetRecurringHelp =>
+      'Regular payments and income as monthly amounts';
+
+  @override
+  String dashPlanAlertsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active alerts',
+      one: '1 active alert',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanAlertsEmpty =>
+      'No active budget alerts. One appears here when a budget reaches a limit you set.';
+
+  @override
+  String get dashPlanAlertsSeeAll => 'See all budget alerts';
+
+  @override
+  String dashPlanAlertSnoozeFor(String budget) {
+    return 'Snooze the alert for $budget';
+  }
+
+  @override
+  String dashPlanAlertDismissFor(String budget) {
+    return 'Dismiss the alert for $budget';
+  }
+
+  @override
+  String dashPlanRenewalsSummary(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count renewals and trial ends through $date',
+      one: '1 renewal or trial end through $date',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanRenewalsEmpty =>
+      'No subscription renewals or trial ends in the next 30 days.';
+
+  @override
+  String get dashPlanRenewalsAdd => 'Add a subscription';
+
+  @override
+  String get dashPlanRenewalsSeeAll => 'See all subscriptions';
+
+  @override
+  String get dashPlanRenewalToday => 'Today';
+
+  @override
+  String dashPlanRenewalOn(String date) {
+    return 'On $date';
+  }
+
+  @override
+  String get dashPlanRecurringSeeAll => 'Open recurring commitments';
+
+  @override
+  String get onboardingCalendarSection => 'Weeks and months';
+
+  @override
+  String get onboardingGoalsTitle => 'Save toward something (optional)';
+
+  @override
+  String get onboardingGoalsBody =>
+      'Add one goal now, such as an emergency fund or a trip. You can add plans, milestones and more goals later, or skip this.';
+
+  @override
+  String get onboardingGoalCreate => 'Create goal';
+
+  @override
+  String get onboardingGoalCreated => 'Goal created';
+
+  @override
+  String onboardingGoalTarget(String amount) {
+    return 'Target $amount';
+  }
+
+  @override
+  String get onboardingGoalLater =>
+      'You can add money to it, change it or add more goals in Goals.';
+
+  @override
+  String get onboardingNotificationsTitle => 'Email summaries';
+
+  @override
+  String get onboardingNotificationsBody =>
+      'Choose how Montra sends optional emails, such as bill reminders and budget alerts.';
+
+  @override
+  String get onboardingDigestOff => 'Send each email right away';
+
+  @override
+  String get onboardingDigestOffHelp =>
+      'Optional emails arrive as things happen.';
+
+  @override
+  String get onboardingDigestDaily => 'Daily summary';
+
+  @override
+  String get onboardingDigestDailyHelp =>
+      'Optional emails are held and sent together at 8:00 each morning.';
+
+  @override
+  String get onboardingDigestWeekly => 'Weekly summary';
+
+  @override
+  String get onboardingDigestWeeklyHelp =>
+      'Optional emails are held and sent together at 8:00 on Mondays.';
+
+  @override
+  String get onboardingDigestSecurity =>
+      'Security and account emails, such as sign-in alerts, are always sent right away. You can choose for each kind of email later in notification settings.';
+
+  @override
+  String get profileEditVisibilityBlocked =>
+      'People you block never see your profile, whatever you choose here, and you don\'t see theirs.';
 }

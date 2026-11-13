@@ -64,6 +64,7 @@ make contract-check     # contract matches the Go API
 
 | Topic | Document |
 |---|---|
+| How it works | [FEATURES](docs/FEATURES.md) (every feature end to end), [KNOWLEDGE_GRAPH](docs/KNOWLEDGE_GRAPH.md) (generated map of features, API, tables, jobs, screens and requirements) |
 | Status and next steps | [IMPLEMENTATION_STATUS](docs/IMPLEMENTATION_STATUS.md), [IMPLEMENTATION_PLAN](docs/IMPLEMENTATION_PLAN.md), [REQUIREMENTS_TRACEABILITY](docs/REQUIREMENTS_TRACEABILITY.md) |
 | Design | [ARCHITECTURE](docs/ARCHITECTURE.md), [DECISIONS](docs/DECISIONS.md) (ADRs), [DATA_MODEL](docs/DATA_MODEL.md), [API](docs/API.md), [METRICS](docs/METRICS.md), [BACKGROUND_JOBS](docs/BACKGROUND_JOBS.md) |
 | Security and privacy | [SECURITY](docs/SECURITY.md), [THREAT_MODEL](docs/THREAT_MODEL.md), [AUTHORIZATION_MATRIX](docs/AUTHORIZATION_MATRIX.md), [RLS_POLICY_MATRIX](docs/RLS_POLICY_MATRIX.md), [PRIVACY](docs/PRIVACY.md) |

@@ -21,7 +21,6 @@ export interface ProfileValues {
   coarseLocation: string;
   profileVisibility: OwnProfile['profile_visibility'];
   discoverable: boolean;
-  showAchievements: boolean;
   allowFriendRequests: OwnProfile['allow_friend_requests'];
 }
 
@@ -34,7 +33,6 @@ export function profileValues(profile: OwnProfile): ProfileValues {
     coarseLocation: profile.coarse_location ?? '',
     profileVisibility: profile.profile_visibility,
     discoverable: profile.discoverable_by_username,
-    showAchievements: profile.show_achievements,
     allowFriendRequests: profile.allow_friend_requests,
   };
 }
@@ -58,7 +56,11 @@ function sameList(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((item, index) => item === b[index]);
 }
 
-/** PATCH /me body with only the changed fields (`{}` when nothing changed). */
+/**
+ * PATCH /me body with only the changed fields (`{}` when nothing changed).
+ * `show_achievements` is never sent: nothing shows achievements yet, so the
+ * stored value is left as it is.
+ */
 export function profilePatch(values: ProfileValues, profile: OwnProfile): OwnProfilePatch {
   const patch: OwnProfilePatch = {};
   const displayName = values.displayName.trim();
@@ -76,9 +78,6 @@ export function profilePatch(values: ProfileValues, profile: OwnProfile): OwnPro
   }
   if (values.discoverable !== profile.discoverable_by_username) {
     patch.discoverable_by_username = values.discoverable;
-  }
-  if (values.showAchievements !== profile.show_achievements) {
-    patch.show_achievements = values.showAchievements;
   }
   if (values.allowFriendRequests !== profile.allow_friend_requests) {
     patch.allow_friend_requests = values.allowFriendRequests;

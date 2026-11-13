@@ -11,7 +11,9 @@ import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/auth/auth_controller.dart';
 import 'package:montra_mobile/core/auth/auth_state.dart';
+import 'package:montra_mobile/core/formatting/dates.dart';
 import 'package:montra_mobile/core/widgets/banners.dart';
+import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/form_errors.dart';
 import 'package:montra_mobile/core/widgets/layout.dart';
 import 'package:montra_mobile/core/widgets/selector_field.dart';
@@ -23,9 +25,28 @@ import 'package:montra_mobile/features/auth/presentation/currency_picker.dart';
 import 'package:montra_mobile/features/labels/application/labels_providers.dart';
 import 'package:montra_mobile/features/labels/domain/label_display.dart';
 import 'package:montra_mobile/features/onboarding/application/onboarding_controller.dart';
+import 'package:montra_mobile/features/onboarding/presentation/onboarding_goal_step.dart';
+import 'package:montra_mobile/features/recurring/domain/schedule.dart';
 import 'package:montra_mobile/features/settings/application/preferences_providers.dart';
 
-enum _Step { welcome, privacy, region, income, accounts, categories }
+enum _Step {
+  welcome,
+  privacy,
+  region,
+  income,
+  goals,
+  accounts,
+  categories,
+  notifications,
+}
+
+/// Email digest choices in onboarding (`PreferencesPatch.email_digest`).
+const List<PreferencesPatchEmailDigest> onboardingDigests =
+    <PreferencesPatchEmailDigest>[
+      PreferencesPatchEmailDigest.off,
+      PreferencesPatchEmailDigest.daily,
+      PreferencesPatchEmailDigest.weekly,
+    ];
 
 /// Income range choices (`PreferencesPatch.income_range`).
 const List<PreferencesPatchIncomeRange> incomeRanges =
@@ -69,10 +90,13 @@ String incomeRangeLabel(
   PreferencesPatchIncomeRange.unrecognized => l10n.incomePreferNot,
 };
 
-/// Post-sign-up setup. Every step is optional and the whole setup can be
-/// skipped; a bank connection is never needed. Answers are saved as
-/// preferences (`PATCH /me/preferences`); finishing records the completed
-/// and skipped steps (`POST /me/onboarding`) and opens Home.
+/// Post-sign-up setup: welcome, privacy, region (country, currency, time
+/// zone, first day of the week and of the month), income range, a first
+/// goal, accounts, starter categories and email summaries. Every step is
+/// optional and the whole setup can be skipped; a bank connection is never
+/// needed. Answers are saved as preferences (`PATCH /me/preferences`), the
+/// goal with `POST /goals`; finishing records the completed and skipped
+/// steps (`POST /me/onboarding`) and opens Home.
 class OnboardingScreen extends ConsumerWidget {
   /// Creates the screen.
   const OnboardingScreen({this.next, super.key});
@@ -130,7 +154,12 @@ class _WizardState extends ConsumerState<_Wizard> {
   );
   late String _currency = widget.preferences.baseCurrency;
   late String _timezone = widget.preferences.timezone;
+  late int _weekStart = widget.preferences.weekStart;
+  late int _monthStart = widget.preferences.monthStartDay;
+  late PreferencesPatchEmailDigest _digest =
+      PreferencesPatchEmailDigest.fromJson(widget.preferences.emailDigest.json);
   PreferencesPatchIncomeRange? _income;
+  GoalDto? _goal;
   final List<AccountDto> _created = <AccountDto>[];
   ServerFormErrors _errors = ServerFormErrors.none;
   final GlobalKey<FormState> _regionForm = GlobalKey<FormState>();
@@ -147,7 +176,7 @@ class _WizardState extends ConsumerState<_Wizard> {
     };
     _step = _order.firstWhere(
       (_Step s) => !_stepIds(s).every(answered.contains),
-      orElse: () => _Step.categories,
+      orElse: () => _Step.notifications,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -193,8 +222,10 @@ class _WizardState extends ConsumerState<_Wizard> {
     _Step.privacy => <String>[OnboardingSteps.privacy],
     _Step.region => OnboardingSteps.region,
     _Step.income => <String>[OnboardingSteps.income],
+    _Step.goals => <String>[OnboardingSteps.goals],
     _Step.accounts => <String>[OnboardingSteps.accounts],
     _Step.categories => <String>[OnboardingSteps.categories],
+    _Step.notifications => <String>[OnboardingSteps.notifications],
   };
 
   /// Every step after the current one.
@@ -237,6 +268,8 @@ class _WizardState extends ConsumerState<_Wizard> {
       country: country == (p.country ?? '') ? null : country,
       baseCurrency: _currency == p.baseCurrency ? null : _currency,
       timezone: _timezone == p.timezone ? null : _timezone,
+      weekStart: _weekStart == p.weekStart ? null : _weekStart,
+      monthStartDay: _monthStart == p.monthStartDay ? null : _monthStart,
     );
     try {
       if (patch.toJson().isNotEmpty) {
@@ -254,6 +287,8 @@ class _WizardState extends ConsumerState<_Wizard> {
               'country': 'country',
               'base_currency': 'currency',
               'timezone': 'timezone',
+              'week_start': 'weekStart',
+              'month_start_day': 'monthStart',
             },
           ),
         );
@@ -284,6 +319,65 @@ class _WizardState extends ConsumerState<_Wizard> {
           ),
         );
       }
+    }
+  }
+
+  /// Saves the email summary choice (when it changed) and finishes.
+  Future<void> _saveNotifications() async {
+    final AppLocalizations l10n = context.l10n;
+    setState(() => _errors = ServerFormErrors.none);
+    try {
+      if (_digest.json != widget.preferences.emailDigest.json) {
+        await _controller.savePreferences(
+          PreferencesPatch(emailDigest: _digest),
+        );
+      }
+      _controller.complete(<String>[OnboardingSteps.notifications]);
+    } on ApiException catch (error) {
+      if (mounted) {
+        setState(
+          () => _errors = ServerFormErrors.from(
+            l10n,
+            error,
+            fieldMap: const <String, String>{},
+          ),
+        );
+      }
+      return;
+    }
+    await _finish();
+  }
+
+  Future<void> _pickWeekStart() async {
+    final AppLocalizations l10n = context.l10n;
+    final String locale = Localizations.localeOf(context).toString();
+    final int? picked = await showOptionSheet<int>(
+      context,
+      title: l10n.prefsWeekStart,
+      selected: _weekStart,
+      options: <SheetOption<int>>[
+        for (final int d in weekdaysFrom(DateTime.monday))
+          SheetOption<int>(value: d, label: weekdayName(d, locale)),
+      ],
+    );
+    if (picked != null && mounted) {
+      setState(() => _weekStart = picked);
+    }
+  }
+
+  Future<void> _pickMonthStart() async {
+    final AppLocalizations l10n = context.l10n;
+    final int? picked = await showOptionSheet<int>(
+      context,
+      title: l10n.prefsMonthStart,
+      selected: _monthStart,
+      options: <SheetOption<int>>[
+        for (int d = 1; d <= 28; d++)
+          SheetOption<int>(value: d, label: l10n.prefsMonthStartDay(d)),
+      ],
+    );
+    if (picked != null && mounted) {
+      setState(() => _monthStart = picked);
     }
   }
 
@@ -470,6 +564,27 @@ class _WizardState extends ConsumerState<_Wizard> {
                         : l10n.onboardingCountryInvalid;
                   },
                 ),
+                FormSectionHeader(l10n.onboardingCalendarSection),
+                SelectorField(
+                  label: l10n.prefsWeekStart,
+                  icon: Icons.view_week_outlined,
+                  value: weekdayName(
+                    _weekStart,
+                    Localizations.localeOf(context).toString(),
+                  ),
+                  helperText: l10n.prefsWeekStartHelp,
+                  errorText: _errors['weekStart'],
+                  onTap: _pickWeekStart,
+                ),
+                const SizedBox(height: Insets.md),
+                SelectorField(
+                  label: l10n.prefsMonthStart,
+                  icon: Icons.calendar_month_outlined,
+                  value: l10n.prefsMonthStartDay(_monthStart),
+                  helperText: l10n.prefsMonthStartHelp,
+                  errorText: _errors['monthStart'],
+                  onTap: _pickMonthStart,
+                ),
               ],
             ),
           ),
@@ -514,6 +629,22 @@ class _WizardState extends ConsumerState<_Wizard> {
             },
           ),
         ];
+      case _Step.goals:
+        return <Widget>[
+          OnboardingGoalStep(
+            currency: _currency,
+            created: _goal,
+            onCreated: (GoalDto goal) {
+              setState(() => _goal = goal);
+              _controller.complete(<String>[OnboardingSteps.goals]);
+            },
+            onContinue: _next,
+            onSkip: () {
+              _controller.skip(<String>[OnboardingSteps.goals]);
+              _next();
+            },
+          ),
+        ];
       case _Step.accounts:
         return <Widget>[
           SectionHeading(l10n.onboardingAccountsTitle, large: true),
@@ -552,10 +683,50 @@ class _WizardState extends ConsumerState<_Wizard> {
           const _StarterCategories(),
           const SizedBox(height: Insets.lg),
           SubmitButton(
-            label: l10n.onboardingFinish,
+            label: l10n.actionContinue,
             onPressed: () async {
               _controller.complete(<String>[OnboardingSteps.categories]);
-              await _finish();
+              _next();
+            },
+          ),
+        ];
+      case _Step.notifications:
+        return <Widget>[
+          SectionHeading(l10n.onboardingNotificationsTitle, large: true),
+          const SizedBox(height: Insets.sm),
+          Text(l10n.onboardingNotificationsBody),
+          const SizedBox(height: Insets.md),
+          RadioGroup<PreferencesPatchEmailDigest>(
+            groupValue: _digest,
+            onChanged: (PreferencesPatchEmailDigest? d) {
+              if (d != null) {
+                setState(() => _digest = d);
+              }
+            },
+            child: Column(
+              children: <Widget>[
+                for (final PreferencesPatchEmailDigest d in onboardingDigests)
+                  RadioListTile<PreferencesPatchEmailDigest>(
+                    contentPadding: EdgeInsets.zero,
+                    value: d,
+                    title: Text(_digestLabel(l10n, d)),
+                    subtitle: Text(_digestHelp(l10n, d)),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Insets.sm),
+          _Point(icon: Icons.lock_outline, text: l10n.onboardingDigestSecurity),
+          const SizedBox(height: Insets.lg),
+          SubmitButton(
+            label: l10n.onboardingFinish,
+            onPressed: _saveNotifications,
+          ),
+          const SizedBox(height: Insets.sm),
+          _SkipButton(
+            onPressed: () {
+              _controller.skip(<String>[OnboardingSteps.notifications]);
+              unawaited(_finish());
             },
           ),
           const SizedBox(height: Insets.sm),
@@ -568,6 +739,22 @@ class _WizardState extends ConsumerState<_Wizard> {
     }
   }
 }
+
+String _digestLabel(AppLocalizations l10n, PreferencesPatchEmailDigest d) =>
+    switch (d) {
+      PreferencesPatchEmailDigest.daily => l10n.onboardingDigestDaily,
+      PreferencesPatchEmailDigest.weekly => l10n.onboardingDigestWeekly,
+      PreferencesPatchEmailDigest.off ||
+      PreferencesPatchEmailDigest.unrecognized => l10n.onboardingDigestOff,
+    };
+
+String _digestHelp(AppLocalizations l10n, PreferencesPatchEmailDigest d) =>
+    switch (d) {
+      PreferencesPatchEmailDigest.daily => l10n.onboardingDigestDailyHelp,
+      PreferencesPatchEmailDigest.weekly => l10n.onboardingDigestWeeklyHelp,
+      PreferencesPatchEmailDigest.off ||
+      PreferencesPatchEmailDigest.unrecognized => l10n.onboardingDigestOffHelp,
+    };
 
 class _Point extends StatelessWidget {
   const _Point({required this.icon, required this.text});

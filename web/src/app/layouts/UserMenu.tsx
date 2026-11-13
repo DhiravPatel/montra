@@ -8,6 +8,7 @@ import { paths } from '@/shared/config/paths';
 import { describeError } from '@/shared/i18n/describeError';
 import { useT } from '@/shared/i18n/I18nContext';
 import { cx } from '@/shared/utils/cx';
+import { useAvatarPreview } from '@/features/settings/profileApi';
 
 function initials(name: string): string {
   const letters = name
@@ -25,6 +26,9 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
   const toast = useToast();
   const { signOut } = useAuth();
   const user = useCurrentUser();
+  // The same cached data: URL as the profile screen (fetched only when there is a photo).
+  const avatar = useAvatarPreview(user.avatar_file_id);
+  const avatarSrc = user.avatar_file_id ? avatar.data?.src : null;
   const [signingOut, setSigningOut] = useState(false);
 
   const handleSignOut = () => {
@@ -54,14 +58,27 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
           compact ? 'px-1.5' : 'w-full px-2 py-1.5',
         )}
       >
-        {/* Decorative initials, drawn by CSS so they are not text content: the
-            compact button is named only "Account menu", and visible text that
-            is missing from a control's name fails WCAG 2.5.3 Label in Name. */}
-        <span
-          aria-hidden="true"
-          data-initials={initials(user.display_name)}
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent before:content-[attr(data-initials)]"
-        />
+        {avatarSrc ? (
+          // Decorative: the button is already named after the person, so the
+          // photo adds no text (alt="") and the name keeps matching the label.
+          <img
+            src={avatarSrc}
+            alt=""
+            aria-hidden="true"
+            className="size-8 shrink-0 rounded-full object-cover ring-1 ring-line"
+          />
+        ) : (
+          /* Decorative initials (also the fallback while the photo loads or
+             when it cannot be shown), drawn by CSS so they are not text
+             content: the compact button is named only "Account menu", and
+             visible text that is missing from a control's name fails WCAG
+             2.5.3 Label in Name. */
+          <span
+            aria-hidden="true"
+            data-initials={initials(user.display_name)}
+            className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent before:content-[attr(data-initials)]"
+          />
+        )}
         {compact ? null : (
           <>
             <span className="min-w-0 flex-1">

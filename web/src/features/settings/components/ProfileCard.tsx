@@ -79,7 +79,6 @@ export function ProfileCard({ profile }: { profile: OwnProfile }) {
         coarseLocation: z.string().max(80, { error: t('profileSettings.profile.locationTooLong') }),
         profileVisibility: z.enum(['private', 'connections', 'public']),
         discoverable: z.boolean(),
-        showAchievements: z.boolean(),
         allowFriendRequests: z.enum(['everyone', 'friends_of_friends', 'nobody']),
       }),
     [t],
@@ -217,18 +216,11 @@ export function ProfileCard({ profile }: { profile: OwnProfile }) {
             />
           )}
         />
-        <div className="space-y-4">
-          <Checkbox
-            label={t('social.privacy.discoverable')}
-            description={t('profileSettings.discoverableHelp')}
-            {...form.register('discoverable')}
-          />
-          <Checkbox
-            label={t('profileSettings.showAchievements')}
-            description={t('profileSettings.showAchievementsHelp')}
-            {...form.register('showAchievements')}
-          />
-        </div>
+        <Checkbox
+          label={t('social.privacy.discoverable')}
+          description={t('profileSettings.discoverableHelp')}
+          {...form.register('discoverable')}
+        />
         <Controller
           control={form.control}
           name="allowFriendRequests"

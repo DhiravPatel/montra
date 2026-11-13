@@ -37,6 +37,7 @@ import {
   type SummaryWidgetKey,
   widgetLabels,
 } from '../registry';
+import { AlertsWidget } from '../widgets/AlertsWidget';
 import { BalancesWidget } from '../widgets/BalancesWidget';
 import { BudgetsWidget } from '../widgets/BudgetsWidget';
 import { CashFlowTrendWidget } from '../widgets/CashFlowTrendWidget';
@@ -47,6 +48,8 @@ import { GoalsWidget } from '../widgets/GoalsWidget';
 import { GroupBalancesWidget } from '../widgets/GroupBalancesWidget';
 import { IncomeVsExpenseWidget } from '../widgets/IncomeVsExpenseWidget';
 import { RecentTransactionsWidget } from '../widgets/RecentTransactionsWidget';
+import { RecurringWidget } from '../widgets/RecurringWidget';
+import { RenewalsWidget } from '../widgets/RenewalsWidget';
 import { TopMerchantsWidget } from '../widgets/TopMerchantsWidget';
 import type { WidgetProps } from '../widgets/types';
 import { UpcomingWidget } from '../widgets/UpcomingWidget';
@@ -67,8 +70,11 @@ const summaryComponents: Readonly<Record<SummaryWidgetKey, (props: WidgetProps) 
 const planningComponents: Readonly<
   Record<PlanningWidgetKey, (props: PlanningWidgetProps) => JSX.Element>
 > = {
+  alerts: AlertsWidget,
   budgets: BudgetsWidget,
   upcoming: UpcomingWidget,
+  renewals: RenewalsWidget,
+  recurring: RecurringWidget,
   goals: GoalsWidget,
   group_balances: GroupBalancesWidget,
 };

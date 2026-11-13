@@ -1181,6 +1181,15 @@ export const hi = {
   'dashboard.widget.goalsHelp': 'आपके सक्रिय लक्ष्य, सबसे नज़दीकी तारीख पहले।',
   'dashboard.widget.group_balances': 'समूह के बैलेंस',
   'dashboard.widget.group_balancesHelp': 'वे समूह जिनमें आपको पैसे मिलने हैं या देने हैं।',
+  'dashboard.widget.alerts': 'बजट अलर्ट',
+  'dashboard.widget.alertsHelp':
+    'वे बजट जो किसी अलर्ट स्तर तक पहुँच गए हैं या सीमा पार कर सकते हैं।',
+  'dashboard.widget.renewals': 'नवीनीकरण और ट्रायल',
+  'dashboard.widget.renewalsHelp':
+    'अगले 30 दिनों में नवीनीकृत होने वाली सदस्यताएँ और खत्म होने वाले मुफ़्त ट्रायल।',
+  'dashboard.widget.recurring': 'हर महीने के नियमित खर्च',
+  'dashboard.widget.recurringHelp':
+    'आपके नियमित शेड्यूल हर महीने कितने होते हैं, हर मुद्रा में अलग।',
   'dashboard.budgets.scope': 'सक्रिय बजट, सबसे ज़्यादा भरे पहले',
   'dashboard.budgets.loading': 'आपके बजट लोड हो रहे हैं…',
   'dashboard.budgets.error': 'हम आपके बजट लोड नहीं कर सके',
@@ -1242,6 +1251,48 @@ export const hi = {
   'dashboard.groupBalances.viewAll': { one: 'अपने समूह देखें', other: 'सभी {count} समूह देखें' },
   'dashboard.groupBalances.empty': 'सब हिसाब बराबर',
   'dashboard.groupBalances.emptyBody': 'अभी आपके समूहों में किसी पर कुछ बकाया नहीं है।',
+  'dashboard.alerts.scope': 'सक्रिय अलर्ट, सबसे नए पहले',
+  'dashboard.alerts.loading': 'आपके बजट अलर्ट लोड हो रहे हैं…',
+  'dashboard.alerts.error': 'हम आपके बजट अलर्ट लोड नहीं कर सके',
+  'dashboard.alerts.count': {
+    one: '{count} सक्रिय अलर्ट में से {shown}',
+    other: '{count} सक्रिय अलर्ट में से {shown}',
+  },
+  'dashboard.alerts.viewAll': {
+    one: 'इसे बजट में देखें',
+    other: 'बजट में सभी {count} देखें',
+  },
+  'dashboard.alerts.empty': 'कोई बजट अलर्ट नहीं',
+  'dashboard.alerts.emptyBody':
+    'जब कोई बजट अपने किसी अलर्ट स्तर तक पहुँचेगा या सीमा पार कर सकता होगा, तो यहाँ सूचना दिखेगी।',
+  'dashboard.renewals.scope': '{date} तक देय, सबसे पहले वाले पहले',
+  'dashboard.renewals.scopeGeneric': 'अगले 30 दिनों में देय, सबसे पहले वाले पहले',
+  'dashboard.renewals.loading': 'नवीनीकरण लोड हो रहे हैं…',
+  'dashboard.renewals.error': 'हम आपके नवीनीकरण लोड नहीं कर सके',
+  'dashboard.renewals.count': {
+    one: '{count} नवीनीकरण या ट्रायल के अंत में से {shown}',
+    other: '{count} नवीनीकरण और ट्रायल के अंत में से {shown}',
+  },
+  'dashboard.renewals.viewAll': {
+    one: 'अपनी सदस्यताएँ देखें',
+    other: 'सदस्यताओं में सभी {count} देखें',
+  },
+  'dashboard.renewals.empty': 'अगले 30 दिनों में कोई नवीनीकरण नहीं',
+  'dashboard.renewals.emptyBody':
+    'जल्द नवीनीकृत होने वाली सदस्यताएँ और खत्म होने वाले मुफ़्त ट्रायल उनकी कीमत के साथ यहाँ दिखते हैं।',
+  'dashboard.renewals.add': 'सदस्यता जोड़ें',
+  'dashboard.renewals.renews': '{date} को नवीनीकरण',
+  'dashboard.renewals.renewsToday': 'आज नवीनीकरण',
+  'dashboard.renewals.trialEnds': 'मुफ़्त ट्रायल {date} को खत्म',
+  'dashboard.renewals.trialEndsToday': 'मुफ़्त ट्रायल आज खत्म',
+  'dashboard.recurring.scope': 'आपके सक्रिय शेड्यूल का मासिक हिसाब',
+  'dashboard.recurring.loading': 'आपकी नियमित प्रतिबद्धताएँ लोड हो रही हैं…',
+  'dashboard.recurring.error': 'हम आपकी नियमित प्रतिबद्धताएँ लोड नहीं कर सके',
+  'dashboard.recurring.viewAll': 'नियमित शेड्यूल देखें',
+  'dashboard.recurring.empty': 'अभी कोई नियमित शेड्यूल नहीं',
+  'dashboard.recurring.emptyBody':
+    'अपना किराया, वेतन या दूसरे नियमित भुगतान जोड़ें और देखें कि हर महीने वे कितने होते हैं।',
+  'dashboard.recurring.add': 'नियमित चीज़ जोड़ें',
   'dashboard.balances.netWorth': '{currency} में कुल संपत्ति',
   'dashboard.balances.empty': 'अभी कोई बैलेंस नहीं',
   'dashboard.balances.emptyBody': 'अपने बैलेंस यहाँ देखने के लिए खाता जोड़ें।',
@@ -1384,6 +1435,13 @@ export const hi = {
   'onboarding.income.1l_2l': '₹1 लाख से ₹2 लाख',
   'onboarding.income.2l_5l': '₹2 लाख से ₹5 लाख',
   'onboarding.income.above_5l': '₹5 लाख से ज़्यादा',
+  'onboarding.goals.title': 'पहला लक्ष्य (वैकल्पिक)',
+  'onboarding.goals.body':
+    'किसी चीज़ के लिए बचत कर रहे हैं? उसे यहाँ जोड़ें और होम पर अपनी प्रगति देखें। बचत की योजना, पड़ाव और योगदान आप बाद में जोड़ सकते हैं।',
+  'onboarding.goals.currencyHelp': '{currency} में, आपकी मुख्य मुद्रा।',
+  'onboarding.goals.datePast': 'आज की या उसके बाद की तारीख चुनें।',
+  'onboarding.goals.submit': 'लक्ष्य जोड़ें और आगे बढ़ें',
+  'onboarding.goals.created': 'लक्ष्य “{name}” जोड़ा गया',
   'onboarding.accounts.title': 'आपका पहला खाता',
   'onboarding.accounts.body':
     'बताएँ कि आपका पैसा कहाँ है, जैसे नकद बटुआ, बैंक खाता या कार्ड। आप बाद में और जोड़ सकते हैं।',
@@ -8333,7 +8391,8 @@ export const hi = {
     'दोस्तों और समूहों को आप कैसे दिखते हैं, Montra तारीखें और पैसे कैसे दिखाता है, और ऐप कैसा दिखता है। बदलाव आपके सभी डिवाइस पर लागू होते हैं।',
   'profileSettings.nothingChanged': 'सहेजने को कुछ नहीं: आपने कुछ नहीं बदला',
   'profileSettings.avatar.title': 'प्रोफ़ाइल फ़ोटो',
-  'profileSettings.avatar.description': 'दोस्तों और समूह के सदस्यों को आपके नाम के साथ दिखती है।',
+  'profileSettings.avatar.description':
+    'उन लोगों को आपके नाम के साथ दिखती है जो आपकी प्रोफ़ाइल देख सकते हैं (नीचे “आपकी प्रोफ़ाइल कौन देख सकता है” देखें)।',
   'profileSettings.avatar.help': '5 MB तक की JPG, PNG या WebP तस्वीर।',
   'profileSettings.avatar.upload': 'फ़ोटो अपलोड करें',
   'profileSettings.avatar.change': 'फ़ोटो बदलें',
@@ -8382,19 +8441,19 @@ export const hi = {
   'profileSettings.profile.locationTooLong': '80 या उससे कम अक्षर इस्तेमाल करें।',
   'profileSettings.profile.save': 'प्रोफ़ाइल सहेजें',
   'profileSettings.profile.saved': 'प्रोफ़ाइल सहेज ली गई',
-  'profileSettings.visibility.legend': 'आपका परिचय, रुचियाँ और जगह कौन देख सकता है',
+  'profileSettings.visibility.legend': 'आपकी प्रोफ़ाइल कौन देख सकता है',
   'profileSettings.visibility.help':
-    'आपके बैलेंस और लेन-देन कभी आपकी प्रोफ़ाइल का हिस्सा नहीं होते।',
-  'profileSettings.visibility.private': 'सिर्फ़ मैं',
-  'profileSettings.visibility.privateHelp': 'कोई और इन्हें नहीं देखता।',
-  'profileSettings.visibility.connections': 'मेरे दोस्त',
-  'profileSettings.visibility.connectionsHelp': 'Montra पर आपके दोस्त।',
+    'आपकी प्रोफ़ाइल में आपकी फ़ोटो, परिचय, रुचियाँ और जगह होती हैं। आपके बैलेंस और लेन-देन कभी इसका हिस्सा नहीं होते। जिन्हें आप ब्लॉक करते हैं या जो आपको ब्लॉक करते हैं, वे इसे कभी नहीं देखते।',
+  'profileSettings.visibility.private': 'निजी',
+  'profileSettings.visibility.privateHelp':
+    'सिर्फ़ आप, आपके साथ किसी सक्रिय समूह में शामिल लोग, और वे लोग जिनके साथ आपका दोस्ती का अनुरोध लंबित है।',
+  'profileSettings.visibility.connections': 'दोस्त',
+  'profileSettings.visibility.connectionsHelp':
+    'आपके दोस्त, और वे सभी जिन्हें निजी प्रोफ़ाइल दिखती है: आपके साथ किसी सक्रिय समूह में शामिल लोग और वे लोग जिनके साथ आपका दोस्ती का अनुरोध लंबित है।',
   'profileSettings.visibility.public': 'Montra पर कोई भी',
-  'profileSettings.visibility.publicHelp': 'जो भी आपकी प्रोफ़ाइल देखे, जैसे किसी कम्युनिटी में।',
+  'profileSettings.visibility.publicHelp': 'Montra में साइन इन किया हुआ कोई भी व्यक्ति।',
   'profileSettings.discoverableHelp':
     'जो लोग आपका पूरा यूज़रनेम लिखते हैं, वे आपको ढूँढ सकते हैं और दोस्ती का अनुरोध भेज सकते हैं।',
-  'profileSettings.showAchievements': 'मेरी प्रोफ़ाइल पर चुनौतियों की उपलब्धियाँ दिखाएँ',
-  'profileSettings.showAchievementsHelp': 'सिर्फ़ बैज; रकम कभी नहीं।',
   'profileSettings.region.title': 'क्षेत्र, पैसे और डिस्प्ले',
   'profileSettings.region.description':
     'आपकी मुद्राएँ, समय क्षेत्र, फ़ॉर्मैट और डिफ़ॉल्ट। सिर्फ़ जो आप बदलते हैं वही सहेजा जाता है।',

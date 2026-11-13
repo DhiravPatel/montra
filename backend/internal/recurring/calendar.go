@@ -19,7 +19,7 @@ import (
 // CalendarItem is one dated planning entry.
 type CalendarItem struct {
 	Date         string          `json:"date"`
-	Kind         string          `json:"kind" enum:"recurring,bill,group_expense,subscription_renewal,trial_end,goal_target"`
+	Kind         string          `json:"kind" enum:"recurring,bill,group_expense,subscription_renewal,trial_end,goal_target" doc:"A trial whose first charge falls on its end date is one trial_end item carrying that charge's amount"`
 	Title        string          `json:"title"`
 	Amount       *apitypes.Money `json:"amount,omitempty"`
 	Status       string          `json:"status" enum:"scheduled,posted,paid,skipped,overdue,projected,expected,target" doc:"Occurrence status; projected = beyond the generated horizon; expected = subscription renewal or trial end; target = goal target date"`
@@ -159,16 +159,30 @@ func (s *Service) Calendar(ctx context.Context, fromS, toS string) ([]CalendarIt
 			return err
 		}
 		for _, x := range subs {
+			trialEnd := ""
+			if x.status == "trial" && x.trial != nil {
+				trialEnd = finance.LocalDateString(*x.trial)
+			}
+			firstCharge := false
 			if x.next != nil {
 				r := subscriptions.RenewalSchedule(x.freq, x.interval, x.unit, x.start, *x.next)
 				for _, d := range r.Between(from, to, 100) {
+					// The first charge when a trial ends is one item: the trial end.
+					if ds := finance.LocalDateString(d); ds == trialEnd {
+						firstCharge = true
+						continue
+					}
 					out = append(out, CalendarItem{Date: finance.LocalDateString(d), Kind: "subscription_renewal", Title: x.name,
 						Amount: apitypes.MP(&x.amount, x.cur), Status: "expected", EntityType: "subscription", EntityID: x.id})
 				}
 			}
-			if x.status == "trial" && x.trial != nil && !x.trial.Before(from) && !x.trial.After(to) {
-				out = append(out, CalendarItem{Date: finance.LocalDateString(*x.trial), Kind: "trial_end", Title: x.name, Status: "expected",
-					EntityType: "subscription", EntityID: x.id})
+			if trialEnd != "" && !x.trial.Before(from) && !x.trial.After(to) {
+				item := CalendarItem{Date: trialEnd, Kind: "trial_end", Title: x.name, Status: "expected",
+					EntityType: "subscription", EntityID: x.id}
+				if firstCharge {
+					item.Amount = apitypes.MP(&x.amount, x.cur)
+				}
+				out = append(out, item)
 			}
 		}
 		// Goal target dates.

@@ -507,7 +507,8 @@ a bill, create a goal) and error state (with Try again, which re-reads once
 for all four), opens its full screen ("See all", rows open the budget,
 calendar source, goal or the group's balances) and says when it lists only
 the first items. `dashboard_widgets.dart` and the layout screen know all
-twelve widgets (`DashboardWidgetKind`); the layout is kept as wire keys
+fifteen widgets (`DashboardWidgetKind`; alerts, renewals and recurring were
+added in round 7); the layout is kept as wire keys
 (`DashboardWidget`), so hide, reorder and reset keep working and a widget
 from a newer server is skipped on Home but saved back unchanged. Hidden
 planning widgets are not requested. On first use (no accounts or

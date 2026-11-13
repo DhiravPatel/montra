@@ -34,8 +34,9 @@ export const dashboardApi = {
   updateWidgets: (body: WidgetsPatch): Promise<Widget[]> =>
     apiData(api.PATCH('/dashboard/widgets', { body })),
   /**
-   * Budgets (fullest first), upcoming items (overdue first), goals and group
-   * balances with their counts: one request for all four planning cards.
+   * Budget alerts, budgets (fullest first), upcoming items (overdue first),
+   * renewals, recurring commitments, goals and group balances with their
+   * counts: one request for every planning card.
    */
   planning: async (signal?: AbortSignal): Promise<PlanningResult> => {
     const envelope = await apiEnvelope(api.GET('/dashboard/planning', signal ? { signal } : {}));

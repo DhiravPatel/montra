@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/auth/auth_controller.dart';
+import 'package:montra_mobile/core/settings/app_preferences.dart';
 import 'package:montra_mobile/features/settings/data/preferences_api.dart';
 
 /// Onboarding step IDs the server accepts (`POST /me/onboarding`).
@@ -12,10 +13,13 @@ abstract final class OnboardingSteps {
   static const String currency = 'currency';
   static const String timezone = 'timezone';
   static const String income = 'income';
+  static const String goals = 'goals';
   static const String accounts = 'accounts';
   static const String categories = 'categories';
+  static const String notifications = 'notifications';
 
-  /// The region page covers three server steps.
+  /// The region page covers three server steps (its week and month start
+  /// fields are saved as preferences with them).
   static const List<String> region = <String>[country, currency, timezone];
 }
 
@@ -102,13 +106,16 @@ class OnboardingController extends Notifier<OnboardingProgress> {
   /// Records [steps] as skipped.
   void skip(Iterable<String> steps) => state = state.skip(steps);
 
-  /// Saves preference changes and mirrors base currency and time zone in
-  /// the signed-in user's summary. Throws `ApiException`.
+  /// Saves preference changes, applies them app wide at once (so a new
+  /// first day of the week or date format is used by the next steps) and
+  /// mirrors base currency and time zone in the signed-in user's summary.
+  /// Throws `ApiException`.
   Future<PreferencesDto> savePreferences(PreferencesPatch patch) async {
     final PreferencesDto saved = await _api.updatePreferences(patch);
     if (!ref.mounted) {
       return saved;
     }
+    ref.read(preferencesSnapshotProvider.notifier).update(saved);
     ref
         .read(authControllerProvider.notifier)
         .updateUser(

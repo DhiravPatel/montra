@@ -147,7 +147,11 @@ defaults in `backend/internal/platform/config/config.go`.
 1. CI green on the release commit: backend (gofmt, vet, lint, sqlc,
    contract drift, unit with `-race`, integration/RLS/API, fuzz,
    govulncheck, binaries, image), web (typecheck, lint, test, build,
-   audit) and mobile (analyze, test).
+   audit) and mobile (analyze, test), plus the `e2e` workflow: Playwright
+   journeys (`web-e2e`) and on-emulator Flutter journeys (`mobile-e2e`)
+   against a throwaway API, worker and PostgreSQL started inside the job
+   (docs/TESTING.md, "End-to-end tests"). These jobs never deploy and use
+   no repository secrets.
 2. Back up the database, then run `migrate status` and `migrate up -yes`.
 3. Deploy the worker and API images. Check `/health/ready` and confirm
    the worker log shows scheduler leadership.

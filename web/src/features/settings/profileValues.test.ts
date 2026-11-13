@@ -29,6 +29,15 @@ describe('profile and preference patches', () => {
     expect(accessibilityPatch(accessibilityValues(preferences), preferences)).toEqual({});
   });
 
+  it('never sends show_achievements (nothing shows achievements yet)', () => {
+    const profile = makeOwnProfile({ show_achievements: true });
+    const values = profileValues(profile);
+    expect(Object.keys(values)).not.toContain('showAchievements');
+    expect(profilePatch({ ...values, profileVisibility: 'private' }, profile)).toEqual({
+      profile_visibility: 'private',
+    });
+  });
+
   it('normalizes the username and clears optional text with ""', () => {
     const profile = makeOwnProfile({ username: 'asha', bio: 'Hi', coarse_location: 'Pune' });
     const values = {

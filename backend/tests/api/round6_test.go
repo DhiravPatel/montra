@@ -1,9 +1,11 @@
 package api_test
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -307,5 +309,188 @@ func TestInsightSingleReadOwnAnyStatus(t *testing.T) {
 	c.Do(t, http.MethodPost, "/insights/"+id+"/actions", map[string]any{"action": "dismiss"}).Expect(t, http.StatusOK)
 	if got := c.Do(t, http.MethodGet, "/insights/"+id, nil).Expect(t, http.StatusOK).Data(); got["status"] != "dismissed" {
 		t.Fatalf("dismissed insight = %v", got)
+	}
+}
+
+// GET /dashboard/planning alerts, renewals and recurring cards, and the
+// widget layout: hide, reorder and reset persist per user only.
+func TestDashboardAlertsRenewalsRecurringAndLayout(t *testing.T) {
+	s := apitest.New(t, nil)
+	a := newPerson(t, s, "cards", nil)
+	b := newPerson(t, s, "layoutother", nil)
+	today := utcToday()
+	a.c.Do(t, http.MethodPatch, "/me/preferences", map[string]any{"timezone": "UTC"}).Expect(t, http.StatusOK)
+	acct := createAccount(t, a.c, map[string]any{"name": "Bank", "account_type": "bank", "currency": "INR", "opening_balance": "50000"})["id"].(string)
+	bud := a.c.Do(t, http.MethodPost, "/budgets", map[string]any{"name": "Tight", "budget_type": "total", "period": "monthly",
+		"currency": "INR", "limit": "1000", "alert_forecast": false}).Expect(t, http.StatusCreated).Data()
+	createTx(t, a.c, map[string]any{"type": "expense", "account_id": acct, "amount": "1500"})
+	a.c.Do(t, http.MethodPost, "/subscriptions", map[string]any{"name": "StreamFlix", "amount": "649", "billing_frequency": "monthly",
+		"start_date": today.AddDate(0, 0, 10).Format(day), "payment_account_id": acct}, "Idempotency-Key", key()).Expect(t, http.StatusCreated)
+	a.c.Do(t, http.MethodPost, "/subscriptions", map[string]any{"name": "Far renewal", "amount": "100", "billing_frequency": "monthly",
+		"start_date": today.AddDate(0, 0, 45).Format(day), "payment_account_id": acct}, "Idempotency-Key", key()).Expect(t, http.StatusCreated)
+	a.c.Do(t, http.MethodPost, "/bills", map[string]any{"name": "Water", "provider_name": "City Water", "expected_amount": "400",
+		"frequency": "monthly", "start_date": today.AddDate(0, 0, 3).Format(day), "timezone": "UTC"}, "Idempotency-Key", key()).Expect(t, http.StatusCreated)
+	s.RunJobs(t)
+
+	p := a.c.Do(t, http.MethodGet, "/dashboard/planning", nil).Expect(t, http.StatusOK).Data()
+	al := p["alerts"].([]any)
+	if len(al) == 0 || al[0].(map[string]any)["budget_id"] != bud["id"] || al[0].(map[string]any)["status"] != "active" ||
+		p["alert_count"].(float64) != float64(len(al)) {
+		t.Fatalf("alerts = %v (count %v)", al, p["alert_count"])
+	}
+	if p["renewals_through"] != today.AddDate(0, 0, 30).Format(day) {
+		t.Fatalf("renewals_through = %v", p["renewals_through"])
+	}
+	rn := p["renewals"].([]any)
+	if len(rn) != 1 || rn[0].(map[string]any)["title"] != "StreamFlix" || rn[0].(map[string]any)["kind"] != "subscription_renewal" ||
+		p["renewal_count"].(float64) != 1 {
+		t.Fatalf("renewals = %v", rn)
+	}
+	var bill map[string]any
+	for _, x := range p["recurring"].([]any) {
+		if x.(map[string]any)["kind"] == "bill" {
+			bill = x.(map[string]any)
+		}
+	}
+	if bill == nil || gfMap(bill["monthly_equivalent"])["amount"] != "400.00" || p["recurring_note_code"] != "fixed_amounts_expectations" {
+		t.Fatalf("recurring = %v", p["recurring"])
+	}
+	if pb := b.c.Do(t, http.MethodGet, "/dashboard/planning", nil).Expect(t, http.StatusOK).Data(); len(pb["alerts"].([]any)) != 0 ||
+		len(pb["renewals"].([]any)) != 0 || len(pb["recurring"].([]any)) != 0 {
+		t.Fatalf("another user's planning = %v", pb)
+	}
+
+	// Layout: hide recurring, move goals first; persisted for this user only.
+	layout := func(c *apitest.Client) []map[string]any {
+		var out []map[string]any
+		for _, w := range c.Do(t, http.MethodGet, "/dashboard/widgets", nil).Expect(t, http.StatusOK).List() {
+			out = append(out, w.(map[string]any))
+		}
+		return out
+	}
+	def := layout(a.c)
+	if len(def) != 15 || def[0]["key"] != "balances" || def[2]["key"] != "alerts" {
+		t.Fatalf("default layout = %v", def)
+	}
+	var patch []any
+	for i, w := range def {
+		pos := i + 1
+		if w["key"] == "goals" {
+			pos = 0
+		}
+		patch = append(patch, map[string]any{"key": w["key"], "position": pos, "visible": w["key"] != "recurring"})
+	}
+	a.c.Do(t, http.MethodPatch, "/dashboard/widgets", map[string]any{"widgets": patch}).Expect(t, http.StatusOK)
+	got := layout(a.c)
+	if got[0]["key"] != "goals" {
+		t.Fatalf("reordered layout = %v", got)
+	}
+	for _, w := range got {
+		if (w["key"] == "recurring") == (w["visible"] == true) {
+			t.Fatalf("visibility of %s = %v", w["key"], w["visible"])
+		}
+	}
+	if other := layout(b.c); other[0]["key"] != "balances" {
+		t.Fatalf("another user's layout changed: %v", other)
+	}
+	a.c.Do(t, http.MethodPatch, "/dashboard/widgets", map[string]any{"reset": true}).Expect(t, http.StatusOK)
+	reset := layout(a.c)
+	for i, w := range reset {
+		if w["key"] != def[i]["key"] || w["visible"] != true {
+			t.Fatalf("reset layout = %v", reset)
+		}
+	}
+}
+
+// A receipt made of several files keeps their page order, a PDF can be a
+// page, a page belongs to one receipt only, and the dashboard summary says
+// when it was computed.
+func TestMultiPageReceiptAndSummaryTimestamp(t *testing.T) {
+	s := apitest.New(t, nil)
+	c, _ := s.Login(t, s.Register(t, "pages"))
+	p1 := uploadFile(t, c, "receipt", "p1.png", "image/png", pngBytes(t))
+	p2 := uploadFile(t, c, "receipt", "p2.pdf", "application/pdf", []byte("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n"))
+	p3 := uploadFile(t, c, "receipt", "p3.png", "image/png", append(pngBytes(t), 7))
+	rc := c.Do(t, http.MethodPost, "/receipts", map[string]any{"file_ids": []string{p3, p1, p2}}, "Idempotency-Key", key()).
+		Expect(t, http.StatusCreated).Data()
+	fl := rc["files"].([]any)
+	if len(fl) != 3 {
+		t.Fatalf("files = %v", fl)
+	}
+	for i, want := range []string{p3, p1, p2} {
+		if got := fl[i].(map[string]any)["file_id"]; got != want {
+			t.Fatalf("page %d = %v, want %s (%v)", i, got, want, fl)
+		}
+	}
+	if r := c.Do(t, http.MethodPost, "/receipts", map[string]any{"file_ids": []string{p1}}, "Idempotency-Key", key()); r.Status != http.StatusConflict ||
+		detail(t, r)["code"] != "file_in_use" {
+		t.Fatalf("a page reused in a second receipt: %d %s", r.Status, r.Raw)
+	}
+
+	before := time.Now().Add(-time.Minute)
+	sum := c.Do(t, http.MethodGet, "/dashboard/summary", nil).Expect(t, http.StatusOK).Data()
+	at, err := time.Parse(time.RFC3339Nano, fmt.Sprint(sum["generated_at"]))
+	if err != nil || at.Before(before) || at.After(time.Now().Add(time.Minute)) {
+		t.Fatalf("generated_at = %v (%v)", sum["generated_at"], err)
+	}
+}
+
+// Weekly analytics buckets start on the user's week start; subscriptions
+// count as recurring commitments; a trial's first charge on its end date is
+// one calendar item.
+func TestWeekStartBucketsSubscriptionsAndTrialEnd(t *testing.T) {
+	s := apitest.New(t, nil)
+	c, _ := s.Login(t, s.Register(t, "weeks"))
+	acct := createAccount(t, c, map[string]any{"name": "Bank", "account_type": "bank", "currency": "INR", "opening_balance": "9000"})["id"].(string)
+	createTx(t, c, map[string]any{"type": "expense", "account_id": acct, "amount": "10", "local_date": "2026-10-07"}) // a Wednesday
+	weeks := func() []string {
+		r := c.Do(t, http.MethodGet, "/analytics/cash-flow?from=2026-10-01&to=2026-10-31&granularity=week", nil).Expect(t, http.StatusOK).Data()
+		var out []string
+		for _, p := range r["series"].([]any) {
+			out = append(out, p.(map[string]any)["bucket"].(string))
+		}
+		return out
+	}
+	for _, tc := range []struct {
+		ws    int
+		first string
+		day   time.Weekday
+	}{{1, "2026-09-28", time.Monday}, {0, "2026-09-27", time.Sunday}, {6, "2026-09-26", time.Saturday}} {
+		c.Do(t, http.MethodPatch, "/me/preferences", map[string]any{"week_start": tc.ws}).Expect(t, http.StatusOK)
+		w := weeks()
+		if len(w) == 0 || w[0] != tc.first {
+			t.Fatalf("week_start %d: buckets = %v", tc.ws, w)
+		}
+		for _, b := range w {
+			if d, _ := time.Parse(day, b); d.Weekday() != tc.day {
+				t.Fatalf("week_start %d: bucket %s is a %s", tc.ws, b, d.Weekday())
+			}
+		}
+	}
+
+	today := utcToday()
+	c.Do(t, http.MethodPatch, "/me/preferences", map[string]any{"timezone": "UTC"}).Expect(t, http.StatusOK)
+	c.Do(t, http.MethodPost, "/subscriptions", map[string]any{"name": "Yearly", "amount": "1200", "billing_frequency": "yearly",
+		"start_date": today.AddDate(0, 0, 40).Format(day), "payment_account_id": acct}, "Idempotency-Key", key()).Expect(t, http.StatusCreated)
+	trial := c.Do(t, http.MethodPost, "/subscriptions", map[string]any{"name": "Trialist", "amount": "300", "billing_frequency": "monthly",
+		"start_date": today.AddDate(0, 0, 5).Format(day), "trial_ends_on": today.AddDate(0, 0, 5).Format(day), "payment_account_id": acct},
+		"Idempotency-Key", key()).Expect(t, http.StatusCreated).Data()
+	var sub map[string]any
+	for _, x := range c.Do(t, http.MethodGet, "/analytics/recurring", nil).Expect(t, http.StatusOK).Data()["commitments"].([]any) {
+		if x.(map[string]any)["kind"] == "subscription" {
+			sub = x.(map[string]any)
+		}
+	}
+	if sub == nil || gfMap(sub["monthly_equivalent"])["amount"] != "100.00" {
+		t.Fatalf("subscription commitment (yearly 1200 = 100/month; trials not yet counted) = %v", sub)
+	}
+	var items []map[string]any
+	for _, x := range c.Do(t, http.MethodGet, "/calendar", nil).Expect(t, http.StatusOK).List() {
+		if m := x.(map[string]any); m["entity_id"] == trial["id"] && m["date"] == today.AddDate(0, 0, 5).Format(day) {
+			items = append(items, m)
+		}
+	}
+	if trial["status"] != "trial" || len(items) != 1 || items[0]["kind"] != "trial_end" || gfMap(items[0]["amount"])["amount"] != "300.00" {
+		t.Fatalf("trial %v: items on its end date = %v", trial["status"], items)
 	}
 }

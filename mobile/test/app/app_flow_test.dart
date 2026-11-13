@@ -14,6 +14,7 @@ import 'package:montra_mobile/core/auth/auth_controller.dart';
 import 'package:montra_mobile/core/auth/credential_store.dart';
 import 'package:montra_mobile/core/auth/session_tokens.dart';
 import 'package:montra_mobile/core/config/app_config.dart';
+import 'package:montra_mobile/core/formatting/dates.dart';
 import 'package:montra_mobile/core/settings/app_preferences.dart';
 import 'package:montra_mobile/core/storage/secure_store.dart';
 import 'package:montra_mobile/features/dashboard/data/dashboard_api.dart';
@@ -66,7 +67,10 @@ void main() {
     );
   });
 
-  tearDown(() => connectivity.dispose());
+  tearDown(() {
+    connectivity.dispose();
+    LocalDates.settings = DateSettings.languageDefault;
+  });
 
   Future<ProviderContainer> boot(WidgetTester tester) async {
     final ProviderContainer container = ProviderContainer(
@@ -126,7 +130,7 @@ void main() {
 
     expect(find.text('Set up Montra'), findsOneWidget);
     expect(find.text('Skip setup'), findsOneWidget);
-    expect(find.text('Step 1 of 6'), findsOneWidget);
+    expect(find.text('Step 1 of 8'), findsOneWidget);
   });
 
   testWidgets('a stored session is restored and lands on Home', (
@@ -162,6 +166,46 @@ void main() {
     expect(
       find.bySemanticsLabel(RegExp('Two-step verification: Off')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('the account date format and week start apply app wide', (
+    WidgetTester tester,
+  ) async {
+    secure.values[CredentialStore.refreshTokenKey] = 'refresh-1';
+    refresh = (String token) async =>
+        AuthResult.fromJson(authResultJson(access: 'a2', refresh: 'r2'));
+    when(
+      () => api.currentSession(),
+    ).thenAnswer((Invocation _) async => AuthResult.fromJson(authResultJson()));
+    when(() => preferencesApi.preferences())
+        .thenAnswer((_) async => preferences(dateFormat: 'dmy', weekStart: 0));
+    when(() => dashboard.planning())
+        .thenAnswer((_) async => dashboardPlanning());
+    when(
+      () => dashboard.widgets(),
+    ).thenAnswer((_) async => widgetLayout(keys: const <String>['upcoming']));
+
+    final ProviderContainer container = await boot(tester);
+
+    expect(
+      find.text('2 items through 26/11/2026 · 1 is overdue'),
+      findsOneWidget,
+    );
+    expect(find.text('Bill · Due 20/11/2026'), findsOneWidget);
+    final BuildContext context = tester.element(find.byType(NavigationBar));
+    expect(MaterialLocalizations.of(context).firstDayOfWeekIndex, 0);
+
+    // A saved change redraws the dates already on screen.
+    container
+        .read(preferencesSnapshotProvider.notifier)
+        .update(preferences(dateFormat: 'ymd', weekStart: 6));
+    await tester.pumpAndSettle();
+    expect(find.text('Bill · Due 2026-11-20'), findsOneWidget);
+    expect(
+      MaterialLocalizations.of(tester.element(find.byType(NavigationBar)))
+          .firstDayOfWeekIndex,
+      6,
     );
   });
 

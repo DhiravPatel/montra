@@ -239,8 +239,9 @@ const Set<String> scheduleGroupKeys = <String>{
   'by_week_of_month',
 };
 
-/// Weekdays in the order pickers show them (Monday first), 0 = Sunday.
-const List<int> weekdayOrder = <int>[1, 2, 3, 4, 5, 6, 0];
+/// Weekdays in the order pickers show them, 0 = Sunday: from the
+/// account's first day of the week (Monday when it is not known).
+List<int> get weekdayOrder => weekdaysFrom(LocalDates.weekStart);
 
 /// The weekday's name in [locale] (0 = Sunday).
 String weekdayName(int weekday, String locale) =>

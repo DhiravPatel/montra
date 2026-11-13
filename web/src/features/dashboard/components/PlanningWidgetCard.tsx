@@ -22,8 +22,11 @@ interface PlanningWidgetCardProps extends PlanningWidgetProps {
   errorTitle: string;
   /** How many exist in all (the API's count, which may exceed the items listed). */
   total: (planning: DashboardPlanning) => number;
-  /** e.g. "5 of 7 active budgets" (the items shown and the API's count). */
-  countText: (planning: DashboardPlanning) => string;
+  /**
+   * e.g. "5 of 7 active budgets" (the items shown and the API's count);
+   * omitted when the card lists everything the API counted.
+   */
+  countText?: (planning: DashboardPlanning) => string;
   /** The full screen and the link text, e.g. "View all 7 budgets". */
   viewAll: { to: string; label: (total: number) => string };
   /** The card's empty state (nothing to show). */
@@ -89,8 +92,13 @@ export function PlanningWidgetCard({
         <>
           {children(data)}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-            <p className="text-sm text-fg-muted">{countText(data)}</p>
-            <ButtonLink to={viewAll.to} variant="ghost" size="sm">
+            {countText ? <p className="text-sm text-fg-muted">{countText(data)}</p> : null}
+            <ButtonLink
+              to={viewAll.to}
+              variant="ghost"
+              size="sm"
+              className={countText ? undefined : 'ms-auto'}
+            >
               {viewAll.label(count)}
               <Icon name="arrow-right" className="size-4" />
             </ButtonLink>

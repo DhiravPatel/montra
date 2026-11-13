@@ -4,8 +4,8 @@ import { waitForEmailLink } from './support/devMailbox';
 import { signInWithForm, submitHonouringRateLimit } from './support/session';
 
 /**
- * Money journey against the local Go API: onboarding with a first account,
- * the dashboard, an expense with a refund, a credit card, a transfer with a
+ * Money journey against the local Go API: onboarding with a first goal and
+ * a first account, the dashboard, an expense with a refund, a credit card, a transfer with a
  * fee (deleted and restored as one unit) and the transaction list. Creates a
  * throwaway account in the development database.
  * Run with: PW_CHANNEL=chrome pnpm e2e
@@ -59,6 +59,15 @@ test('set up, record money and see it everywhere', async ({ page }) => {
     page.getByRole('heading', { level: 2, name: 'Your income (optional)' }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Skip this step' }).click();
+  // A first goal, created with POST /goals (Idempotency-Key) and recorded as completed.
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'A first goal (optional)' }),
+  ).toBeVisible();
+  await page.getByLabel('Name', { exact: true }).fill('Emergency fund');
+  await page.getByLabel('Type', { exact: true }).selectOption('emergency_fund');
+  await page.getByLabel(/^Target amount/).fill('50000');
+  await page.getByRole('button', { name: 'Add goal and continue' }).click();
+  await expect(page.getByText('Goal “Emergency fund” added')).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: 'Your first account' })).toBeVisible();
   await page.getByLabel('Account name').fill('Wallet');
   await page.getByLabel('Account type').selectOption('cash');
@@ -78,6 +87,10 @@ test('set up, record money and see it everywhere', async ({ page }) => {
   const balances = page.getByRole('region', { name: 'Balances' });
   await expect(balances.getByText('₹1,500.00').first()).toBeVisible();
   await expect(page.getByText('Finish setting up Montra')).toHaveCount(0);
+  // The goal from onboarding, with the server's figures.
+  const goals = page.getByRole('region', { name: 'Goals' });
+  await expect(goals.getByRole('link', { name: 'Emergency fund' })).toBeVisible();
+  await expect(goals.getByText('₹0.00 saved of ₹50,000.00')).toBeVisible();
 
   // An expense (the Wallet is the default account after onboarding).
   await page.goto('/transactions/new');

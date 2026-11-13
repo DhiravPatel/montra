@@ -7,8 +7,9 @@ import { signInWithForm, submitHonouringRateLimit } from './support/session';
  * Planning journey against the local Go API: a budget that counts a real
  * expense, a bill paid from Montra and shown on the calendar, a savings goal
  * with a contribution, a subscription with its normalized cost, and a
- * category created from the Categories area. Creates a throwaway account in
- * the development database.
+ * category created from the Categories area, then the dashboard's alert,
+ * renewal and recurring cards. Creates a throwaway account in the
+ * development database.
  * Run with: PW_CHANNEL=chrome pnpm e2e
  */
 test.describe.configure({ mode: 'serial' });
@@ -77,10 +78,10 @@ test('plan ahead: budget, bill, calendar, goal, subscription and categories', as
   await page.getByLabel('Name', { exact: true }).fill('Monthly spending');
   await page.getByRole('radio', { name: /^Overall/ }).check();
   await page.getByLabel('Period', { exact: true }).selectOption('monthly');
-  await page.getByLabel(/^Limit for each period/).fill('5000');
+  await page.getByLabel(/^Limit for each period/).fill('1000');
   await page.getByRole('button', { name: 'Create budget' }).click();
   await expect(pageHeading(page, 'Monthly spending')).toBeVisible();
-  await expect(page.getByText('₹700.00 of ₹5,000.00 spent').first()).toBeVisible();
+  await expect(page.getByText('₹700.00 of ₹1,000.00 spent').first()).toBeVisible();
   await page.goto('/budgets');
   await expect(page.getByRole('link', { name: 'Monthly spending' })).toBeVisible();
 
@@ -142,4 +143,40 @@ test('plan ahead: budget, bill, calendar, goal, subscription and categories', as
     .last()
     .click();
   await expect(page.getByText('Pets').first()).toBeVisible();
+
+  // Home: the planning cards from GET /dashboard/planning.
+  await page.goto('/dashboard');
+  await expect(pageHeading(page, 'Home')).toBeVisible();
+
+  // Budget alerts are raised by the server in the background: reload until one is listed.
+  const alerts = page.getByRole('region', { name: 'Budget alerts' });
+  const alert = alerts.getByRole('link', { name: /^Monthly spending reached \d+% of its limit$/ });
+  await expect(async () => {
+    await page.reload();
+    await expect(alert.first()).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 60_000 });
+  await expect(alerts.getByText(/^\d+ of \d+ active alerts?$/)).toBeVisible();
+  const message = (await alert.first().textContent()) ?? '';
+  await alerts.getByRole('button', { name: `Dismiss: ${message}` }).click();
+  await expect(page.getByText('Alert dismissed')).toBeVisible();
+  await expect(alerts.getByRole('link', { name: message, exact: true })).toHaveCount(0);
+
+  // The subscription renews within 30 days, with its price, linking to it.
+  const renewals = page.getByRole('region', { name: 'Renewals and trials' });
+  await expect(renewals.getByRole('link', { name: 'Music' })).toHaveAttribute(
+    'href',
+    /^\/subscriptions\/[0-9a-f-]{36}$/,
+  );
+  await expect(renewals.getByText(/^Renews /)).toBeVisible();
+  await expect(renewals.getByText('₹1,200.00')).toBeVisible();
+
+  // The bill as a monthly equivalent, with what the figures count.
+  const recurring = page.getByRole('region', { name: 'Recurring per month' });
+  const bills = recurring.getByRole('listitem').filter({ hasText: /^Bills \(1 schedule\)/ });
+  await expect(bills.getByText('₹1,200.00').first()).toBeVisible();
+  await expect(recurring.getByText(/^Only fixed amounts are counted\./)).toBeVisible();
+  await expect(recurring.getByRole('link', { name: 'View recurring schedules' })).toHaveAttribute(
+    'href',
+    '/planning/recurring',
+  );
 });

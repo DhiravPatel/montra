@@ -59,8 +59,7 @@ backend/            Go module `montra/backend`
                     ratelimit, crypto, observability, storage, email, push
     domain/         pure packages: money, currency, split, ledger, period,
                     recurrence, budgetcalc, subdetect, settlement, statement
-                    (file parsing/normalization), reconcile (fx and forecast
-                    arrive with their phases)
+                    (file parsing/normalization), reconcile
     <feature>/      application services + repositories + HTTP registration:
                     auth, users, files, notifications, privacy, finance
                     (accounts, transactions, transfers, categories, tags,
@@ -98,7 +97,7 @@ docs/               all project documentation
    each behind an interface with timeouts and error classification.
 8. **Durable jobs** — PostgreSQL queue (ADR-008).
 9. **Observability** — slog JSON logs with request/job IDs and redaction,
-   Prometheus metrics, optional OpenTelemetry traces.
+   Prometheus metrics (no tracing is implemented; the access log carries request IDs and error codes).
 
 ## 4. Data flow: committed write → side effects
 
@@ -115,7 +114,7 @@ sequenceDiagram
   A->>D: COMMIT
   A-->>C: 201 {data, meta}
   W->>D: claim outbox events (SKIP LOCKED)
-  W->>D: enqueue jobs (budget evaluation, anomaly, notifications)
+  W->>D: enqueue jobs (budget evaluation, notifications)
   W->>D: process job, record attempt, dedupe notification
 ```
 
@@ -150,7 +149,10 @@ reminders), `subscriptions.renewals` (hourly),
 `retention.cleanup`, `notifications.digest_scan` (hourly; digests at
 08:00 local, ADR-047), `integrations.schedule` (30 min: abandoned-run
 recovery, consent expiry, scheduled syncs, stale webhook re-queue,
-ADR-048), `insights.generate_all` (daily). Request-driven jobs: `imports.parse`,
+ADR-048), `insights.generate_all` (daily), `fx.refresh` (6 h),
+`reports.schedules`, `support.notify_staff` (hourly) and
+`groups.trip_reminders` (hourly); the full list with intervals is
+`docs/BACKGROUND_JOBS.md`. Request-driven jobs: `imports.parse`,
 `imports.normalize`, `imports.process`, `imports.rollback`,
 `receipts.extract`, `subscriptions.detect`, `notifications.deliver`
 (per channel), `notifications.digest_send`, `integrations.sync` (one run;

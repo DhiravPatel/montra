@@ -289,17 +289,31 @@ func seriesGranularity(sc *scope, granularity string) string {
 	return g
 }
 
+// bucketExpr truncates a date expression to its bucket. Weeks start on
+// the user's week start (PostgreSQL weeks start on Monday, so the date is
+// shifted before truncating and shifted back after).
+func bucketExpr(granularity, date string, weekStart time.Weekday) string {
+	if granularity == "week" {
+		if shift := (8 - int(weekStart)) % 7; shift != 0 {
+			return fmt.Sprintf("(date_trunc('week', (%s)::date + %d)::date - %d)", date, shift, shift)
+		}
+	}
+	return "date_trunc('" + granularity + "', (" + date + ")::date)::date"
+}
+
 // series returns one point per bucket of the window (zero-filled) for each
-// currency with activity, oldest first. Weeks start on Monday.
+// currency with activity, oldest first. Weeks start on the user's week
+// start (preferences week_start; Monday by default).
 func (s *Service) series(ctx context.Context, tx pgx.Tx, sc *scope, granularity string) ([]SeriesPoint, error) {
 	granularity = seriesGranularity(sc, granularity)
 	args := append(append([]any{}, sc.args...), sc.window.From, sc.window.To)
 	from, to := fmt.Sprintf("$%d", len(args)-1), fmt.Sprintf("$%d", len(args))
+	ws := sc.u.WeekStart
 	rows, err := tx.Query(ctx, `with v as (
-			select date_trunc('`+granularity+`', t.local_date)::date as bucket, t.currency,
+			select `+bucketExpr(granularity, "t.local_date", ws)+` as bucket, t.currency,
 				coalesce(sum(`+sqlIncome+`),0)::bigint as inc, coalesce(sum(`+sqlExpense+`) - sum(`+sqlRefund+`),0)::bigint as exp
 			from transactions t join financial_accounts a on a.id = t.account_id where `+sc.clause()+` group by 1, 2),
-		b as (select generate_series(date_trunc('`+granularity+`', `+from+`::date), date_trunc('`+granularity+`', `+to+`::date),
+		b as (select generate_series(`+bucketExpr(granularity, from, ws)+`, `+bucketExpr(granularity, to, ws)+`,
 			interval '1 `+granularity+`')::date as bucket),
 		c as (select distinct currency from v)
 		select to_char(b.bucket, 'YYYY-MM-DD'), c.currency, coalesce(v.inc, 0), coalesce(v.exp, 0)
@@ -505,7 +519,7 @@ type CashFlowReport struct {
 	Previous       []CashFlowTotals `json:"previous_period" doc:"Same-length preceding period for comparison; its dates are previous_window"`
 	PreviousWindow Window           `json:"previous_window" doc:"The dates previous_period covers: as many days as window, ending the day before it starts"`
 	Series         []SeriesPoint    `json:"series"`
-	SeriesBy       string           `json:"series_granularity" enum:"day,week,month,year" doc:"Bucket size of series (zero-filled buckets; weeks start Monday)"`
+	SeriesBy       string           `json:"series_granularity" enum:"day,week,month,year" doc:"Bucket size of series (zero-filled buckets; weeks start on your week_start preference)"`
 	Coverage       Coverage         `json:"coverage"`
 	Converted      *ConvertedTotals `json:"converted,omitempty" doc:"Present when display_currency is requested"`
 }

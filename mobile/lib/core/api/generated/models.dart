@@ -5507,6 +5507,8 @@ final class CalendarItem {
   /// JSON `group_id` (optional).
   final String? groupId;
 
+  /// A trial whose first charge falls on its end date is one trial_end item carrying that charge's amount.
+  ///
   /// JSON `kind`.
   final CalendarItemKind kind;
 
@@ -5710,7 +5712,7 @@ final class CashFlowReport {
   /// JSON `series`.
   final List<SeriesPoint> series;
 
-  /// Bucket size of series (zero-filled buckets; weeks start Monday).
+  /// Bucket size of series (zero-filled buckets; weeks start on your week_start preference).
   ///
   /// JSON `series_granularity`.
   final CashFlowReportSeriesGranularity seriesGranularity;
@@ -12429,6 +12431,8 @@ final class DailyUsage {
 final class DashboardPlanning {
   /// Creates a [DashboardPlanning].
   const DashboardPlanning({
+    required this.alertCount,
+    required this.alerts,
     required this.budgetCount,
     required this.budgets,
     required this.goalCount,
@@ -12437,6 +12441,11 @@ final class DashboardPlanning {
     required this.groupCount,
     required this.overBudgetCount,
     required this.overdueCount,
+    required this.recurring,
+    required this.recurringNoteCode,
+    required this.renewalCount,
+    required this.renewals,
+    required this.renewalsThrough,
     required this.today,
     required this.upcoming,
     required this.upcomingCount,
@@ -12446,6 +12455,16 @@ final class DashboardPlanning {
   /// Decodes a `DashboardPlanning` JSON object.
   factory DashboardPlanning.fromJson(Map<String, Object?> json) =>
       DashboardPlanning(
+        alertCount: _cast<int>(
+          json['alert_count'],
+          'DashboardPlanning.alert_count',
+        ),
+        alerts: _castList(
+          json['alerts'],
+          'DashboardPlanning.alerts',
+          (Object? e1, String p1) =>
+              AlertDto.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
         budgetCount: _cast<int>(
           json['budget_count'],
           'DashboardPlanning.budget_count',
@@ -12484,6 +12503,32 @@ final class DashboardPlanning {
           json['overdue_count'],
           'DashboardPlanning.overdue_count',
         ),
+        recurring: _castList(
+          json['recurring'],
+          'DashboardPlanning.recurring',
+          (Object? e1, String p1) =>
+              RecurringCommitment.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
+        recurringNoteCode: DashboardPlanningRecurringNoteCode.fromJson(
+          _cast<String>(
+            json['recurring_note_code'],
+            'DashboardPlanning.recurring_note_code',
+          ),
+        ),
+        renewalCount: _cast<int>(
+          json['renewal_count'],
+          'DashboardPlanning.renewal_count',
+        ),
+        renewals: _castList(
+          json['renewals'],
+          'DashboardPlanning.renewals',
+          (Object? e1, String p1) =>
+              CalendarItem.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
+        renewalsThrough: _cast<String>(
+          json['renewals_through'],
+          'DashboardPlanning.renewals_through',
+        ),
         today: _cast<String>(json['today'], 'DashboardPlanning.today'),
         upcoming: _castList(
           json['upcoming'],
@@ -12500,6 +12545,18 @@ final class DashboardPlanning {
           'DashboardPlanning.upcoming_through',
         ),
       );
+
+  /// Active budget alerts (counted up to 200).
+  ///
+  /// JSON `alert_count`.
+  ///
+  /// Format: `int64`.
+  final int alertCount;
+
+  /// Active budget alerts, newest first, up to 5 (dismiss or snooze them with the budget alert endpoints).
+  ///
+  /// JSON `alerts`.
+  final List<AlertDto> alerts;
 
   /// Active budgets.
   ///
@@ -12547,6 +12604,31 @@ final class DashboardPlanning {
   /// Format: `int64`.
   final int overdueCount;
 
+  /// Active recurring commitments per kind and currency, normalized to a month (as GET /analytics/recurring).
+  ///
+  /// JSON `recurring`.
+  final List<RecurringCommitment> recurring;
+
+  /// How the monthly figures are calculated (localize by code).
+  ///
+  /// JSON `recurring_note_code`.
+  final DashboardPlanningRecurringNoteCode recurringNoteCode;
+
+  /// JSON `renewal_count`.
+  ///
+  /// Format: `int64`.
+  final int renewalCount;
+
+  /// Subscription renewals and trial ends from today through renewals_through, soonest first, up to 6.
+  ///
+  /// JSON `renewals`.
+  final List<CalendarItem> renewals;
+
+  /// Last date the renewals list covers (today + 30 days).
+  ///
+  /// JSON `renewals_through`.
+  final String renewalsThrough;
+
   /// Your local date (YYYY-MM-DD).
   ///
   /// JSON `today`.
@@ -12571,6 +12653,8 @@ final class DashboardPlanning {
 
   /// Encodes this object as JSON. Absent optional fields are omitted.
   Map<String, Object?> toJson() => <String, Object?>{
+    'alert_count': alertCount,
+    'alerts': alerts.map((AlertDto item1) => item1.toJson()).toList(),
     'budget_count': budgetCount,
     'budgets': budgets.map((BudgetDto item1) => item1.toJson()).toList(),
     'goal_count': goalCount,
@@ -12581,6 +12665,13 @@ final class DashboardPlanning {
     'group_count': groupCount,
     'over_budget_count': overBudgetCount,
     'overdue_count': overdueCount,
+    'recurring': recurring
+        .map((RecurringCommitment item1) => item1.toJson())
+        .toList(),
+    'recurring_note_code': recurringNoteCode.json,
+    'renewal_count': renewalCount,
+    'renewals': renewals.map((CalendarItem item1) => item1.toJson()).toList(),
+    'renewals_through': renewalsThrough,
     'today': today,
     'upcoming': upcoming.map((CalendarItem item1) => item1.toJson()).toList(),
     'upcoming_count': upcomingCount,
@@ -12591,6 +12682,8 @@ final class DashboardPlanning {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is DashboardPlanning &&
+          other.alertCount == alertCount &&
+          _listEquals(other.alerts, alerts) &&
           other.budgetCount == budgetCount &&
           _listEquals(other.budgets, budgets) &&
           other.goalCount == goalCount &&
@@ -12599,6 +12692,11 @@ final class DashboardPlanning {
           other.groupCount == groupCount &&
           other.overBudgetCount == overBudgetCount &&
           other.overdueCount == overdueCount &&
+          _listEquals(other.recurring, recurring) &&
+          other.recurringNoteCode == recurringNoteCode &&
+          other.renewalCount == renewalCount &&
+          _listEquals(other.renewals, renewals) &&
+          other.renewalsThrough == renewalsThrough &&
           other.today == today &&
           _listEquals(other.upcoming, upcoming) &&
           other.upcomingCount == upcomingCount &&
@@ -12606,6 +12704,8 @@ final class DashboardPlanning {
 
   @override
   int get hashCode => Object.hashAll(<Object?>[
+    alertCount,
+    _listHash(alerts),
     budgetCount,
     _listHash(budgets),
     goalCount,
@@ -12614,6 +12714,11 @@ final class DashboardPlanning {
     groupCount,
     overBudgetCount,
     overdueCount,
+    _listHash(recurring),
+    recurringNoteCode,
+    renewalCount,
+    _listHash(renewals),
+    renewalsThrough,
     today,
     _listHash(upcoming),
     upcomingCount,
@@ -12769,7 +12874,7 @@ final class DashboardSummary {
   /// JSON `trend`.
   final List<SeriesPoint> trend;
 
-  /// Bucket size of trend (weeks start Monday).
+  /// Bucket size of trend (weeks start on your week_start preference).
   ///
   /// JSON `trend_granularity`.
   final DashboardSummaryTrendGranularity trendGranularity;
@@ -50960,6 +51065,32 @@ enum ConvertedTotalsRatePolicyCode {
   }
 }
 
+/// Allowed values of `DashboardPlanning.recurring_note_code`: `fixed_amounts_expectations`.
+///
+/// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
+enum DashboardPlanningRecurringNoteCode {
+  /// Wire value `fixed_amounts_expectations`.
+  fixedAmountsExpectations('fixed_amounts_expectations'),
+
+  /// A value this client version does not know. Never sent to the server.
+  unrecognized('');
+
+  const DashboardPlanningRecurringNoteCode(this.json);
+
+  /// The wire value.
+  final String json;
+
+  /// Decodes a wire value, falling back to [unrecognized].
+  static DashboardPlanningRecurringNoteCode fromJson(String value) {
+    for (final DashboardPlanningRecurringNoteCode candidate in values) {
+      if (candidate != unrecognized && candidate.json == value) {
+        return candidate;
+      }
+    }
+    return unrecognized;
+  }
+}
+
 /// Allowed values of `DashboardSummary.note_codes_item`: `excludes_transfers_adjustments`, `refunds_reduce_spending`, `currencies_separate`, `balances_tracked_not_verified`.
 ///
 /// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
@@ -61153,7 +61284,7 @@ enum WebhookResultStatus {
   }
 }
 
-/// Allowed values of `WidgetDTO.key`: `balances`, `cash_flow`, `budgets`, `upcoming`, `income_vs_expense`, `cash_flow_trend`, `category_breakdown`, `top_merchants`, `goals`, `group_balances`, `recent_transactions`, `data_coverage`.
+/// Allowed values of `WidgetDTO.key`: `balances`, `cash_flow`, `alerts`, `budgets`, `upcoming`, `renewals`, `income_vs_expense`, `cash_flow_trend`, `category_breakdown`, `top_merchants`, `recurring`, `goals`, `group_balances`, `recent_transactions`, `data_coverage`.
 ///
 /// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
 enum WidgetDtoKey {
@@ -61163,11 +61294,17 @@ enum WidgetDtoKey {
   /// Wire value `cash_flow`.
   cashFlow('cash_flow'),
 
+  /// Wire value `alerts`.
+  alerts('alerts'),
+
   /// Wire value `budgets`.
   budgets('budgets'),
 
   /// Wire value `upcoming`.
   upcoming('upcoming'),
+
+  /// Wire value `renewals`.
+  renewals('renewals'),
 
   /// Wire value `income_vs_expense`.
   incomeVsExpense('income_vs_expense'),
@@ -61180,6 +61317,9 @@ enum WidgetDtoKey {
 
   /// Wire value `top_merchants`.
   topMerchants('top_merchants'),
+
+  /// Wire value `recurring`.
+  recurring('recurring'),
 
   /// Wire value `goals`.
   goals('goals'),

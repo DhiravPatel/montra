@@ -1,0 +1,59 @@
+# Throwaway Montra backend for end-to-end jobs (never deploys anything).
+# Expects a PostgreSQL service container on localhost:5432 whose superuser is
+# `postgres` with password PGPASSWORD (set by the calling job). Creates the
+# Montra roles and a throwaway database the way scripts/db/bootstrap.sh does,
+# then migrates and starts the API + worker with scripts/ci/e2e-stack.sh.
+name: Montra e2e backend
+description: Bootstrap roles + database, migrate, and start the API and worker for e2e tests.
+inputs:
+  api-port:
+    description: Port the API listens on (127.0.0.1)
+    default: '8080'
+  web-origin:
+    description: Web origin used for CORS and links in emails
+    default: http://localhost:5199
+  database:
+    description: Throwaway database name (must end in _test or _dev)
+    default: montra_e2e_test
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v5
+      with: { go-version-file: backend/go.mod, cache-dependency-path: backend/go.sum }
+
+    - name: Create roles and database (mirrors scripts/db/bootstrap.sh)
+      shell: bash
+      env:
+        DB_NAME: ${{ inputs.database }}
+      run: |
+        set -euo pipefail
+        # Throwaway role passwords, generated per run and never stored.
+        OWNER_PW="$(openssl rand -hex 24)"; APP_PW="$(openssl rand -hex 24)"; WORKER_PW="$(openssl rand -hex 24)"
+        for pw in "$OWNER_PW" "$APP_PW" "$WORKER_PW"; do echo "::add-mask::$pw"; done
+        admin() { psql -X -q -v ON_ERROR_STOP=1 -h localhost -U postgres -d "${1:-postgres}" "${@:2}"; }
+        for role in owner app worker; do
+          case "$role" in owner) pw="$OWNER_PW" ;; app) pw="$APP_PW" ;; worker) pw="$WORKER_PW" ;; esac
+          admin postgres -c "create role montra_$role with login nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls password '$pw'"
+        done
+        admin postgres -c "create database $DB_NAME owner montra_owner encoding 'UTF8' template template0"
+        admin postgres -c "revoke connect, temporary on database $DB_NAME from public"
+        admin postgres -c "grant connect on database $DB_NAME to montra_owner, montra_app, montra_worker"
+        admin "$DB_NAME" -c "revoke create on schema public from public"
+        for role in montra_app montra_worker montra_owner; do
+          admin postgres -c "alter role $role set search_path = montra, extensions"
+        done
+        {
+          echo "E2E_DATABASE_MIGRATION_URL=postgres://montra_owner:$OWNER_PW@localhost:5432/$DB_NAME?sslmode=disable"
+          echo "E2E_DATABASE_URL=postgres://montra_app:$APP_PW@localhost:5432/$DB_NAME?sslmode=disable"
+          echo "E2E_WORKER_DATABASE_URL=postgres://montra_worker:$WORKER_PW@localhost:5432/$DB_NAME?sslmode=disable"
+        } >> "$GITHUB_ENV"
+
+    - name: Migrate and start API + worker
+      shell: bash
+      env:
+        E2E_API_PORT: ${{ inputs.api-port }}
+        E2E_WEB_ORIGIN: ${{ inputs.web-origin }}
+        E2E_STATE_DIR: ${{ github.workspace }}/.data/e2e-stack
+      run: |
+        scripts/ci/e2e-stack.sh start
+        echo "E2E_STATE_DIR=$E2E_STATE_DIR" >> "$GITHUB_ENV"

@@ -405,7 +405,8 @@ export const en = {
     'How you appear to friends and groups, how Montra shows dates and money, and how the app looks. Changes apply on all your devices.',
   'profileSettings.nothingChanged': 'Nothing to save: you haven’t changed anything',
   'profileSettings.avatar.title': 'Profile photo',
-  'profileSettings.avatar.description': 'Shown next to your name to friends and group members.',
+  'profileSettings.avatar.description':
+    'Shown next to your name to the people who can see your profile (see “Who can see your profile” below).',
   'profileSettings.avatar.help': 'A JPG, PNG or WebP image up to 5 MB.',
   'profileSettings.avatar.upload': 'Upload a photo',
   'profileSettings.avatar.change': 'Change photo',
@@ -455,20 +456,19 @@ export const en = {
   'profileSettings.profile.locationTooLong': 'Use 80 characters or fewer.',
   'profileSettings.profile.save': 'Save profile',
   'profileSettings.profile.saved': 'Profile saved',
-  'profileSettings.visibility.legend': 'Who can see your bio, interests and location',
+  'profileSettings.visibility.legend': 'Who can see your profile',
   'profileSettings.visibility.help':
-    'Your balances and transactions are never part of your profile.',
-  'profileSettings.visibility.private': 'Only me',
-  'profileSettings.visibility.privateHelp': 'Nobody else sees them.',
-  'profileSettings.visibility.connections': 'My friends',
-  'profileSettings.visibility.connectionsHelp': 'People you are friends with on Montra.',
+    'Your profile is your photo, bio, interests and location. Your balances and transactions are never part of it. People you block, or who block you, never see it.',
+  'profileSettings.visibility.private': 'Private',
+  'profileSettings.visibility.privateHelp':
+    'Only you, people in an active group with you, and people you have a pending friend request with.',
+  'profileSettings.visibility.connections': 'Friends',
+  'profileSettings.visibility.connectionsHelp':
+    'Your friends, plus everyone a private profile is shown to: people in an active group with you and people you have a pending friend request with.',
   'profileSettings.visibility.public': 'Anyone on Montra',
-  'profileSettings.visibility.publicHelp':
-    'Anyone who sees your profile, for example in a community.',
+  'profileSettings.visibility.publicHelp': 'Anyone who is signed in to Montra.',
   'profileSettings.discoverableHelp':
     'People who type your exact username can find you and send a friend request.',
-  'profileSettings.showAchievements': 'Show my challenge achievements on my profile',
-  'profileSettings.showAchievementsHelp': 'Badges only; never amounts.',
   'profileSettings.region.title': 'Region, money and display',
   'profileSettings.region.description':
     'Your currencies, time zone, formats and defaults. Only what you change is saved.',
@@ -1559,6 +1559,14 @@ export const en = {
   'dashboard.widget.goalsHelp': 'Your active goals, nearest target date first.',
   'dashboard.widget.group_balances': 'Group balances',
   'dashboard.widget.group_balancesHelp': 'Groups where you are owed or owe money.',
+  'dashboard.widget.alerts': 'Budget alerts',
+  'dashboard.widget.alertsHelp': 'Budgets that reached an alert level or may go over.',
+  'dashboard.widget.renewals': 'Renewals and trials',
+  'dashboard.widget.renewalsHelp':
+    'Subscriptions renewing and free trials ending in the next 30 days.',
+  'dashboard.widget.recurring': 'Recurring per month',
+  'dashboard.widget.recurringHelp':
+    'What your regular schedules add up to each month, per currency.',
   'dashboard.budgets.scope': 'Active budgets, fullest first',
   'dashboard.budgets.loading': 'Loading your budgets…',
   'dashboard.budgets.error': 'We couldn’t load your budgets',
@@ -1622,6 +1630,48 @@ export const en = {
   'dashboard.groupBalances.viewAll': { one: 'View your groups', other: 'View all {count} groups' },
   'dashboard.groupBalances.empty': 'All settled up',
   'dashboard.groupBalances.emptyBody': 'No one owes anything in your groups right now.',
+  'dashboard.alerts.scope': 'Active alerts, newest first',
+  'dashboard.alerts.loading': 'Loading your budget alerts…',
+  'dashboard.alerts.error': 'We couldn’t load your budget alerts',
+  'dashboard.alerts.count': {
+    one: '{shown} of {count} active alert',
+    other: '{shown} of {count} active alerts',
+  },
+  'dashboard.alerts.viewAll': {
+    one: 'View it in Budgets',
+    other: 'View all {count} in Budgets',
+  },
+  'dashboard.alerts.empty': 'No budget alerts',
+  'dashboard.alerts.emptyBody':
+    'You’ll see a note here when a budget reaches one of its alert levels or may go over.',
+  'dashboard.renewals.scope': 'Due through {date}, soonest first',
+  'dashboard.renewals.scopeGeneric': 'Due in the next 30 days, soonest first',
+  'dashboard.renewals.loading': 'Loading renewals…',
+  'dashboard.renewals.error': 'We couldn’t load your renewals',
+  'dashboard.renewals.count': {
+    one: '{shown} of {count} renewal or trial end',
+    other: '{shown} of {count} renewals and trial ends',
+  },
+  'dashboard.renewals.viewAll': {
+    one: 'View your subscriptions',
+    other: 'View all {count} in Subscriptions',
+  },
+  'dashboard.renewals.empty': 'No renewals in the next 30 days',
+  'dashboard.renewals.emptyBody':
+    'Subscriptions that renew and free trials that end soon appear here, with what they cost.',
+  'dashboard.renewals.add': 'Add a subscription',
+  'dashboard.renewals.renews': 'Renews {date}',
+  'dashboard.renewals.renewsToday': 'Renews today',
+  'dashboard.renewals.trialEnds': 'Free trial ends {date}',
+  'dashboard.renewals.trialEndsToday': 'Free trial ends today',
+  'dashboard.recurring.scope': 'Monthly equivalents of your active schedules',
+  'dashboard.recurring.loading': 'Loading your recurring commitments…',
+  'dashboard.recurring.error': 'We couldn’t load your recurring commitments',
+  'dashboard.recurring.viewAll': 'View recurring schedules',
+  'dashboard.recurring.empty': 'No recurring schedules yet',
+  'dashboard.recurring.emptyBody':
+    'Add your rent, salary or other regular payments to see what they add up to each month.',
+  'dashboard.recurring.add': 'Add a recurring item',
   'dashboard.balances.netWorth': 'Net worth in {currency}',
   'dashboard.balances.empty': 'No balances yet',
   'dashboard.balances.emptyBody': 'Add an account to see your balances here.',
@@ -1762,6 +1812,13 @@ export const en = {
   'onboarding.income.1l_2l': '₹1 lakh to ₹2 lakh',
   'onboarding.income.2l_5l': '₹2 lakh to ₹5 lakh',
   'onboarding.income.above_5l': 'Above ₹5 lakh',
+  'onboarding.goals.title': 'A first goal (optional)',
+  'onboarding.goals.body':
+    'Saving for something? Add it here and watch your progress on Home. You can add a saving plan, milestones and contributions later.',
+  'onboarding.goals.currencyHelp': 'In {currency}, your main currency.',
+  'onboarding.goals.datePast': 'Choose today or a later date.',
+  'onboarding.goals.submit': 'Add goal and continue',
+  'onboarding.goals.created': 'Goal “{name}” added',
   'onboarding.accounts.title': 'Your first account',
   'onboarding.accounts.body':
     'Add where your money is, like a cash wallet, bank account or card. You can add more later.',

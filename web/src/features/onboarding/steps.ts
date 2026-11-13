@@ -15,6 +15,7 @@ export const ONBOARDING_STEPS = [
     skippable: true,
   },
   { id: 'income', apiSteps: ['income'], title: 'onboarding.income.title', skippable: true },
+  { id: 'goals', apiSteps: ['goals'], title: 'onboarding.goals.title', skippable: true },
   { id: 'accounts', apiSteps: ['accounts'], title: 'onboarding.accounts.title', skippable: true },
   {
     id: 'categories',

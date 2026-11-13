@@ -1,6 +1,6 @@
-import 'package:intl/intl.dart';
 import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/core/api/generated/models.dart' show Detail;
+import 'package:montra_mobile/core/formatting/dates.dart';
 
 /// Localized text for the coded `DOMAIN_RULE_VIOLATION` (422) and
 /// `CONFLICT` (409) answers of communities, posts, comments and
@@ -38,7 +38,7 @@ String _instant(AppLocalizations l10n, String value) {
     return value;
   }
   try {
-    return DateFormat.yMMMd(l10n.localeName).add_jm().format(at.toLocal());
+    return formatDateTime(at, locale: l10n.localeName);
   } on Object {
     // Date symbols for the locale are not loaded (outside the app).
     return value;

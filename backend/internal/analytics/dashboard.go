@@ -17,10 +17,11 @@ import (
 	"montra/backend/internal/platform/identity"
 )
 
-// Widget keys in default order. budgets, upcoming (bills, recurring and
-// renewals), goals and group_balances read GET /dashboard/planning.
-var widgetRegistry = []string{"balances", "cash_flow", "budgets", "upcoming", "income_vs_expense", "cash_flow_trend",
-	"category_breakdown", "top_merchants", "goals", "group_balances", "recent_transactions", "data_coverage"}
+// Widget keys in default order. alerts, budgets, upcoming (bills,
+// recurring and renewals due soon), renewals (next 30 days), recurring,
+// goals and group_balances read GET /dashboard/planning.
+var widgetRegistry = []string{"balances", "cash_flow", "alerts", "budgets", "upcoming", "renewals", "income_vs_expense", "cash_flow_trend",
+	"category_breakdown", "top_merchants", "recurring", "goals", "group_balances", "recent_transactions", "data_coverage"}
 
 // RegisterWidget adds a widget key (called by feature modules at startup).
 func RegisterWidget(key string) {
@@ -39,7 +40,7 @@ type DashboardSummary struct {
 	CashFlow         []CashFlowTotals         `json:"cash_flow"`
 	PreviousCashFlow []CashFlowTotals         `json:"previous_cash_flow"`
 	Trend            []SeriesPoint            `json:"trend" doc:"Zero-filled buckets for each currency with activity"`
-	TrendBy          string                   `json:"trend_granularity" enum:"day,week,month,year" doc:"Bucket size of trend (weeks start Monday)"`
+	TrendBy          string                   `json:"trend_granularity" enum:"day,week,month,year" doc:"Bucket size of trend (weeks start on your week_start preference)"`
 	TopCategories    []CategorySlice          `json:"top_categories" doc:"Largest net spending first, up to 8 per currency"`
 	TopMerchants     []MerchantSlice          `json:"top_merchants" doc:"Largest net spending first, up to 5 per currency"`
 	Recent           []finance.TransactionDTO `json:"recent_transactions"`
@@ -116,7 +117,7 @@ func (s *Service) Summary(ctx context.Context, f Filter, fin *finance.Service) (
 
 // WidgetDTO is one dashboard widget's layout.
 type WidgetDTO struct {
-	Key      string          `json:"key" enum:"balances,cash_flow,budgets,upcoming,income_vs_expense,cash_flow_trend,category_breakdown,top_merchants,goals,group_balances,recent_transactions,data_coverage" doc:"New widgets may be added; clients skip keys they do not know"`
+	Key      string          `json:"key" enum:"balances,cash_flow,alerts,budgets,upcoming,renewals,income_vs_expense,cash_flow_trend,category_breakdown,top_merchants,recurring,goals,group_balances,recent_transactions,data_coverage" doc:"New widgets may be added; clients skip keys they do not know"`
 	Position int16           `json:"position"`
 	Visible  bool            `json:"visible"`
 	Settings json.RawMessage `json:"settings" doc:"Widget-specific settings (e.g. default range)"`

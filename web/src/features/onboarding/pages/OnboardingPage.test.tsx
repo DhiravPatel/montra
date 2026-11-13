@@ -10,6 +10,7 @@ import {
   makeSummary,
   starterCategories,
 } from '@/tests/financeFixtures';
+import { makeGoal } from '@/tests/goalsFixtures';
 import { testBackend } from '@/tests/msw/backend';
 import { server } from '@/tests/msw/server';
 import { findPageHeading, renderRoute } from '@/tests/render';
@@ -48,8 +49,16 @@ describe('OnboardingPage', () => {
     const patches: unknown[] = [];
     const archived: string[] = [];
     let accountBody: unknown = null;
+    const goals: { body: unknown; key: string | null }[] = [];
     server.use(
       onboardingHandler(progress),
+      http.post(`${API}/goals`, async ({ request }) => {
+        goals.push({ body: await request.json(), key: request.headers.get('Idempotency-Key') });
+        return HttpResponse.json(
+          envelope(makeGoal({ name: 'Emergency fund', goal_type: 'emergency_fund' })),
+          { status: 201 },
+        );
+      }),
       http.patch(`${API}/me/preferences`, async ({ request }) => {
         const patch = (await request.json()) as Record<string, unknown>;
         patches.push(patch);
@@ -75,7 +84,7 @@ describe('OnboardingPage', () => {
     renderRoute('/onboarding', { user: makeUser() });
     await findPageHeading('Set up Montra');
     expect(await stepHeading('Welcome to Montra')).toBeInTheDocument();
-    expect(screen.getByText('Step 1 of 7')).toBeInTheDocument();
+    expect(screen.getByText('Step 1 of 8')).toBeInTheDocument();
     await user.click(await screen.findByRole('button', { name: 'Get started' }));
 
     // Privacy: explained, with one optional choice.
@@ -87,15 +96,29 @@ describe('OnboardingPage', () => {
     await user.click(screen.getByLabelText(/Share anonymous usage statistics/));
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
-    // Region: currency, time zone, week start.
+    // Region: currency, time zone, week start and month start.
     await stepHeading('Where you are');
     await user.selectOptions(await screen.findByLabelText('Main currency'), 'EUR');
     await user.selectOptions(screen.getByLabelText('Week starts on'), '0');
+    const monthStart = screen.getByLabelText('Month starts on day');
+    expect(monthStart).toHaveValue('1');
+    await user.selectOptions(monthStart, '25');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     // Income: skipped.
     await stepHeading('Your income (optional)');
     await user.click(screen.getByRole('button', { name: 'Skip this step' }));
+
+    // A first goal, in the main currency chosen above.
+    await stepHeading('A first goal (optional)');
+    expect(screen.getByText('Step 5 of 8')).toBeInTheDocument();
+    await user.type(await screen.findByLabelText('Name'), 'Emergency fund');
+    await user.selectOptions(screen.getByLabelText('Type'), 'emergency_fund');
+    const target = screen.getByLabelText('Target amount');
+    expect(target).toHaveAccessibleDescription(/In EUR, your main currency\./);
+    await user.type(target, '50000');
+    await user.type(screen.getByLabelText(/^Target date/), '2030-06-30');
+    await user.click(screen.getByRole('button', { name: 'Add goal and continue' }));
 
     // First account.
     await stepHeading('Your first account');
@@ -122,7 +145,7 @@ describe('OnboardingPage', () => {
 
     expect(patches).toEqual([
       { analytics_opt_in: true },
-      { country: 'IN', base_currency: 'EUR', week_start: 0 },
+      { country: 'IN', base_currency: 'EUR', week_start: 0, month_start_day: 25 },
       { default_account_id: makeAccount().id },
       { email_digest: 'weekly' },
     ]);
@@ -132,6 +155,18 @@ describe('OnboardingPage', () => {
       currency: 'EUR',
       opening_balance: '500.00',
     });
+    expect(goals).toEqual([
+      {
+        body: {
+          name: 'Emergency fund',
+          goal_type: 'emergency_fund',
+          currency: 'EUR',
+          target_amount: '50000.00',
+          target_date: '2030-06-30',
+        },
+        key: expect.stringMatching(/^web-[0-9a-f-]{36}$/) as string,
+      },
+    ]);
     expect(archived).toEqual([CATEGORY_TRAVEL]);
     expect(progress.at(-1)).toEqual({
       completed_steps: [
@@ -140,6 +175,7 @@ describe('OnboardingPage', () => {
         'country',
         'currency',
         'timezone',
+        'goals',
         'accounts',
         'categories',
         'notifications',
@@ -173,6 +209,7 @@ describe('OnboardingPage', () => {
           'currency',
           'timezone',
           'income',
+          'goals',
           'accounts',
           'categories',
           'notifications',
@@ -233,6 +270,7 @@ describe('OnboardingPage', () => {
       'Your privacy',
       'Where you are',
       'Your income (optional)',
+      'A first goal (optional)',
       'Your first account',
       'Categories',
     ]) {
@@ -269,7 +307,7 @@ describe('OnboardingPage', () => {
     renderRoute('/onboarding', { user: makeUser() });
     await findPageHeading('Set up Montra');
     expect(await stepHeading('Your income (optional)')).toBeInTheDocument();
-    expect(screen.getByText('Step 4 of 7')).toBeInTheDocument();
+    expect(screen.getByText('Step 4 of 8')).toBeInTheDocument();
 
     // Earlier answers are kept when the next step is recorded (the API merges them).
     await user.click(await screen.findByRole('button', { name: 'Skip this step' }));
@@ -291,6 +329,108 @@ describe('OnboardingPage', () => {
     );
     renderRoute('/onboarding', { user: makeUser() });
     await findPageHeading('Set up Montra');
-    expect(await screen.findByText('Step 1 of 7')).toBeInTheDocument();
+    expect(await screen.findByText('Step 1 of 8')).toBeInTheDocument();
+  });
+
+  it('records the goal step as skipped without creating a goal', async () => {
+    testBackend.onboarding = {
+      completed_steps: ['welcome', 'privacy', 'country', 'currency', 'timezone'],
+      skipped_steps: ['income'],
+    };
+    const bodies: OnboardingBody[] = [];
+    const created: unknown[] = [];
+    server.use(
+      onboardingHandler(bodies),
+      http.post(`${API}/goals`, async ({ request }) => {
+        created.push(await request.json());
+        return HttpResponse.json(envelope(makeGoal()), { status: 201 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute('/onboarding', { user: makeUser() });
+    expect(await stepHeading('A first goal (optional)')).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Skip this step' }));
+    await stepHeading('Your first account');
+    expect(bodies).toEqual([
+      {
+        completed_steps: ['welcome', 'privacy', 'country', 'currency', 'timezone'],
+        skipped_steps: ['income', 'goals'],
+        complete: false,
+      },
+    ]);
+    expect(created).toEqual([]);
+  });
+
+  it('checks the goal first, then retries a failed create with the same Idempotency-Key', async () => {
+    testBackend.onboarding = {
+      completed_steps: ['welcome', 'privacy', 'country', 'currency', 'timezone', 'income'],
+      skipped_steps: [],
+    };
+    const bodies: OnboardingBody[] = [];
+    const keys: (string | null)[] = [];
+    const sent: unknown[] = [];
+    let fail = true;
+    server.use(
+      onboardingHandler(bodies),
+      http.post(`${API}/goals`, async ({ request }) => {
+        keys.push(request.headers.get('Idempotency-Key'));
+        sent.push(await request.json());
+        if (fail) {
+          fail = false;
+          return HttpResponse.json(errorBody({ code: 'SERVICE_UNAVAILABLE' }), { status: 503 });
+        }
+        return HttpResponse.json(envelope(makeGoal({ name: 'Laptop' })), { status: 201 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute('/onboarding', { user: makeUser() });
+    await stepHeading('A first goal (optional)');
+    const submit = await screen.findByRole('button', { name: 'Add goal and continue' });
+
+    // Nothing is sent until the goal is complete.
+    await user.click(submit);
+    expect(await screen.findByText('Enter a name.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Type')).toHaveAccessibleDescription(/Choose a type\./);
+    expect(screen.getByLabelText('Target amount')).toHaveAccessibleDescription(/Enter an amount\./);
+    await user.type(screen.getByLabelText('Name'), 'Laptop');
+    await user.selectOptions(screen.getByLabelText('Type'), 'device');
+    await user.type(screen.getByLabelText('Target amount'), '80000.005');
+    await user.type(screen.getByLabelText(/^Target date/), '2020-01-01');
+    await user.click(submit);
+    expect(await screen.findByText('Choose today or a later date.')).toBeInTheDocument();
+    // Exact amounts only: INR has two decimal places.
+    expect(screen.getByLabelText('Target amount')).toHaveAccessibleDescription(
+      /INR amounts can have at most 2 decimal places\./,
+    );
+    expect(keys).toEqual([]);
+
+    await user.clear(screen.getByLabelText('Target amount'));
+    await user.type(screen.getByLabelText('Target amount'), '80,000');
+    await user.clear(screen.getByLabelText(/^Target date/));
+    await user.click(submit);
+    expect(
+      await screen.findByText('Montra is temporarily unavailable. Try again in a moment.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'A first goal (optional)' }),
+    ).toBeInTheDocument();
+    expect(bodies).toEqual([]);
+
+    await user.click(submit);
+    expect(await screen.findByText('Goal “Laptop” added')).toBeInTheDocument();
+    await stepHeading('Your first account');
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toMatch(/^web-/);
+    expect(keys[1]).toBe(keys[0]);
+    // The same draft both times: the locale's grouping is read exactly, no target date.
+    expect(sent).toEqual([
+      { name: 'Laptop', goal_type: 'device', currency: 'INR', target_amount: '80000.00' },
+      { name: 'Laptop', goal_type: 'device', currency: 'INR', target_amount: '80000.00' },
+    ]);
+    expect(bodies.at(-1)).toEqual({
+      completed_steps: ['welcome', 'privacy', 'country', 'currency', 'timezone', 'income', 'goals'],
+      skipped_steps: [],
+      complete: false,
+    });
   });
 });

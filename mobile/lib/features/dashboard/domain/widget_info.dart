@@ -4,7 +4,7 @@ import 'package:montra_mobile/app/l10n/l10n.dart';
 /// The Home widgets this app version can draw, by their wire key, in the
 /// server's default order (`backend/internal/analytics/dashboard.go`).
 ///
-/// The same twelve keys as the generated `WidgetDtoKey` (a test keeps them
+/// The same fifteen keys as the generated `WidgetDtoKey` (a test keeps them
 /// in step). The layout is kept as wire keys ([DashboardWidget.key]) rather
 /// than that enum: a key from a newer server would decode as
 /// `unrecognized` and lose its name, so saving the layout could not send it
@@ -16,12 +16,20 @@ enum DashboardWidgetKind {
   /// Income, spending and net cash flow.
   cashFlow('cash_flow'),
 
+  /// Active budget alerts, with dismiss and snooze
+  /// (`GET /dashboard/planning`).
+  alerts('alerts'),
+
   /// Fullest budgets (`GET /dashboard/planning`).
   budgets('budgets'),
 
   /// Overdue and upcoming bills, recurring payments, renewals and goal
   /// dates (`GET /dashboard/planning`).
   upcoming('upcoming'),
+
+  /// Subscription renewals and trial ends in the next 30 days
+  /// (`GET /dashboard/planning`).
+  renewals('renewals'),
 
   /// Income vs spending chart.
   incomeVsExpense('income_vs_expense'),
@@ -34,6 +42,10 @@ enum DashboardWidgetKind {
 
   /// Top merchants.
   topMerchants('top_merchants'),
+
+  /// Recurring commitments as monthly amounts per kind and currency
+  /// (`GET /dashboard/planning`).
+  recurring('recurring'),
 
   /// Nearest goals (`GET /dashboard/planning`).
   goals('goals'),
@@ -65,8 +77,11 @@ enum DashboardWidgetKind {
   /// Whether the widget reads `GET /dashboard/planning` (one request feeds
   /// all of them) instead of the period summary.
   bool get isPlanning =>
+      this == alerts ||
       this == budgets ||
       this == upcoming ||
+      this == renewals ||
+      this == recurring ||
       this == goals ||
       this == groupBalances;
 }
@@ -142,12 +157,15 @@ String widgetTitle(AppLocalizations l10n, DashboardWidgetKind? kind) =>
     switch (kind) {
       DashboardWidgetKind.balances => l10n.widgetBalances,
       DashboardWidgetKind.cashFlow => l10n.widgetCashFlow,
+      DashboardWidgetKind.alerts => l10n.widgetAlerts,
       DashboardWidgetKind.budgets => l10n.widgetBudgets,
       DashboardWidgetKind.upcoming => l10n.widgetUpcoming,
+      DashboardWidgetKind.renewals => l10n.widgetRenewals,
       DashboardWidgetKind.incomeVsExpense => l10n.widgetIncomeVsExpense,
       DashboardWidgetKind.cashFlowTrend => l10n.widgetCashFlowTrend,
       DashboardWidgetKind.categoryBreakdown => l10n.widgetCategoryBreakdown,
       DashboardWidgetKind.topMerchants => l10n.widgetTopMerchants,
+      DashboardWidgetKind.recurring => l10n.widgetRecurring,
       DashboardWidgetKind.goals => l10n.widgetGoals,
       DashboardWidgetKind.groupBalances => l10n.widgetGroupBalances,
       DashboardWidgetKind.recentTransactions => l10n.widgetRecentTransactions,
@@ -160,12 +178,15 @@ String widgetDescription(AppLocalizations l10n, DashboardWidgetKind? kind) =>
     switch (kind) {
       DashboardWidgetKind.balances => l10n.widgetBalancesHelp,
       DashboardWidgetKind.cashFlow => l10n.widgetCashFlowHelp,
+      DashboardWidgetKind.alerts => l10n.widgetAlertsHelp,
       DashboardWidgetKind.budgets => l10n.widgetBudgetsHelp,
       DashboardWidgetKind.upcoming => l10n.widgetUpcomingHelp,
+      DashboardWidgetKind.renewals => l10n.widgetRenewalsHelp,
       DashboardWidgetKind.incomeVsExpense => l10n.widgetIncomeVsExpenseHelp,
       DashboardWidgetKind.cashFlowTrend => l10n.widgetCashFlowTrendHelp,
       DashboardWidgetKind.categoryBreakdown => l10n.widgetCategoryBreakdownHelp,
       DashboardWidgetKind.topMerchants => l10n.widgetTopMerchantsHelp,
+      DashboardWidgetKind.recurring => l10n.widgetRecurringHelp,
       DashboardWidgetKind.goals => l10n.widgetGoalsHelp,
       DashboardWidgetKind.groupBalances => l10n.widgetGroupBalancesHelp,
       DashboardWidgetKind.recentTransactions =>
@@ -178,12 +199,15 @@ String widgetDescription(AppLocalizations l10n, DashboardWidgetKind? kind) =>
 IconData widgetIcon(DashboardWidgetKind? kind) => switch (kind) {
   DashboardWidgetKind.balances => Icons.account_balance_wallet_outlined,
   DashboardWidgetKind.cashFlow => Icons.swap_vert,
+  DashboardWidgetKind.alerts => Icons.notifications_active_outlined,
   DashboardWidgetKind.budgets => Icons.savings_outlined,
   DashboardWidgetKind.upcoming => Icons.event_outlined,
+  DashboardWidgetKind.renewals => Icons.autorenew,
   DashboardWidgetKind.incomeVsExpense => Icons.bar_chart,
   DashboardWidgetKind.cashFlowTrend => Icons.show_chart,
   DashboardWidgetKind.categoryBreakdown => Icons.donut_small_outlined,
   DashboardWidgetKind.topMerchants => Icons.storefront_outlined,
+  DashboardWidgetKind.recurring => Icons.event_repeat_outlined,
   DashboardWidgetKind.goals => Icons.flag_outlined,
   DashboardWidgetKind.groupBalances => Icons.groups_outlined,
   DashboardWidgetKind.recentTransactions => Icons.receipt_long_outlined,

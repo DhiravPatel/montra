@@ -16,17 +16,29 @@ export async function retryRateLimitedReads(context: BrowserContext): Promise<vo
       await route.fallback();
       return;
     }
-    for (let attempt = 0; ; attempt += 1) {
-      const response = await route.fetch();
-      if (response.status() !== 429 || attempt >= 5) {
-        await route.fulfill({ response });
-        return;
+    try {
+      for (let attempt = 0; ; attempt += 1) {
+        const response = await route.fetch();
+        if (response.status() !== 429 || attempt >= 5) {
+          await route.fulfill({ response });
+          return;
+        }
+        const retryAfter = Number(response.headers()['retry-after'] ?? '1');
+        const seconds = Number.isFinite(retryAfter) ? retryAfter : 1;
+        await new Promise((resolve) => setTimeout(resolve, seconds * 1000 + 100));
       }
-      const retryAfter = Number(response.headers()['retry-after'] ?? '1');
-      const seconds = Number.isFinite(retryAfter) ? retryAfter : 1;
-      await new Promise((resolve) => setTimeout(resolve, seconds * 1000 + 100));
+    } catch (error) {
+      // A background read still in flight when the test ends (or its page
+      // closes) is not a failure of the test.
+      if (isClosed(error)) return;
+      throw error;
     }
   });
+}
+
+function isClosed(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Test ended|has been closed|Target closed|context closed/i.test(message);
 }
 
 /** Playwright's `test`, with rate-limited reads retried in every test's context. */
@@ -34,5 +46,7 @@ export const test = base.extend({
   context: async ({ context }, provide) => {
     await retryRateLimitedReads(context);
     await provide(context);
+    // Requests still in flight at the end must not fail the finished test.
+    await context.unrouteAll({ behavior: 'ignoreErrors' });
   },
 });

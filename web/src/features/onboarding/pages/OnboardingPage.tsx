@@ -19,6 +19,7 @@ import { cx } from '@/shared/utils/cx';
 import { onboardingApi } from '../api';
 import { AccountsStep } from '../components/AccountsStep';
 import { CategoriesStep } from '../components/CategoriesStep';
+import { GoalStep } from '../components/GoalStep';
 import { IncomeStep } from '../components/IncomeStep';
 import { NotificationsStep } from '../components/NotificationsStep';
 import { PrivacyStep } from '../components/PrivacyStep';
@@ -40,6 +41,7 @@ const stepComponents: Readonly<
   privacy: PrivacyStep,
   region: RegionStep,
   income: IncomeStep,
+  goals: GoalStep,
   accounts: AccountsStep,
   categories: CategoriesStep,
   notifications: NotificationsStep,

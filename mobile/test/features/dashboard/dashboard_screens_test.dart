@@ -19,6 +19,7 @@ import 'package:montra_mobile/features/transactions/data/transactions_api.dart';
 import '../../helpers/budgets_fakes.dart';
 import '../../helpers/dashboard_fakes.dart';
 import '../../helpers/finance_fakes.dart';
+import '../../helpers/planning_fakes.dart';
 import '../../helpers/router_app.dart';
 
 void main() {
@@ -146,7 +147,12 @@ void main() {
       );
       expect(find.text(chart), findsOneWidget);
       // The chart drawing is replaced by the same figures as a list.
-      await tester.tap(find.text('Show as a list').first);
+      await tester.scrollUntilVisible(
+        find.text('Show as a list').hitTestable(),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Show as a list').hitTestable().first);
       await tester.pumpAndSettle();
       expect(find.text('Show as a chart'), findsOneWidget);
 
@@ -277,7 +283,7 @@ void main() {
 
       expect(
         saved!.map((DashboardWidget w) => w.key).take(3).toList(),
-        <String>['balances', 'budgets', 'cash_flow'],
+        <String>['balances', 'alerts', 'cash_flow'],
       );
       expect(saved!.first.visible, isFalse);
       expect(find.text('Home layout saved.'), findsOneWidget);
@@ -367,6 +373,62 @@ void main() {
       await tester.tap(find.text('Goa trip'));
       await tester.pumpAndSettle();
       expect(locationOf(router), '/groups/g2/balances');
+    });
+
+    testWidgets('coming up lists subscription renewals and trial ends '
+        '(DASH-001)', (WidgetTester tester) async {
+      when(() => api.summary(any())).thenAnswer((_) async => summary());
+      when(
+        () => api.widgets(),
+      ).thenAnswer((_) async => widgetLayout(keys: const <String>['upcoming']));
+      when(() => api.planning()).thenAnswer(
+        (_) async => dashboardPlanning(
+          upcoming: <CalendarItem>[
+            calendarItem(date: '2026-11-08', status: 'overdue'),
+            calendarItem(
+              date: '2026-11-12',
+              kind: 'subscription_renewal',
+              entityType: 'subscription',
+              entityId: 'sub-1',
+              title: 'Netflix',
+              status: 'expected',
+              amount: '649.00',
+            ),
+            calendarItem(
+              date: '2026-11-20',
+              kind: 'trial_end',
+              entityType: 'subscription',
+              entityId: 'sub-2',
+              title: 'Music Plus',
+              status: 'expected',
+              amount: null,
+            ),
+          ],
+          upcomingCount: 5,
+        ),
+      );
+      final GoRouter router = await pump(tester);
+
+      expect(
+        find.text('5 items through Nov 26, 2026 · 1 is overdue'),
+        findsOneWidget,
+      );
+      expect(find.text('Netflix'), findsOneWidget);
+      expect(find.text('Subscription renewal · Due today'), findsOneWidget);
+      expect(find.text('₹649.00'), findsOneWidget);
+      expect(find.text('Music Plus'), findsOneWidget);
+      expect(find.text('Trial ends · Due Nov 20, 2026'), findsOneWidget);
+      expect(find.text('Expected'), findsNWidgets(2));
+      expect(find.text('2 more in the calendar'), findsOneWidget);
+
+      await tester.scrollUntilVisible(
+        find.text('Music Plus').hitTestable(),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Music Plus').hitTestable());
+      await tester.pumpAndSettle();
+      expect(locationOf(router), '/subscriptions/sub-2');
     });
 
     testWidgets('rows and "See all" open the full screens', (

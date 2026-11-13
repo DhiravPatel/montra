@@ -4,16 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/router/app_routes.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
-import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
-import 'package:montra_mobile/core/widgets/detail_rows.dart';
-import 'package:montra_mobile/core/widgets/dialogs.dart';
-import 'package:montra_mobile/core/widgets/error_messages.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
 import 'package:montra_mobile/features/budgets/application/budgets_providers.dart';
-import 'package:montra_mobile/features/budgets/data/budgets_api.dart';
 import 'package:montra_mobile/features/budgets/domain/budget_display.dart';
+import 'package:montra_mobile/features/budgets/presentation/budget_alert_actions.dart';
 import 'package:montra_mobile/features/labels/application/paged_list.dart';
 import 'package:montra_mobile/features/labels/presentation/load_more_footer.dart';
 
@@ -36,8 +32,6 @@ enum BudgetAlertFilter {
   /// The `status` query value (null for all).
   final String? status;
 }
-
-enum _Snooze { day, threeDays, week, date }
 
 /// Budget alerts: thresholds reached, likely overspending and unusual
 /// spending. Each can be dismissed, snoozed or shown again, and opens its
@@ -62,53 +56,6 @@ class _BudgetAlertsScreenState extends ConsumerState<BudgetAlertsScreen> {
         BudgetAlertFilter.all => l10n.budgetAlertStatusAll,
       };
 
-  Future<DateTime?> _snoozeUntil() async {
-    final AppLocalizations l10n = context.l10n;
-    final _Snooze? choice = await showOptionSheet<_Snooze>(
-      context,
-      title: l10n.budgetSnoozeTitle,
-      options: <SheetOption<_Snooze>>[
-        SheetOption<_Snooze>(value: _Snooze.day, label: l10n.budgetSnoozeDay),
-        SheetOption<_Snooze>(
-          value: _Snooze.threeDays,
-          label: l10n.budgetSnooze3Days,
-        ),
-        SheetOption<_Snooze>(value: _Snooze.week, label: l10n.budgetSnoozeWeek),
-        SheetOption<_Snooze>(
-          value: _Snooze.date,
-          label: l10n.budgetSnoozePickDate,
-          icon: Icons.event_outlined,
-        ),
-      ],
-    );
-    final DateTime now = DateTime.now();
-    switch (choice) {
-      case null:
-        return null;
-      case _Snooze.day:
-        return now.add(const Duration(days: 1));
-      case _Snooze.threeDays:
-        return now.add(const Duration(days: 3));
-      case _Snooze.week:
-        return now.add(const Duration(days: 7));
-      case _Snooze.date:
-        if (!mounted) {
-          return null;
-        }
-        final DateTime today = LocalDates.today(now);
-        final DateTime? picked = await showDatePicker(
-          context: context,
-          firstDate: today.add(const Duration(days: 1)),
-          lastDate: today.add(const Duration(days: 90)),
-          initialDate: today.add(const Duration(days: 1)),
-        );
-        // The alert comes back at the start of the chosen day.
-        return picked == null
-            ? null
-            : DateTime(picked.year, picked.month, picked.day);
-    }
-  }
-
   Future<void> _update(
     AlertDto alert,
     BudgetAlertsUpdateRequestStatus status,
@@ -116,37 +63,14 @@ class _BudgetAlertsScreenState extends ConsumerState<BudgetAlertsScreen> {
     if (_busyId != null) {
       return;
     }
-    DateTime? until;
-    if (status == BudgetAlertsUpdateRequestStatus.snoozed) {
-      until = await _snoozeUntil();
-      if (until == null || !mounted) {
-        return;
-      }
-    }
-    final AppLocalizations l10n = context.l10n;
-    final String locale = Localizations.localeOf(context).toString();
-    final BudgetRevision revision = ref.read(budgetRevisionProvider.notifier);
-    final BudgetsApi api = ref.read(budgetsApiProvider);
-    setState(() => _busyId = alert.id);
     try {
-      await api.updateAlert(
-        alert.id,
-        BudgetAlertsUpdateRequest(status: status, snoozedUntil: until?.toUtc()),
+      await changeBudgetAlert(
+        context,
+        ref,
+        alert,
+        status,
+        onSending: () => setState(() => _busyId = alert.id),
       );
-      revision.bump();
-      if (mounted) {
-        showSnack(context, switch (status) {
-          BudgetAlertsUpdateRequestStatus.dismissed =>
-            l10n.budgetAlertDismissed,
-          BudgetAlertsUpdateRequestStatus.snoozed =>
-            l10n.budgetAlertSnoozedDone(formatDateTime(until!, locale: locale)),
-          _ => l10n.budgetAlertReactivated,
-        });
-      }
-    } on ApiException catch (error) {
-      if (mounted) {
-        showSnack(context, describeError(l10n, error));
-      }
     } finally {
       if (mounted) {
         setState(() => _busyId = null);

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:montra_mobile/app/l10n/date_localizations.dart';
 import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/router/app_router.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/app/theme/theme_mode_controller.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
+import 'package:montra_mobile/core/formatting/dates.dart';
 import 'package:montra_mobile/core/settings/app_preferences.dart';
 import 'package:montra_mobile/core/widgets/offline_banner.dart';
 import 'package:montra_mobile/features/settings/application/preferences_providers.dart';
@@ -13,8 +15,9 @@ import 'package:montra_mobile/features/settings/application/preferences_provider
 /// The Montra application.
 ///
 /// Once a user is signed in, their preferences are loaded and applied app
-/// wide: the language (`locale`), reduced motion, high contrast and text
-/// size, on top of the device's own accessibility settings.
+/// wide: the language (`locale`), the date format and first day of the
+/// week, reduced motion, high contrast and text size, on top of the
+/// device's own accessibility settings.
 class MontraApp extends ConsumerWidget {
   /// Creates the app.
   const MontraApp({super.key});
@@ -28,6 +31,11 @@ class MontraApp extends ConsumerWidget {
       ref.watch(preferencesProvider);
     }
     final AccessibilitySettings a11y = ref.watch(accessibilitySettingsProvider);
+    // Dates are written through `LocalDates`; a change reloads the
+    // localizations below (see `appLocalizationsDelegates`), so every
+    // screen redraws its dates.
+    final DateSettings dates = ref.watch(dateSettingsProvider);
+    LocalDates.settings = dates;
     return MaterialApp.router(
       onGenerateTitle: (BuildContext context) => context.l10n.appTitle,
       debugShowCheckedModeBanner: false,
@@ -40,7 +48,7 @@ class MontraApp extends ConsumerWidget {
           ? AnimationStyle.noAnimation
           : null,
       locale: ref.watch(appLocaleProvider),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationsDelegates(dates),
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
       builder: (BuildContext context, Widget? child) => MediaQuery(

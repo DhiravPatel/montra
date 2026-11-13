@@ -10,7 +10,7 @@ import { PageHeader } from '@/shared/components/PageHeader';
 import { EmptyState, ErrorState, LoadingState, PermissionDenied } from '@/shared/components/states';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { paths } from '@/shared/config/paths';
-import type { CalendarItem, RecurringReport } from '@/shared/finance/types';
+import type { CalendarItem } from '@/shared/finance/types';
 import { formatLocalDate, todayInTimeZone } from '@/shared/formatting/dates';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { useI18n } from '@/shared/i18n/I18nContext';
@@ -24,13 +24,9 @@ import {
   parseMonth,
   shiftMonth,
 } from '../calendarMonth';
+import { CommitmentList } from '../components/CommitmentList';
 import { PlanningSubNav } from '../components/PlanningSubNav';
-import {
-  calendarKindLook,
-  calendarStatusLook,
-  commitmentKindLabel,
-  recurringNoteLabel,
-} from '../labels';
+import { calendarKindLook, calendarStatusLook } from '../labels';
 
 /** Upcoming: bills, recurring items, renewals, trial ends and goal dates by day. */
 export function PlanningCalendarPage() {
@@ -232,8 +228,6 @@ function CalendarRow({ item }: { item: CalendarItem }) {
   );
 }
 
-const KIND_ORDER = ['income', 'expense', 'bill', 'subscription', 'transfer', 'group_expense'];
-
 /** Fixed recurring amounts as a monthly equivalent per currency (from the API). */
 function CommitmentsCard() {
   const { t } = useI18n();
@@ -254,7 +248,9 @@ function CommitmentsCard() {
       />
     );
   } else {
-    body = <CommitmentList report={report.data} />;
+    body = (
+      <CommitmentList commitments={report.data.commitments} noteCode={report.data.note_code} />
+    );
   }
   return (
     <Card
@@ -263,60 +259,5 @@ function CommitmentsCard() {
     >
       {body}
     </Card>
-  );
-}
-
-function CommitmentList({ report }: { report: RecurringReport }) {
-  const { t } = useI18n();
-  const commitments = [...report.commitments].sort(
-    (a, b) =>
-      KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) ||
-      a.currency.localeCompare(b.currency),
-  );
-  if (commitments.length === 0) {
-    return <p className="text-sm text-fg-muted">{t('calendar.commitments.empty')}</p>;
-  }
-  return (
-    <>
-      <ul className="divide-y divide-line">
-        {commitments.map((commitment) => (
-          <li
-            key={`${commitment.kind}-${commitment.currency}`}
-            className="space-y-2 py-3 first:pt-0 last:pb-0"
-          >
-            <p className="font-medium text-fg">
-              {t(commitmentKindLabel[commitment.kind])}{' '}
-              <span className="font-normal text-fg-muted">
-                ({t('calendar.commitments.count', { count: commitment.rule_count })})
-              </span>
-            </p>
-            <dl className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <dt className="text-fg-muted">{t('calendar.commitments.monthly')}</dt>
-                <dd>
-                  <MoneyText
-                    money={commitment.monthly_equivalent}
-                    className="font-medium text-fg"
-                  />
-                </dd>
-              </div>
-              <div>
-                <dt className="text-fg-muted">{t('calendar.commitments.next30')}</dt>
-                <dd>
-                  <MoneyText money={commitment.next_30_days} className="font-medium text-fg" />
-                </dd>
-              </div>
-            </dl>
-            {commitment.variable_count > 0 ? (
-              <p className="text-sm text-fg-muted">
-                {t('calendar.commitments.variable', { count: commitment.variable_count })}
-              </p>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-      {/* What the totals count, in the interface language (note_code, not the English note). */}
-      <p className="mt-4 text-sm text-fg-muted">{t(recurringNoteLabel[report.note_code])}</p>
-    </>
   );
 }

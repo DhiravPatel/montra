@@ -1,5 +1,5 @@
-import 'package:intl/intl.dart';
 import 'package:montra_mobile/app/l10n/l10n.dart';
+import 'package:montra_mobile/core/formatting/dates.dart';
 
 /// "just now", "5 minutes ago", "yesterday", or a date for older moments.
 /// Future instants (clock skew) read as "just now".
@@ -25,9 +25,10 @@ String formatRelativeTime(
   return formatShortDate(when, locale: locale);
 }
 
-/// Medium date in the user's locale and local time zone, e.g. `4 Nov 2026`.
+/// Medium date in the user's local time zone and date format, e.g.
+/// `4 Nov 2026`.
 String formatShortDate(DateTime when, {required String locale}) =>
-    DateFormat.yMMMd(locale).format(when.toLocal());
+    LocalDates.displayDay(when.toLocal(), locale: locale);
 
 /// A wait for messages: "30 seconds", "15 minutes" (rounded up, minimum one
 /// second). Servers can ask for long waits (e.g. the sign-in throttle window).

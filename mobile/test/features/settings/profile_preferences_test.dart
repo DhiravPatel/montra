@@ -16,6 +16,7 @@ import 'package:montra_mobile/core/formatting/currency_catalog.dart';
 import 'package:montra_mobile/core/settings/app_preferences.dart';
 import 'package:montra_mobile/features/accounts/data/accounts_api.dart';
 import 'package:montra_mobile/features/settings/data/preferences_api.dart';
+import 'package:montra_mobile/features/settings/presentation/edit_profile_screen.dart';
 import 'package:montra_mobile/features/social/data/social_api.dart';
 
 import '../../helpers/fakes.dart';
@@ -187,6 +188,80 @@ void main() {
       expect(find.text('Profile saved.'), findsOneWidget);
       final AuthState auth = containerOf(tester).read(authControllerProvider);
       expect((auth as SignedIn).user.displayName, 'Asha Rao');
+    });
+
+    testWidgets('who can see the profile is said exactly as the server '
+        'enforces it, and achievements are never sent', (
+      WidgetTester tester,
+    ) async {
+      Map<String, Object?>? sent;
+      when(() => social.updateProfile(any())).thenAnswer((Invocation i) async {
+        sent = (i.positionalArguments.single as ProfilePatch).toJson();
+        return ProfileDto.fromJson(<String, Object?>{
+          ...profileDtoJson(),
+          'profile_visibility': 'private',
+          'updated_at': '2026-11-12T10:00:00Z',
+        });
+      });
+      await pump(tester, '/profile/edit');
+      await tester.scrollUntilVisible(
+        find.text('Friends'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.text(
+          'Your friends can see your profile and photo, as well as you, '
+          'people in an active group with you, and people with a pending '
+          'friend request between you.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'People you block never see your profile, whatever you choose '
+          "here, and you don't see theirs.",
+        ),
+        findsOneWidget,
+      );
+      // Nothing on the screen offers an achievements setting.
+      expect(find.textContaining('chievement'), findsNothing);
+      expect(find.byType(SwitchListTile), findsNothing);
+
+      await tapVisible(tester, find.text('Friends'));
+      expect(
+        find.text(
+          'Only you, people in an active group with you, and people with a '
+          'pending friend request between you can see your profile and '
+          'photo.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Anyone signed in to Montra can see your profile and photo.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Private'));
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Save'));
+
+      expect(sent, <String, Object?>{'profile_visibility': 'private'});
+      expect(sent!.containsKey('show_achievements'), isFalse);
+    });
+
+    test('the profile form never sends show_achievements', () {
+      for (final ProfileDtoProfileVisibility v
+          in ProfileDtoProfileVisibility.values) {
+        final Map<String, Object?> json = profileFormJson(
+          displayName: 'Asha',
+          username: 'asha',
+          bio: 'Hi',
+          location: 'Pune',
+          interests: const <String>['cricket'],
+          visibility: v,
+        );
+        expect(json.containsKey('show_achievements'), isFalse);
+      }
     });
 
     testWidgets('nothing changed sends nothing; a long interest is refused', (
@@ -485,6 +560,44 @@ void main() {
       await tester.pumpAndSettle();
       await tapVisible(tester, find.widgetWithText(FilledButton, 'Save'));
       expect(sent, <String, Object?>{'clear_default_account': true});
+    });
+
+    testWidgets('a new time zone is saved and applied to the account '
+        '(SET-001)', (WidgetTester tester) async {
+      Map<String, Object?>? sent;
+      PreferencesDto current = preferences();
+      when(() => prefs.preferences()).thenAnswer((_) async => current);
+      when(() => prefs.updatePreferences(any()))
+          .thenAnswer((Invocation i) async {
+            sent = (i.positionalArguments.single as PreferencesPatch).toJson();
+            // The server now answers with the new zone.
+            return current = prefsWith(<String, Object?>{
+              'timezone': 'Europe/London',
+              'updated_at': '2026-11-12T10:00:00Z',
+            });
+          });
+      await pump(tester, '/profile/preferences');
+      await tapVisible(tester, find.text('Asia/Kolkata'));
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Search time zones'),
+        'london',
+      );
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ListTile, 'Asia/Kolkata'), findsNothing);
+      await tester.tap(find.widgetWithText(ListTile, 'Europe/London'));
+      await tester.pumpAndSettle();
+      expect(find.text('Europe/London'), findsOneWidget);
+
+      await tapVisible(tester, find.widgetWithText(FilledButton, 'Save'));
+      expect(sent, <String, Object?>{'timezone': 'Europe/London'});
+      expect(find.text('Preferences saved.'), findsOneWidget);
+      final ProviderContainer container = containerOf(tester);
+      final AuthState auth = container.read(authControllerProvider);
+      expect((auth as SignedIn).user.timezone, 'Europe/London');
+      expect(
+        container.read(preferencesSnapshotProvider)?.timezone,
+        'Europe/London',
+      );
     });
 
     testWidgets('server errors are shown on their fields', (

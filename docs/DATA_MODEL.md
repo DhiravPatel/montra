@@ -1,6 +1,6 @@
 # Montra — Data Model
 
-PostgreSQL schema `montra`: 111 tables and `schema_migrations`, created by
+PostgreSQL schema `montra`: 113 tables and `schema_migrations`, created by
 `supabase/migrations/*.sql` (the only source of DDL, applied by
 `cmd/migrate`). Row-level security covers every table
 (`docs/RLS_POLICY_MATRIX.md`). This document explains the entities and

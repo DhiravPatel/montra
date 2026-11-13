@@ -6662,7 +6662,10 @@ export interface components {
             entity_type: "recurring_rule" | "bill" | "group_recurring_expense" | "subscription" | "goal";
             /** @description Shared expenses of one of your groups */
             group_id?: string;
-            /** @enum {string} */
+            /**
+             * @description A trial whose first charge falls on its end date is one trial_end item carrying that charge's amount
+             * @enum {string}
+             */
             kind: "recurring" | "bill" | "group_expense" | "subscription_renewal" | "trial_end" | "goal_target";
             occurrence_id?: string;
             /** @description Set when the occurrence was moved; date is then the new date */
@@ -6690,7 +6693,7 @@ export interface components {
             previous_window: components["schemas"]["Window"];
             series: components["schemas"]["SeriesPoint"][];
             /**
-             * @description Bucket size of series (zero-filled buckets; weeks start Monday)
+             * @description Bucket size of series (zero-filled buckets; weeks start on your week_start preference)
              * @enum {string}
              */
             series_granularity: "day" | "week" | "month" | "year";
@@ -7580,6 +7583,13 @@ export interface components {
         DashboardPlanning: {
             /**
              * Format: int64
+             * @description Active budget alerts (counted up to 200)
+             */
+            alert_count: number;
+            /** @description Active budget alerts, newest first, up to 5 (dismiss or snooze them with the budget alert endpoints) */
+            alerts: components["schemas"]["AlertDTO"][];
+            /**
+             * Format: int64
              * @description Active budgets
              */
             budget_count: number;
@@ -7603,6 +7613,19 @@ export interface components {
             over_budget_count: number;
             /** Format: int64 */
             overdue_count: number;
+            /** @description Active recurring commitments per kind and currency, normalized to a month (as GET /analytics/recurring) */
+            recurring: components["schemas"]["RecurringCommitment"][];
+            /**
+             * @description How the monthly figures are calculated (localize by code)
+             * @enum {string}
+             */
+            recurring_note_code: "fixed_amounts_expectations";
+            /** Format: int64 */
+            renewal_count: number;
+            /** @description Subscription renewals and trial ends from today through renewals_through, soonest first, up to 6 */
+            renewals: components["schemas"]["CalendarItem"][];
+            /** @description Last date the renewals list covers (today + 30 days) */
+            renewals_through: string;
             /** @description Your local date (YYYY-MM-DD) */
             today: string;
             /** @description Overdue items first (oldest first), then items due from today through upcoming_through, up to 8. Bills, recurring transactions, shared recurring expenses, subscription renewals, trial ends and goal target dates */
@@ -7635,7 +7658,7 @@ export interface components {
             /** @description Zero-filled buckets for each currency with activity */
             trend: components["schemas"]["SeriesPoint"][];
             /**
-             * @description Bucket size of trend (weeks start Monday)
+             * @description Bucket size of trend (weeks start on your week_start preference)
              * @enum {string}
              */
             trend_granularity: "day" | "week" | "month" | "year";
@@ -12731,7 +12754,7 @@ export interface components {
              * @description New widgets may be added; clients skip keys they do not know
              * @enum {string}
              */
-            key: "balances" | "cash_flow" | "budgets" | "upcoming" | "income_vs_expense" | "cash_flow_trend" | "category_breakdown" | "top_merchants" | "goals" | "group_balances" | "recent_transactions" | "data_coverage";
+            key: "balances" | "cash_flow" | "alerts" | "budgets" | "upcoming" | "renewals" | "income_vs_expense" | "cash_flow_trend" | "category_breakdown" | "top_merchants" | "recurring" | "goals" | "group_balances" | "recent_transactions" | "data_coverage";
             /** Format: int32 */
             position: number;
             /** @description Widget-specific settings (e.g. default range) */

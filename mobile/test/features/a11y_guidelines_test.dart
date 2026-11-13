@@ -165,4 +165,83 @@ void main() {
       semantics.dispose();
     });
   }
+
+  /// The new Home cards when they are empty, and the onboarding steps
+  /// added for goals and email summaries.
+  for (final (String name, String location, void Function() arrange)
+      in <(String, String, void Function())>[
+        (
+          'empty alerts, renewals and recurring cards',
+          '/home',
+          () {
+            when(() => dashboard.widgets()).thenAnswer(
+              (_) async => widgetLayout(
+                keys: const <String>['alerts', 'renewals', 'recurring'],
+              ),
+            );
+            when(() => dashboard.planning())
+                .thenAnswer((_) async => dashboardPlanning(empty: true));
+          },
+        ),
+        (
+          'the onboarding goals step',
+          '/onboarding',
+          () => when(() => prefs.onboarding()).thenAnswer(
+            (_) async => const OnboardingDto(
+              completedSteps: <String>[
+                'welcome',
+                'privacy',
+                'country',
+                'currency',
+                'timezone',
+                'income',
+              ],
+              skippedSteps: <String>[],
+            ),
+          ),
+        ),
+        (
+          'the onboarding email summaries step',
+          '/onboarding',
+          () => when(() => prefs.onboarding()).thenAnswer(
+            (_) async => const OnboardingDto(
+              completedSteps: <String>[
+                'welcome',
+                'privacy',
+                'country',
+                'currency',
+                'timezone',
+                'income',
+                'goals',
+                'accounts',
+                'categories',
+              ],
+              skippedSteps: <String>[],
+            ),
+          ),
+        ),
+      ]) {
+    testWidgets('$name meets the tap-target, label and contrast guidelines', (
+      WidgetTester tester,
+    ) async {
+      arrange();
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      tester.view
+        ..physicalSize = const Size(1080, 30000)
+        ..devicePixelRatio = 2.5;
+      addTearDown(tester.view.reset);
+      final ({Widget app, GoRouter router}) r = routedApp(
+        location,
+        overrides: overrides(),
+      );
+      await tester.pumpWidget(r.app);
+      await tester.pumpAndSettle();
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+      semantics.dispose();
+    });
+  }
 }

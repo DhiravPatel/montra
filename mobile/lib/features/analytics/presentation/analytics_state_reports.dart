@@ -18,6 +18,7 @@ import 'package:montra_mobile/features/analytics/domain/analytics_query.dart';
 import 'package:montra_mobile/features/analytics/presentation/analytics_widgets.dart';
 import 'package:montra_mobile/features/dashboard/presentation/dashboard_widgets.dart'
     show formatBasisPoints;
+import 'package:montra_mobile/features/recurring/domain/recurring_display.dart';
 
 /// The body of a report about the current state (not a period): each
 /// currency is shown on its own, never added to another.
@@ -513,17 +514,6 @@ class _Subscriptions extends ConsumerWidget {
   }
 }
 
-String _commitmentKind(AppLocalizations l10n, RecurringCommitmentKind kind) =>
-    switch (kind) {
-      RecurringCommitmentKind.expense => l10n.recurringKindExpense,
-      RecurringCommitmentKind.income => l10n.recurringKindIncome,
-      RecurringCommitmentKind.transfer => l10n.recurringKindTransfer,
-      RecurringCommitmentKind.bill => l10n.recurringKindBill,
-      RecurringCommitmentKind.subscription => l10n.recurringKindSubscription,
-      RecurringCommitmentKind.groupExpense => l10n.recurringKindGroupExpense,
-      RecurringCommitmentKind.unrecognized => l10n.recurringKindOther,
-    };
-
 /// The localized note of a recurring report (server English otherwise).
 String recurringNote(AppLocalizations l10n, RecurringReport report) =>
     switch (report.noteCode) {
@@ -608,14 +598,14 @@ class _RecurringCurrency extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: Insets.sm),
           child: AccessibleChart(
             summary: l10n.analyticsRecurringSummary(
-              _commitmentKind(l10n, top.kind),
+              commitmentKindLabel(l10n, top.kind),
               formatMoney(context, ref, top.monthlyEquivalent),
             ),
             chart: HorizontalBars(
               entries: <BarEntry>[
                 for (final RecurringCommitment c in commitments)
                   BarEntry(
-                    label: _commitmentKind(l10n, c.kind),
+                    label: commitmentKindLabel(l10n, c.kind),
                     valueText: l10n.analyticsPerMonth(
                       formatMoney(context, ref, c.monthlyEquivalent),
                     ),
@@ -642,7 +632,7 @@ class _RecurringCurrency extends ConsumerWidget {
               children: <Widget>[
                 for (final RecurringCommitment c in commitments)
                   DetailRow(
-                    label: _commitmentKind(l10n, c.kind),
+                    label: commitmentKindLabel(l10n, c.kind),
                     value: l10n.analyticsPerMonth(
                       formatMoney(context, ref, c.monthlyEquivalent),
                     ),
@@ -653,7 +643,7 @@ class _RecurringCurrency extends ConsumerWidget {
         ),
         for (final RecurringCommitment c in commitments) ...<Widget>[
           AnalyticsMoneyRow(
-            label: l10n.analyticsNext30Days(_commitmentKind(l10n, c.kind)),
+            label: l10n.analyticsNext30Days(commitmentKindLabel(l10n, c.kind)),
             money: c.next30Days,
           ),
           if (c.variableCount > 0)

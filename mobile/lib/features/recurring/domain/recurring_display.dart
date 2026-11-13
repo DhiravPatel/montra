@@ -25,6 +25,21 @@ String recurringKindLabel(AppLocalizations l10n, String kind) => switch (kind) {
   _ => l10n.recurringKindOther,
 };
 
+/// Localized name of a recurring commitment's kind (`GET
+/// /analytics/recurring`, the Home recurring card).
+String commitmentKindLabel(
+  AppLocalizations l10n,
+  RecurringCommitmentKind kind,
+) => switch (kind) {
+  RecurringCommitmentKind.expense => l10n.recurringKindExpense,
+  RecurringCommitmentKind.income => l10n.recurringKindIncome,
+  RecurringCommitmentKind.transfer => l10n.recurringKindTransfer,
+  RecurringCommitmentKind.bill => l10n.recurringKindBill,
+  RecurringCommitmentKind.subscription => l10n.recurringKindSubscription,
+  RecurringCommitmentKind.groupExpense => l10n.recurringKindGroupExpense,
+  RecurringCommitmentKind.unrecognized => l10n.recurringKindOther,
+};
+
 /// Icon for a rule or occurrence kind.
 IconData recurringKindIcon(String kind) => switch (kind) {
   'expense' => Icons.north_east,

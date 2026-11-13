@@ -29,8 +29,14 @@ const (
 	planningUpcoming = 8
 	planningGoals    = 4
 	planningGroups   = 5
+	planningAlerts   = 5
+	planningRenewals = 6
 	// UpcomingDays is how far ahead the upcoming card looks.
 	UpcomingDays = 14
+	// RenewalDays is how far ahead the renewals card looks.
+	RenewalDays = 30
+	// alertScan bounds how many active alerts are counted.
+	alertScan = 200
 	// overdueLookback is how far back overdue items are collected.
 	overdueLookback = 60
 )
@@ -63,6 +69,16 @@ type DashboardPlanning struct {
 
 	GroupBalances []GroupBalance `json:"group_balances" doc:"Active groups where you are owed or owe, largest amounts first within each currency, up to 5"`
 	GroupCount    int            `json:"group_count" doc:"Active groups with an open balance"`
+
+	Alerts     []budgets.AlertDTO `json:"alerts" doc:"Active budget alerts, newest first, up to 5 (dismiss or snooze them with the budget alert endpoints)"`
+	AlertCount int                `json:"alert_count" doc:"Active budget alerts (counted up to 200)"`
+
+	RenewalsThrough string                   `json:"renewals_through" doc:"Last date the renewals list covers (today + 30 days)"`
+	Renewals        []recurring.CalendarItem `json:"renewals" doc:"Subscription renewals and trial ends from today through renewals_through, soonest first, up to 6"`
+	RenewalCount    int                      `json:"renewal_count"`
+
+	Recurring         []RecurringCommitment `json:"recurring" doc:"Active recurring commitments per kind and currency, normalized to a month (as GET /analytics/recurring)"`
+	RecurringNoteCode string                `json:"recurring_note_code" enum:"fixed_amounts_expectations" doc:"How the monthly figures are calculated (localize by code)"`
 }
 
 // PlanningCards gathers the planning cards from the feature services.
@@ -102,7 +118,9 @@ func (s *Service) Planning(ctx context.Context, p *PlanningCards) (*DashboardPla
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	through := today.AddDate(0, 0, UpcomingDays)
 	out := &DashboardPlanning{Today: finance.LocalDateString(today), UpcomingThrough: finance.LocalDateString(through),
-		Budgets: []budgets.BudgetDTO{}, Upcoming: []recurring.CalendarItem{}, Goals: []goals.GoalDTO{}, GroupBalances: []GroupBalance{}}
+		RenewalsThrough: finance.LocalDateString(today.AddDate(0, 0, RenewalDays)),
+		Budgets:         []budgets.BudgetDTO{}, Upcoming: []recurring.CalendarItem{}, Goals: []goals.GoalDTO{}, GroupBalances: []GroupBalance{},
+		Alerts: []budgets.AlertDTO{}, Renewals: []recurring.CalendarItem{}, Recurring: []RecurringCommitment{}}
 
 	// Budgets: fullest first.
 	bl, err := p.Budgets.List(ctx, false)
@@ -130,22 +148,29 @@ func (s *Service) Planning(ctx context.Context, p *PlanningCards) (*DashboardPla
 	out.Budgets = append(out.Budgets, active[:min(len(active), planningBudgets)]...)
 
 	// Upcoming: overdue (oldest first), then due through the window.
-	cal, err := p.Recurring.Calendar(ctx, finance.LocalDateString(today.AddDate(0, 0, -overdueLookback)), out.UpcomingThrough)
+	cal, err := p.Recurring.Calendar(ctx, finance.LocalDateString(today.AddDate(0, 0, -overdueLookback)), out.RenewalsThrough)
 	if err != nil {
 		return nil, err
-	}
-	var overdue, due []recurring.CalendarItem
-	for _, it := range cal {
-		switch {
-		case it.Status == "overdue":
-			overdue = append(overdue, it)
-		case it.Date >= out.Today && (it.Status == "scheduled" || it.Status == "expected" || it.Status == "projected" || it.Status == "target"):
-			due = append(due, it)
-		}
 	}
 	byDate := func(l []recurring.CalendarItem) {
 		sort.SliceStable(l, func(i, j int) bool { return l[i].Date < l[j].Date })
 	}
+	var overdue, due, renewals []recurring.CalendarItem
+	for _, it := range cal {
+		open := it.Status == "scheduled" || it.Status == "expected" || it.Status == "projected" || it.Status == "target"
+		switch {
+		case it.Status == "overdue":
+			overdue = append(overdue, it)
+		case it.Date >= out.Today && it.Date <= out.UpcomingThrough && open:
+			due = append(due, it)
+		}
+		if it.Date >= out.Today && (it.Kind == "subscription_renewal" || it.Kind == "trial_end") && open {
+			renewals = append(renewals, it)
+		}
+	}
+	byDate(renewals)
+	out.RenewalCount = len(renewals)
+	out.Renewals = append(out.Renewals, renewals[:min(len(renewals), planningRenewals)]...)
 	byDate(overdue)
 	byDate(due)
 	out.OverdueCount = len(overdue)
@@ -195,6 +220,22 @@ func (s *Service) Planning(ctx context.Context, p *PlanningCards) (*DashboardPla
 	})
 	out.GroupCount = len(open)
 	out.GroupBalances = append(out.GroupBalances, open[:min(len(open), planningGroups)]...)
+
+	// Budget alerts: active ones, newest first.
+	al, _, err := p.Budgets.ListAlerts(ctx, "active", nil, "", alertScan)
+	if err != nil {
+		return nil, err
+	}
+	out.AlertCount = len(al)
+	out.Alerts = append(out.Alerts, al[:min(len(al), planningAlerts)]...)
+
+	// Recurring commitments per month.
+	rr, err := s.Recurring(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out.Recurring = append(out.Recurring, rr.Commitments...)
+	out.RecurringNoteCode = rr.NoteCode
 	return out, nil
 }
 

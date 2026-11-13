@@ -8,7 +8,7 @@ FLUTTER ?= $(shell command -v flutter 2>/dev/null || echo flutter)
 
 .PHONY: help
 help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 # ---------------------------------------------------------------- database
 .PHONY: db-bootstrap migrate migrate-status seed db-reset-dev migrate-test
@@ -48,11 +48,14 @@ contract-check: ## Fail if the committed contract is out of date
 	cd backend && go run ./cmd/openapi -check -out ../contracts/openapi/montra.v1.json
 
 .PHONY: docs docs-check
-docs: ## Regenerate generated doc sections (error-code tables in docs/API.md)
+docs: ## Regenerate generated docs (error-code tables in docs/API.md, knowledge graph in docs/knowledge-graph)
 	python3 scripts/docs/gen_error_codes.py
+	python3 scripts/docs/gen_knowledge_graph.py
 
-docs-check: ## Fail if generated doc sections are out of date
+docs-check: ## Fail if generated docs are out of date (error codes, knowledge graph + its parser tests)
 	python3 scripts/docs/gen_error_codes.py --check
+	python3 -B -m unittest scripts/docs/test_gen_knowledge_graph.py
+	python3 scripts/docs/gen_knowledge_graph.py --check
 
 fmt: ## Format Go code
 	cd backend && gofmt -w ./cmd ./internal ./tests
@@ -95,6 +98,13 @@ web-lint: ## Web typecheck + lint
 
 web-build: ## Production build of the web portal (no deploy)
 	cd web && pnpm build
+
+.PHONY: e2e e2e-mobile
+e2e: ## Playwright journeys, all three projects (starts Vite on :5199; API via MONTRA_API_PROXY_TARGET, default :8080)
+	cd web && pnpm e2e
+
+e2e-mobile: ## Flutter integration_test journeys on the running Android emulator against the API on :8080 (keeps the app installed)
+	cd mobile && $(FLUTTER) test integration_test --no-uninstall --dart-define=API_BASE_URL=http://10.0.2.2:8080
 
 # ------------------------------------------------------------------ mobile
 .PHONY: mobile mobile-test mobile-analyze gen-mobile-api

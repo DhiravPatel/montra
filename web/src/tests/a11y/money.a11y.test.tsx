@@ -3,11 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/tests/axe';
-import { makeBudget, makeSharedBudget } from '@/tests/budgetsFixtures';
+import { makeBudget, makeBudgetAlert, makeSharedBudget } from '@/tests/budgetsFixtures';
 import { API, envelope, makeUser, meta } from '@/tests/fixtures';
 import {
   ACCOUNT_CASH,
   TX_GROCERIES,
+  emptyPlanning,
   makeAccount,
   makeCard,
   makeCategory,
@@ -19,9 +20,12 @@ import {
   money,
   starterCategories,
 } from '@/tests/financeFixtures';
+import { makeGoal } from '@/tests/goalsFixtures';
 import { testBackend } from '@/tests/msw/backend';
+import { makeCalendarItem } from '@/tests/planningFixtures';
 import { server } from '@/tests/msw/server';
 import { findPageHeading, renderRoute } from '@/tests/render';
+import { SUB_NETFLIX } from '@/tests/subscriptionsFixtures';
 
 const signedIn = () => makeUser({ onboarding_completed: true });
 
@@ -89,6 +93,103 @@ describe('axe: money pages', () => {
     // Each widget names its per-currency section after itself, so landmarks stay unique.
     await screen.findByRole('region', { name: 'Cash flow in INR' });
     await expectNoAxeViolations();
+  });
+
+  it('dashboard planning cards with alerts, renewals and recurring commitments', async () => {
+    seedFinance();
+    testBackend.planning = emptyPlanning({
+      budgets: [makeBudget()],
+      budget_count: 1,
+      upcoming: [makeCalendarItem({ date: '2026-11-03', status: 'overdue' })],
+      upcoming_count: 1,
+      overdue_count: 1,
+      goals: [makeGoal()],
+      goal_count: 1,
+      alerts: [
+        makeBudgetAlert(),
+        makeBudgetAlert({
+          id: 'a1a1a1a1-0000-4000-8000-0000000000f2',
+          kind: 'forecast_overspend',
+          threshold: 0,
+        }),
+      ],
+      alert_count: 2,
+      renewals: [
+        makeCalendarItem({
+          date: '2026-11-20',
+          kind: 'subscription_renewal',
+          title: 'Netflix',
+          amount: money('649.00'),
+          status: 'expected',
+          entity_type: 'subscription',
+          entity_id: SUB_NETFLIX,
+          occurrence_id: undefined,
+        }),
+        makeCalendarItem({
+          date: '2026-11-20',
+          kind: 'trial_end',
+          title: 'Netflix',
+          amount: undefined,
+          status: 'expected',
+          entity_type: 'subscription',
+          entity_id: SUB_NETFLIX,
+          occurrence_id: undefined,
+        }),
+      ],
+      renewal_count: 2,
+      recurring: [
+        {
+          kind: 'income',
+          currency: 'INR',
+          monthly_equivalent: money('50000.00'),
+          next_30_days: money('50000.00'),
+          rule_count: 1,
+          variable_count: 0,
+        },
+        {
+          kind: 'bill',
+          currency: 'INR',
+          monthly_equivalent: money('1200.00'),
+          next_30_days: money('1200.00'),
+          rule_count: 1,
+          variable_count: 1,
+        },
+      ],
+    });
+    server.use(
+      http.get(`${API}/dashboard/summary`, () => HttpResponse.json(envelope(makeSummary()))),
+    );
+    renderRoute('/dashboard', { user: signedIn() });
+    await findPageHeading('Home');
+    const alerts = await screen.findByRole('region', { name: 'Budget alerts' });
+    await within(alerts).findByRole('link', { name: 'Food reached 75% of its limit' });
+    await within(screen.getByRole('region', { name: 'Renewals and trials' })).findByText(
+      'Free trial ends Nov 20, 2026',
+    );
+    await within(screen.getByRole('region', { name: 'Recurring per month' })).findByText(
+      'Recurring income',
+      { exact: false },
+    );
+    await expectNoAxeViolations();
+  });
+
+  it('snooze menu on a dashboard budget alert', async () => {
+    seedFinance();
+    testBackend.planning = emptyPlanning({ alerts: [makeBudgetAlert()], alert_count: 1 });
+    server.use(
+      http.get(`${API}/dashboard/summary`, () => HttpResponse.json(envelope(makeSummary()))),
+    );
+    const user = userEvent.setup();
+    renderRoute('/dashboard', { user: signedIn() });
+    await findPageHeading('Home');
+    const alerts = await screen.findByRole('region', { name: 'Budget alerts' });
+    await user.click(
+      await within(alerts).findByRole('button', { name: 'Snooze: Food reached 75% of its limit' }),
+    );
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getByRole('menuitem', { name: 'For a week' })).toBeInTheDocument();
+    // The portalled popup is checked as its own context (see the account menu case).
+    await expectNoAxeViolations(menu);
   });
 
   it('account menu (Radix dropdown) opened from the shell', async () => {

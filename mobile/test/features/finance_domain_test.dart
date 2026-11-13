@@ -233,7 +233,15 @@ void main() {
         DashboardWidgetKind.values.where(
           (DashboardWidgetKind k) => k.isPlanning,
         ),
-        hasLength(4),
+        <DashboardWidgetKind>[
+          DashboardWidgetKind.alerts,
+          DashboardWidgetKind.budgets,
+          DashboardWidgetKind.upcoming,
+          DashboardWidgetKind.renewals,
+          DashboardWidgetKind.recurring,
+          DashboardWidgetKind.goals,
+          DashboardWidgetKind.groupBalances,
+        ],
       );
     });
 

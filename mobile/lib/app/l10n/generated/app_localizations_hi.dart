@@ -17881,25 +17881,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get profileEditVisibility => 'आपकी प्रोफ़ाइल कौन देख सकता है';
 
   @override
-  String get profileEditVisibilityPrivate => 'केवल आप';
+  String get profileEditVisibilityPrivate => 'निजी';
 
   @override
   String get profileEditVisibilityPrivateHelp =>
-      'दूसरे लोग केवल आपका नाम और फ़ोटो देखते हैं, जहाँ आप शामिल होते हैं।';
+      'केवल आप, आपके साथ किसी सक्रिय समूह के सदस्य, और वे लोग जिनके और आपके बीच दोस्ती का अनुरोध लंबित है, आपकी प्रोफ़ाइल और फ़ोटो देख सकते हैं।';
 
   @override
-  String get profileEditVisibilityConnections => 'दोस्त और समूह के सदस्य';
+  String get profileEditVisibilityConnections => 'दोस्त';
 
   @override
   String get profileEditVisibilityConnectionsHelp =>
-      'आपका परिचय, स्थान और रुचियाँ उन लोगों को दिखती हैं जिनसे आप जुड़े हैं।';
+      'आपके दोस्त आपकी प्रोफ़ाइल और फ़ोटो देख सकते हैं, और साथ ही आप, आपके साथ किसी सक्रिय समूह के सदस्य, और वे लोग जिनके और आपके बीच दोस्ती का अनुरोध लंबित है।';
 
   @override
   String get profileEditVisibilityPublic => 'Montra पर सभी';
 
   @override
   String get profileEditVisibilityPublicHelp =>
-      'Montra में साइन इन किया कोई भी व्यक्ति आपकी प्रोफ़ाइल देख सकता है।';
+      'Montra में साइन इन किया कोई भी व्यक्ति आपकी प्रोफ़ाइल और फ़ोटो देख सकता है।';
 
   @override
   String get profileEditUsernameHelp =>
@@ -18025,7 +18025,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get prefsDateFormatHelp =>
-      'निर्यात, रिपोर्ट और ईमेल में इस्तेमाल होता है।';
+      'ऐप, निर्यात, रिपोर्ट और ईमेल में तारीख़ें इसी तरह लिखी जाती हैं।';
 
   @override
   String get prefsNumberFormat => 'संख्या का प्रारूप';
@@ -18053,7 +18053,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get prefsWeekStartHelp =>
-      'साप्ताहिक बजट, रिपोर्ट और साप्ताहिक योग में इस्तेमाल होता है।';
+      'साप्ताहिक बजट, रिपोर्ट, साप्ताहिक योग और तारीख़ चुनने वाले कैलेंडर में इस्तेमाल होता है।';
 
   @override
   String get prefsMonthStart => 'महीना किस तारीख़ से शुरू हो';
@@ -18294,4 +18294,146 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get receiptPagesLeave => 'निकलें';
+
+  @override
+  String get widgetAlerts => 'बजट अलर्ट';
+
+  @override
+  String get widgetAlertsHelp =>
+      'जो बजट आपकी तय सीमा तक पहुँच गए हैं, उन्हें स्नूज़ करें या हटाएँ';
+
+  @override
+  String get widgetRenewals => 'रिन्यूअल';
+
+  @override
+  String get widgetRenewalsHelp =>
+      'अगले 30 दिनों में सब्सक्रिप्शन रिन्यूअल और ट्रायल का ख़त्म होना';
+
+  @override
+  String get widgetRecurring => 'नियमित प्रतिबद्धताएँ';
+
+  @override
+  String get widgetRecurringHelp =>
+      'नियमित भुगतान और आय, मासिक राशि के रूप में';
+
+  @override
+  String dashPlanAlertsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count चालू अलर्ट',
+      one: '1 चालू अलर्ट',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanAlertsEmpty =>
+      'कोई चालू बजट अलर्ट नहीं है। जब कोई बजट आपकी तय सीमा तक पहुँचेगा, तो अलर्ट यहाँ दिखेगा।';
+
+  @override
+  String get dashPlanAlertsSeeAll => 'सभी बजट अलर्ट देखें';
+
+  @override
+  String dashPlanAlertSnoozeFor(String budget) {
+    return '$budget का अलर्ट स्नूज़ करें';
+  }
+
+  @override
+  String dashPlanAlertDismissFor(String budget) {
+    return '$budget का अलर्ट हटाएँ';
+  }
+
+  @override
+  String dashPlanRenewalsSummary(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$date तक $count रिन्यूअल और ट्रायल के अंत',
+      one: '$date तक 1 रिन्यूअल या ट्रायल का अंत',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashPlanRenewalsEmpty =>
+      'अगले 30 दिनों में कोई सब्सक्रिप्शन रिन्यूअल या ट्रायल ख़त्म नहीं हो रहा है।';
+
+  @override
+  String get dashPlanRenewalsAdd => 'सब्सक्रिप्शन जोड़ें';
+
+  @override
+  String get dashPlanRenewalsSeeAll => 'सभी सब्सक्रिप्शन देखें';
+
+  @override
+  String get dashPlanRenewalToday => 'आज';
+
+  @override
+  String dashPlanRenewalOn(String date) {
+    return '$date को';
+  }
+
+  @override
+  String get dashPlanRecurringSeeAll => 'नियमित प्रतिबद्धताएँ खोलें';
+
+  @override
+  String get onboardingCalendarSection => 'हफ़्ते और महीने';
+
+  @override
+  String get onboardingGoalsTitle => 'किसी चीज़ के लिए बचत करें (वैकल्पिक)';
+
+  @override
+  String get onboardingGoalsBody =>
+      'अभी एक लक्ष्य जोड़ें, जैसे आपातकालीन फ़ंड या कोई यात्रा। योजना, पड़ाव और दूसरे लक्ष्य आप बाद में जोड़ सकते हैं, या इसे छोड़ दें।';
+
+  @override
+  String get onboardingGoalCreate => 'लक्ष्य बनाएँ';
+
+  @override
+  String get onboardingGoalCreated => 'लक्ष्य बन गया';
+
+  @override
+  String onboardingGoalTarget(String amount) {
+    return 'लक्ष्य राशि $amount';
+  }
+
+  @override
+  String get onboardingGoalLater =>
+      '“लक्ष्य” में आप इसमें पैसे जोड़ सकते हैं, इसे बदल सकते हैं या और लक्ष्य जोड़ सकते हैं।';
+
+  @override
+  String get onboardingNotificationsTitle => 'ईमेल सारांश';
+
+  @override
+  String get onboardingNotificationsBody =>
+      'चुनें कि Montra बिल रिमाइंडर और बजट अलर्ट जैसे वैकल्पिक ईमेल कैसे भेजे।';
+
+  @override
+  String get onboardingDigestOff => 'हर ईमेल तुरंत भेजें';
+
+  @override
+  String get onboardingDigestOffHelp =>
+      'वैकल्पिक ईमेल उसी समय आते हैं जब कुछ होता है।';
+
+  @override
+  String get onboardingDigestDaily => 'रोज़ का सारांश';
+
+  @override
+  String get onboardingDigestDailyHelp =>
+      'वैकल्पिक ईमेल रोके जाते हैं और हर सुबह 8:00 बजे एक साथ भेजे जाते हैं।';
+
+  @override
+  String get onboardingDigestWeekly => 'हफ़्ते का सारांश';
+
+  @override
+  String get onboardingDigestWeeklyHelp =>
+      'वैकल्पिक ईमेल रोके जाते हैं और हर सोमवार सुबह 8:00 बजे एक साथ भेजे जाते हैं।';
+
+  @override
+  String get onboardingDigestSecurity =>
+      'सुरक्षा और खाते से जुड़े ईमेल, जैसे साइन-इन अलर्ट, हमेशा तुरंत भेजे जाते हैं। हर तरह के ईमेल के लिए आप बाद में सूचना सेटिंग में चुन सकते हैं।';
+
+  @override
+  String get profileEditVisibilityBlocked =>
+      'आप जिन्हें ब्लॉक करते हैं, वे आपकी प्रोफ़ाइल कभी नहीं देखते, चाहे आप यहाँ कुछ भी चुनें, और आप भी उनकी प्रोफ़ाइल नहीं देखते।';
 }

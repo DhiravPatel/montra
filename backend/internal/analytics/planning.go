@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"sort"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/jackc/pgx/v5"
@@ -11,6 +12,7 @@ import (
 	"montra/backend/internal/apitypes"
 	"montra/backend/internal/budgets"
 	"montra/backend/internal/domain/money"
+	"montra/backend/internal/finance"
 	"montra/backend/internal/goals"
 	"montra/backend/internal/platform/database"
 	"montra/backend/internal/platform/httpx"
@@ -140,11 +142,68 @@ func (s *Service) Recurring(ctx context.Context) (*RecurringReport, error) {
 		if err := rows.Err(); err != nil {
 			return err
 		}
+		// Active subscriptions are commitments too (kind subscription); trials
+		// start counting once they convert.
+		srows, err := tx.Query(ctx, `select amount_minor, currency, billing_frequency, interval_count, interval_unit, start_date, next_renewal_date
+			from subscriptions where user_id = $1 and status = 'active'`, uid)
+		if err != nil {
+			return err
+		}
+		type subRow struct {
+			amount   int64
+			cur      string
+			freq     string
+			interval int16
+			unit     *string
+			start    time.Time
+			next     *time.Time
+		}
+		subs, err := pgx.CollectRows(srows, func(r pgx.CollectableRow) (subRow, error) {
+			var x subRow
+			err := r.Scan(&x.amount, &x.cur, &x.freq, &x.interval, &x.unit, &x.start, &x.next)
+			return x, err
+		})
+		if err != nil {
+			return err
+		}
+		subNext := map[key]int64{}
+		u, err := finance.LoadUser(ctx, tx, uid)
+		if err != nil {
+			return err
+		}
+		// The next 30 days in the user's own calendar.
+		now := time.Now().In(u.Loc)
+		from := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		to := from.AddDate(0, 0, 30)
+		for _, x := range subs {
+			k := key{"subscription", x.cur}
+			c := get(k)
+			c.RuleCount++
+			num, den := subscriptions.PeriodsPerYear(x.freq, x.interval, x.unit)
+			v, err := money.MulRatio(x.amount, num, den*12)
+			if err != nil {
+				return err
+			}
+			if monthly[k], err = money.Add(monthly[k], v); err != nil {
+				return err
+			}
+			if x.next != nil {
+				due := subscriptions.RenewalSchedule(x.freq, x.interval, x.unit, x.start, *x.next).Between(from, to, 100)
+				for range due {
+					if subNext[k], err = money.Add(subNext[k], x.amount); err != nil {
+						return err
+					}
+				}
+			}
+		}
 		next := map[key]int64{}
+		for k, v := range subNext {
+			next[k] = v
+		}
 		orows, err := tx.Query(ctx, `select r.kind, r.currency, coalesce(sum(coalesce(o.amount_minor, r.amount_minor)), 0)::bigint
 			from recurring_occurrences o join recurring_rules r on r.id = o.rule_id
 			where o.user_id = $1 and o.group_id is null and o.status in ('scheduled','overdue') and r.currency is not null
-			and coalesce(o.postponed_to, o.occurrence_date) between current_date and current_date + 30 group by 1, 2`, uid)
+			and coalesce(o.postponed_to, o.occurrence_date) between $2::date and $3::date group by 1, 2`, uid, from, to)
 		if err != nil {
 			return err
 		}
@@ -156,7 +215,10 @@ func (s *Service) Recurring(ctx context.Context) (*RecurringReport, error) {
 				return err
 			}
 			get(key{kind, cur})
-			next[key{kind, cur}] = sum
+			if next[key{kind, cur}], err = money.Add(next[key{kind, cur}], sum); err != nil {
+				orows.Close()
+				return err
+			}
 		}
 		orows.Close()
 		if err := orows.Err(); err != nil {

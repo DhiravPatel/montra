@@ -29283,25 +29283,25 @@ abstract class AppLocalizations {
   /// No description provided for @profileEditVisibilityPrivate.
   ///
   /// In en, this message translates to:
-  /// **'Only you'**
+  /// **'Private'**
   String get profileEditVisibilityPrivate;
 
   /// No description provided for @profileEditVisibilityPrivateHelp.
   ///
   /// In en, this message translates to:
-  /// **'Others see only your display name and photo where you take part.'**
+  /// **'Only you, people in an active group with you, and people with a pending friend request between you can see your profile and photo.'**
   String get profileEditVisibilityPrivateHelp;
 
   /// No description provided for @profileEditVisibilityConnections.
   ///
   /// In en, this message translates to:
-  /// **'Friends and group members'**
+  /// **'Friends'**
   String get profileEditVisibilityConnections;
 
   /// No description provided for @profileEditVisibilityConnectionsHelp.
   ///
   /// In en, this message translates to:
-  /// **'Your bio, location and interests are shown to people you\'re connected with.'**
+  /// **'Your friends can see your profile and photo, as well as you, people in an active group with you, and people with a pending friend request between you.'**
   String get profileEditVisibilityConnectionsHelp;
 
   /// No description provided for @profileEditVisibilityPublic.
@@ -29313,7 +29313,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileEditVisibilityPublicHelp.
   ///
   /// In en, this message translates to:
-  /// **'Anyone signed in to Montra can see your profile details.'**
+  /// **'Anyone signed in to Montra can see your profile and photo.'**
   String get profileEditVisibilityPublicHelp;
 
   /// No description provided for @profileEditUsernameHelp.
@@ -29535,7 +29535,7 @@ abstract class AppLocalizations {
   /// No description provided for @prefsDateFormatHelp.
   ///
   /// In en, this message translates to:
-  /// **'Used in exports, reports and emails.'**
+  /// **'How dates are written in the app, exports, reports and emails.'**
   String get prefsDateFormatHelp;
 
   /// No description provided for @prefsNumberFormat.
@@ -29577,7 +29577,7 @@ abstract class AppLocalizations {
   /// No description provided for @prefsWeekStartHelp.
   ///
   /// In en, this message translates to:
-  /// **'Used for weekly budgets, reports and weekly totals.'**
+  /// **'Used for weekly budgets, reports, weekly totals and the calendars where you pick dates.'**
   String get prefsWeekStartHelp;
 
   /// No description provided for @prefsMonthStart.
@@ -29921,6 +29921,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leave'**
   String get receiptPagesLeave;
+
+  /// No description provided for @widgetAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget alerts'**
+  String get widgetAlerts;
+
+  /// No description provided for @widgetAlertsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets that reached a limit you set, to snooze or dismiss'**
+  String get widgetAlertsHelp;
+
+  /// No description provided for @widgetRenewals.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewals'**
+  String get widgetRenewals;
+
+  /// No description provided for @widgetRenewalsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription renewals and trial ends in the next 30 days'**
+  String get widgetRenewalsHelp;
+
+  /// No description provided for @widgetRecurring.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring commitments'**
+  String get widgetRecurring;
+
+  /// No description provided for @widgetRecurringHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular payments and income as monthly amounts'**
+  String get widgetRecurringHelp;
+
+  /// No description provided for @dashPlanAlertsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 active alert} other{{count} active alerts}}'**
+  String dashPlanAlertsSummary(int count);
+
+  /// No description provided for @dashPlanAlertsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active budget alerts. One appears here when a budget reaches a limit you set.'**
+  String get dashPlanAlertsEmpty;
+
+  /// No description provided for @dashPlanAlertsSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all budget alerts'**
+  String get dashPlanAlertsSeeAll;
+
+  /// No description provided for @dashPlanAlertSnoozeFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Snooze the alert for {budget}'**
+  String dashPlanAlertSnoozeFor(String budget);
+
+  /// No description provided for @dashPlanAlertDismissFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss the alert for {budget}'**
+  String dashPlanAlertDismissFor(String budget);
+
+  /// No description provided for @dashPlanRenewalsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 renewal or trial end through {date}} other{{count} renewals and trial ends through {date}}}'**
+  String dashPlanRenewalsSummary(int count, String date);
+
+  /// No description provided for @dashPlanRenewalsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No subscription renewals or trial ends in the next 30 days.'**
+  String get dashPlanRenewalsEmpty;
+
+  /// No description provided for @dashPlanRenewalsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a subscription'**
+  String get dashPlanRenewalsAdd;
+
+  /// No description provided for @dashPlanRenewalsSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all subscriptions'**
+  String get dashPlanRenewalsSeeAll;
+
+  /// No description provided for @dashPlanRenewalToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get dashPlanRenewalToday;
+
+  /// No description provided for @dashPlanRenewalOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On {date}'**
+  String dashPlanRenewalOn(String date);
+
+  /// No description provided for @dashPlanRecurringSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Open recurring commitments'**
+  String get dashPlanRecurringSeeAll;
+
+  /// No description provided for @onboardingCalendarSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks and months'**
+  String get onboardingCalendarSection;
+
+  /// No description provided for @onboardingGoalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save toward something (optional)'**
+  String get onboardingGoalsTitle;
+
+  /// No description provided for @onboardingGoalsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one goal now, such as an emergency fund or a trip. You can add plans, milestones and more goals later, or skip this.'**
+  String get onboardingGoalsBody;
+
+  /// No description provided for @onboardingGoalCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create goal'**
+  String get onboardingGoalCreate;
+
+  /// No description provided for @onboardingGoalCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal created'**
+  String get onboardingGoalCreated;
+
+  /// No description provided for @onboardingGoalTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target {amount}'**
+  String onboardingGoalTarget(String amount);
+
+  /// No description provided for @onboardingGoalLater.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add money to it, change it or add more goals in Goals.'**
+  String get onboardingGoalLater;
+
+  /// No description provided for @onboardingNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email summaries'**
+  String get onboardingNotificationsTitle;
+
+  /// No description provided for @onboardingNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how Montra sends optional emails, such as bill reminders and budget alerts.'**
+  String get onboardingNotificationsBody;
+
+  /// No description provided for @onboardingDigestOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Send each email right away'**
+  String get onboardingDigestOff;
+
+  /// No description provided for @onboardingDigestOffHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional emails arrive as things happen.'**
+  String get onboardingDigestOffHelp;
+
+  /// No description provided for @onboardingDigestDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily summary'**
+  String get onboardingDigestDaily;
+
+  /// No description provided for @onboardingDigestDailyHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional emails are held and sent together at 8:00 each morning.'**
+  String get onboardingDigestDailyHelp;
+
+  /// No description provided for @onboardingDigestWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly summary'**
+  String get onboardingDigestWeekly;
+
+  /// No description provided for @onboardingDigestWeeklyHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional emails are held and sent together at 8:00 on Mondays.'**
+  String get onboardingDigestWeeklyHelp;
+
+  /// No description provided for @onboardingDigestSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Security and account emails, such as sign-in alerts, are always sent right away. You can choose for each kind of email later in notification settings.'**
+  String get onboardingDigestSecurity;
+
+  /// No description provided for @profileEditVisibilityBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'People you block never see your profile, whatever you choose here, and you don\'t see theirs.'**
+  String get profileEditVisibilityBlocked;
 }
 
 class _AppLocalizationsDelegate

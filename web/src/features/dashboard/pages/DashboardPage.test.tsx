@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import type { DashboardPlanning, DashboardSummary } from '@/shared/finance/types';
-import { makeBudget, makeProgress } from '@/tests/budgetsFixtures';
+import { BUDGET_ID, makeBudget, makeBudgetAlert, makeProgress } from '@/tests/budgetsFixtures';
 import { API, envelope, errorBody, makeUser } from '@/tests/fixtures';
 import {
   CATEGORY_GROCERIES,
@@ -19,6 +19,7 @@ import { GOAL_FUND, GOAL_TRIP, makeGoal } from '@/tests/goalsFixtures';
 import { testBackend } from '@/tests/msw/backend';
 import { BILL_ID, makeCalendarItem } from '@/tests/planningFixtures';
 import { server } from '@/tests/msw/server';
+import { SUB_GYM, SUB_NETFLIX } from '@/tests/subscriptionsFixtures';
 import { findPageHeading, renderRoute } from '@/tests/render';
 
 const returning = () => makeUser({ onboarding_completed: true });
@@ -215,11 +216,14 @@ describe('DashboardPage', () => {
     let dialog = await screen.findByRole('dialog', { name: 'Customize your dashboard' });
     await user.click(within(dialog).getByLabelText('Show Balances'));
     await user.click(within(dialog).getByRole('button', { name: 'Move Cash flow up' }));
-    expect(await screen.findByText('Cash flow moved to position 1 of 12')).toBeInTheDocument();
-    // The planning cards are part of the same layout: hide one and move another.
+    expect(await screen.findByText('Cash flow moved to position 1 of 15')).toBeInTheDocument();
+    // The planning cards are part of the same layout: hide some and move another.
     await user.click(within(dialog).getByLabelText('Show Group balances'));
+    await user.click(within(dialog).getByLabelText('Show Renewals and trials'));
     await user.click(within(dialog).getByRole('button', { name: 'Move Goals up' }));
-    expect(await screen.findByText('Goals moved to position 8 of 12')).toBeInTheDocument();
+    expect(await screen.findByText('Goals moved to position 11 of 15')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Move Budget alerts down' }));
+    expect(await screen.findByText('Budget alerts moved to position 4 of 15')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
     expect(await screen.findByText('Dashboard layout saved')).toBeInTheDocument();
     expect(bodies[0]).toEqual({
@@ -227,15 +231,18 @@ describe('DashboardPage', () => {
         { key: 'cash_flow', position: 0, visible: true, settings: {} },
         { key: 'balances', position: 1, visible: false, settings: {} },
         { key: 'budgets', position: 2, visible: true, settings: {} },
-        { key: 'upcoming', position: 3, visible: true, settings: {} },
-        { key: 'income_vs_expense', position: 4, visible: true, settings: {} },
-        { key: 'cash_flow_trend', position: 5, visible: true, settings: {} },
-        { key: 'category_breakdown', position: 6, visible: true, settings: {} },
-        { key: 'goals', position: 7, visible: true, settings: {} },
-        { key: 'top_merchants', position: 8, visible: true, settings: {} },
-        { key: 'group_balances', position: 9, visible: false, settings: {} },
-        { key: 'recent_transactions', position: 10, visible: true, settings: {} },
-        { key: 'data_coverage', position: 11, visible: true, settings: {} },
+        { key: 'alerts', position: 3, visible: true, settings: {} },
+        { key: 'upcoming', position: 4, visible: true, settings: {} },
+        { key: 'renewals', position: 5, visible: false, settings: {} },
+        { key: 'income_vs_expense', position: 6, visible: true, settings: {} },
+        { key: 'cash_flow_trend', position: 7, visible: true, settings: {} },
+        { key: 'category_breakdown', position: 8, visible: true, settings: {} },
+        { key: 'top_merchants', position: 9, visible: true, settings: {} },
+        { key: 'goals', position: 10, visible: true, settings: {} },
+        { key: 'recurring', position: 11, visible: true, settings: {} },
+        { key: 'group_balances', position: 12, visible: false, settings: {} },
+        { key: 'recent_transactions', position: 13, visible: true, settings: {} },
+        { key: 'data_coverage', position: 14, visible: true, settings: {} },
       ],
     });
 
@@ -334,6 +341,7 @@ const GROUP_HOME = 'c1c1c1c1-3333-4333-8333-0000000000a1';
 const GROUP_TRIP = 'c1c1c1c1-3333-4333-8333-0000000000a2';
 const GROUP_FLAT = 'c1c1c1c1-3333-4333-8333-0000000000a3';
 const BUDGET_TRAVEL = 'b0b0b0b0-0000-4000-8000-0000000000a2';
+const ALERT_FORECAST = 'a1e7a1e7-0000-4000-8000-0000000000a2';
 const RULE_GYM = 'c1111111-1111-4111-8111-1111111111a2';
 
 /** GET /dashboard/planning as the API orders it: fullest budgets, overdue first, nearest goals. */
@@ -396,6 +404,65 @@ function makePlanning(overrides: Partial<DashboardPlanning> = {}): DashboardPlan
       { group_id: GROUP_TRIP, name: 'Goa trip', group_type: 'trip', my_net: money('-300.50') },
     ],
     group_count: 2,
+    alerts: [
+      makeBudgetAlert({ budget_id: BUDGET_TRAVEL, budget_name: 'Travel', threshold: 100 }),
+      makeBudgetAlert({
+        id: ALERT_FORECAST,
+        kind: 'forecast_overspend',
+        threshold: 0,
+        triggered_at: '2026-11-04T09:00:00Z',
+      }),
+    ],
+    alert_count: 4,
+    renewals: [
+      makeCalendarItem({
+        date: '2026-11-12',
+        kind: 'trial_end',
+        title: 'Music',
+        amount: undefined,
+        status: 'expected',
+        entity_type: 'subscription',
+        entity_id: SUB_GYM,
+        occurrence_id: undefined,
+      }),
+      makeCalendarItem({
+        date: '2026-11-20',
+        kind: 'subscription_renewal',
+        title: 'Netflix',
+        amount: money('649.00'),
+        status: 'expected',
+        entity_type: 'subscription',
+        entity_id: SUB_NETFLIX,
+        occurrence_id: undefined,
+      }),
+    ],
+    renewal_count: 3,
+    recurring: [
+      {
+        kind: 'expense',
+        currency: 'USD',
+        monthly_equivalent: money('9.99', 'USD'),
+        next_30_days: money('9.99', 'USD'),
+        rule_count: 1,
+        variable_count: 0,
+      },
+      {
+        kind: 'expense',
+        currency: 'INR',
+        monthly_equivalent: money('1299.99', 'INR'),
+        next_30_days: money('1200.00', 'INR'),
+        rule_count: 2,
+        variable_count: 1,
+      },
+      {
+        kind: 'income',
+        currency: 'INR',
+        monthly_equivalent: money('50000.00', 'INR'),
+        next_30_days: money('50000.00', 'INR'),
+        rule_count: 1,
+        variable_count: 0,
+      },
+    ],
     ...overrides,
   });
 }
@@ -503,6 +570,174 @@ describe('DashboardPage planning cards', () => {
     expect(calls.count).toBe(1);
   });
 
+  it('shows budget alerts, renewals and recurring commitments from the same request', async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-04T10:02:00Z') });
+    const calls = { count: 0 };
+    server.use(summaryHandler(), planningHandler(calls));
+    renderRoute('/dashboard', { user: returning() });
+    await findPageHeading('Home');
+
+    const alerts = await screen.findByRole('region', { name: 'Budget alerts' });
+    expect(within(alerts).getByText('Active alerts, newest first')).toBeInTheDocument();
+    // The budget, what happened and the threshold, in words, linking to the budget.
+    expect(
+      within(alerts).getByRole('link', { name: 'Travel reached 100% of its limit' }),
+    ).toHaveAttribute('href', `/budgets/${BUDGET_TRAVEL}`);
+    expect(
+      within(alerts).getByRole('link', {
+        name: 'Food may go over its limit before the period ends (an estimate)',
+      }),
+    ).toHaveAttribute('href', `/budgets/${BUDGET_ID}`);
+    expect(within(alerts).getByText('Raised 1 hour ago')).toHaveAttribute(
+      'dateTime',
+      '2026-11-04T09:00:00Z',
+    );
+    expect(
+      within(alerts).getByRole('button', { name: 'Snooze: Travel reached 100% of its limit' }),
+    ).toBeInTheDocument();
+    expect(
+      within(alerts).getByRole('button', { name: 'Dismiss: Travel reached 100% of its limit' }),
+    ).toBeInTheDocument();
+    // The count is the API's (4), not the 2 listed.
+    expect(within(alerts).getByText('2 of 4 active alerts')).toBeInTheDocument();
+    expect(within(alerts).getByRole('link', { name: 'View all 4 in Budgets' })).toHaveAttribute(
+      'href',
+      '/budgets',
+    );
+
+    const renewals = screen.getByRole('region', { name: 'Renewals and trials' });
+    expect(
+      within(renewals).getByText('Due through Dec 12, 2026, soonest first'),
+    ).toBeInTheDocument();
+    const [trial, netflix] = within(renewals).getAllByRole('listitem');
+    expect(within(trial!).getByRole('link', { name: 'Music' })).toHaveAttribute(
+      'href',
+      `/subscriptions/${SUB_GYM}`,
+    );
+    expect(within(trial!).getByText('Free trial ends today')).toHaveAttribute(
+      'dateTime',
+      '2026-11-12',
+    );
+    expect(within(netflix!).getByRole('link', { name: 'Netflix' })).toHaveAttribute(
+      'href',
+      `/subscriptions/${SUB_NETFLIX}`,
+    );
+    expect(within(netflix!).getByText('Renews Nov 20, 2026')).toBeInTheDocument();
+    // Exactly the amount the API sent.
+    expect(within(netflix!).getByText('₹649.00')).toBeInTheDocument();
+    expect(within(renewals).getByText('2 of 3 renewals and trial ends')).toBeInTheDocument();
+    expect(
+      within(renewals).getByRole('link', { name: 'View all 3 in Subscriptions' }),
+    ).toHaveAttribute('href', '/subscriptions');
+
+    const recurring = screen.getByRole('region', { name: 'Recurring per month' });
+    expect(
+      within(recurring).getByText('Monthly equivalents of your active schedules'),
+    ).toBeInTheDocument();
+    // Per kind and currency, income first; currencies are never added together.
+    const rows = within(recurring).getAllByRole('listitem');
+    expect(rows.map((row) => row.querySelector('p')?.textContent)).toEqual([
+      'Recurring income (1 schedule)',
+      'Recurring expenses (2 schedules)',
+      'Recurring expenses (1 schedule)',
+    ]);
+    expect(within(rows[0]!).getAllByText('₹50,000.00')).toHaveLength(2);
+    expect(within(rows[1]!).getByText('₹1,299.99')).toBeInTheDocument();
+    expect(within(rows[1]!).getByText('₹1,200.00')).toBeInTheDocument();
+    expect(
+      within(rows[1]!).getByText('1 schedule has a changing amount and isn’t included.'),
+    ).toBeInTheDocument();
+    expect(within(rows[2]!).getAllByText('$9.99')).toHaveLength(2);
+    // What the figures count, localized from recurring_note_code.
+    expect(
+      within(recurring).getByText(
+        'Only fixed amounts are counted. Bills and income are what you expect, not money recorded yet.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(recurring).getByRole('link', { name: 'View recurring schedules' }),
+    ).toHaveAttribute('href', '/planning/recurring');
+
+    expect(calls.count).toBe(1);
+  });
+
+  it('dismisses and snoozes an alert with the budget alert endpoints, then refreshes the cards', async () => {
+    const travel = makePlanning().alerts[0]!;
+    // Every active alert is listed (2 of 2).
+    let planning = makePlanning({ alert_count: 2 });
+    const calls = { count: 0 };
+    const bodies: { id: string; body: Record<string, unknown> }[] = [];
+    server.use(
+      summaryHandler(),
+      http.get(`${API}/dashboard/planning`, () => {
+        calls.count += 1;
+        return HttpResponse.json(envelope(planning));
+      }),
+      http.patch(`${API}/budget-alerts/:id`, async ({ request, params }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        bodies.push({ id: String(params.id), body });
+        // The server drops the alert from the active list.
+        planning = makePlanning({
+          alerts: planning.alerts.filter((alert) => alert.id !== params.id),
+          alert_count: planning.alert_count - 1,
+        });
+        return HttpResponse.json(envelope({ ok: true }));
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute('/dashboard', { user: returning() });
+    await findPageHeading('Home');
+    const alerts = await screen.findByRole('region', { name: 'Budget alerts' });
+    await within(alerts).findByText('2 of 2 active alerts');
+
+    await user.click(
+      within(alerts).getByRole('button', { name: 'Dismiss: Travel reached 100% of its limit' }),
+    );
+    expect(await screen.findByText('Alert dismissed')).toBeInTheDocument();
+    expect(bodies[0]).toEqual({ id: travel.id, body: { status: 'dismissed' } });
+    expect(await within(alerts).findByText('1 of 1 active alert')).toBeInTheDocument();
+    expect(
+      within(alerts).queryByRole('link', { name: 'Travel reached 100% of its limit' }),
+    ).not.toBeInTheDocument();
+    expect(calls.count).toBe(2);
+
+    const forecast = 'Food may go over its limit before the period ends (an estimate)';
+    await user.click(within(alerts).getByRole('button', { name: `Snooze: ${forecast}` }));
+    await user.click(await screen.findByRole('menuitem', { name: 'For a week' }));
+    expect(await screen.findByText(/Alert snoozed until/)).toBeInTheDocument();
+    const snooze = bodies[1]!;
+    expect(snooze.id).toBe(ALERT_FORECAST);
+    expect(snooze.body.status).toBe('snoozed');
+    expect(Date.parse(String(snooze.body.snoozed_until))).toBeGreaterThan(
+      Date.now() + 6 * 24 * 3600 * 1000,
+    );
+    expect(await within(alerts).findByText('No budget alerts')).toBeInTheDocument();
+    expect(calls.count).toBe(3);
+  });
+
+  it('keeps the alert and says so when a change is refused', async () => {
+    server.use(
+      summaryHandler(),
+      planningHandler({ count: 0 }),
+      http.patch(`${API}/budget-alerts/:id`, () =>
+        HttpResponse.json(errorBody({ code: 'NOT_FOUND' }), { status: 404 }),
+      ),
+    );
+    const user = userEvent.setup();
+    renderRoute('/dashboard', { user: returning() });
+    await findPageHeading('Home');
+    const alerts = await screen.findByRole('region', { name: 'Budget alerts' });
+    await user.click(
+      await within(alerts).findByRole('button', {
+        name: 'Dismiss: Travel reached 100% of its limit',
+      }),
+    );
+    expect(await screen.findByText('We couldn’t update the alert')).toBeInTheDocument();
+    expect(
+      within(alerts).getByRole('link', { name: 'Travel reached 100% of its limit' }),
+    ).toBeInTheDocument();
+  });
+
   it('shows a calm empty state on each card, without View all links', async () => {
     server.use(summaryHandler(), planningHandler({ count: 0 }, emptyPlanning()));
     renderRoute('/dashboard', { user: returning() });
@@ -519,7 +754,28 @@ describe('DashboardPage planning cards', () => {
     expect(within(goals).getByText('No active goals')).toBeInTheDocument();
     const groups = screen.getByRole('region', { name: 'Group balances' });
     expect(within(groups).getByText('All settled up')).toBeInTheDocument();
+    const alerts = screen.getByRole('region', { name: 'Budget alerts' });
+    expect(within(alerts).getByText('No budget alerts')).toBeInTheDocument();
+    expect(within(alerts).queryByRole('button')).not.toBeInTheDocument();
+    const renewals = screen.getByRole('region', { name: 'Renewals and trials' });
+    expect(within(renewals).getByText('No renewals in the next 30 days')).toBeInTheDocument();
+    expect(
+      within(renewals).getByText('Due through Dec 12, 2026, soonest first'),
+    ).toBeInTheDocument();
+    expect(within(renewals).getByRole('link', { name: 'Add a subscription' })).toHaveAttribute(
+      'href',
+      '/subscriptions/new',
+    );
+    const recurring = screen.getByRole('region', { name: 'Recurring per month' });
+    expect(within(recurring).getByText('No recurring schedules yet')).toBeInTheDocument();
+    expect(within(recurring).getByRole('link', { name: 'Add a recurring item' })).toHaveAttribute(
+      'href',
+      '/planning/recurring/new',
+    );
     expect(screen.queryByRole('link', { name: /^View all \d/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'View recurring schedules' }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows loading, then an error with retry on each card; one retry refreshes them all', async () => {
@@ -540,6 +796,11 @@ describe('DashboardPage planning cards', () => {
     await findPageHeading('Home');
     const budgets = await screen.findByRole('region', { name: 'Budgets' });
     expect(within(budgets).getByText('Loading your budgets…')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('region', { name: 'Budget alerts' })).getByText(
+        'Loading your budget alerts…',
+      ),
+    ).toBeInTheDocument();
     expect(await within(budgets).findByText('We couldn’t load your budgets')).toBeInTheDocument();
     const upcoming = screen.getByRole('region', { name: 'Coming up' });
     expect(within(upcoming).getByText('We couldn’t load what’s coming up')).toBeInTheDocument();
@@ -553,6 +814,13 @@ describe('DashboardPage planning cards', () => {
         'We couldn’t load your group balances',
       ),
     ).toBeInTheDocument();
+    for (const [name, text] of [
+      ['Budget alerts', 'We couldn’t load your budget alerts'],
+      ['Renewals and trials', 'We couldn’t load your renewals'],
+      ['Recurring per month', 'We couldn’t load your recurring commitments'],
+    ] as const) {
+      expect(within(screen.getByRole('region', { name })).getByText(text)).toBeInTheDocument();
+    }
     // The summary widgets are unaffected.
     expect(screen.getByRole('region', { name: 'Cash flow' })).toBeInTheDocument();
     expect(calls.count).toBe(1);
@@ -560,6 +828,11 @@ describe('DashboardPage planning cards', () => {
     fail = false;
     await user.click(within(upcoming).getByRole('button', { name: 'Try again' }));
     expect(await within(budgets).findByRole('link', { name: 'Travel' })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('region', { name: 'Renewals and trials' })).getByRole('link', {
+        name: 'Music',
+      }),
+    ).toBeInTheDocument();
     expect(
       within(screen.getByRole('region', { name: 'Goals' })).getByRole('link', {
         name: 'Goa trip',
@@ -579,7 +852,14 @@ describe('DashboardPage planning cards', () => {
     await findPageHeading('Home');
     const budgets = await screen.findByRole('region', { name: 'Budgets' });
     expect(await within(budgets).findByText('You don’t have access to this')).toBeInTheDocument();
-    for (const name of ['Coming up', 'Goals', 'Group balances']) {
+    for (const name of [
+      'Coming up',
+      'Goals',
+      'Group balances',
+      'Budget alerts',
+      'Renewals and trials',
+      'Recurring per month',
+    ]) {
       expect(
         within(screen.getByRole('region', { name })).getByText('You don’t have access to this'),
       ).toBeInTheDocument();
@@ -590,7 +870,15 @@ describe('DashboardPage planning cards', () => {
   it('does not request the planning cards while they are all hidden', async () => {
     const calls = { count: 0 };
     testBackend.widgets = defaultWidgets().map((widget) =>
-      ['budgets', 'upcoming', 'goals', 'group_balances'].includes(widget.key)
+      [
+        'alerts',
+        'budgets',
+        'upcoming',
+        'renewals',
+        'recurring',
+        'goals',
+        'group_balances',
+      ].includes(widget.key)
         ? { ...widget, visible: false }
         : widget,
     );

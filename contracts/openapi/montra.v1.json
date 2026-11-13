@@ -2399,6 +2399,7 @@
             "type": "string"
           },
           "kind": {
+            "description": "A trial whose first charge falls on its end date is one trial_end item carrying that charge's amount",
             "enum": [
               "recurring",
               "bill",
@@ -2494,7 +2495,7 @@
             "type": "array"
           },
           "series_granularity": {
-            "description": "Bucket size of series (zero-filled buckets; weeks start Monday)",
+            "description": "Bucket size of series (zero-filled buckets; weeks start on your week_start preference)",
             "enum": [
               "day",
               "week",
@@ -5202,6 +5203,18 @@
       "DashboardPlanning": {
         "additionalProperties": false,
         "properties": {
+          "alert_count": {
+            "description": "Active budget alerts (counted up to 200)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "alerts": {
+            "description": "Active budget alerts, newest first, up to 5 (dismiss or snooze them with the budget alert endpoints)",
+            "items": {
+              "$ref": "#/components/schemas/AlertDTO"
+            },
+            "type": "array"
+          },
           "budget_count": {
             "description": "Active budgets",
             "format": "int64",
@@ -5246,6 +5259,35 @@
             "format": "int64",
             "type": "integer"
           },
+          "recurring": {
+            "description": "Active recurring commitments per kind and currency, normalized to a month (as GET /analytics/recurring)",
+            "items": {
+              "$ref": "#/components/schemas/RecurringCommitment"
+            },
+            "type": "array"
+          },
+          "recurring_note_code": {
+            "description": "How the monthly figures are calculated (localize by code)",
+            "enum": [
+              "fixed_amounts_expectations"
+            ],
+            "type": "string"
+          },
+          "renewal_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "renewals": {
+            "description": "Subscription renewals and trial ends from today through renewals_through, soonest first, up to 6",
+            "items": {
+              "$ref": "#/components/schemas/CalendarItem"
+            },
+            "type": "array"
+          },
+          "renewals_through": {
+            "description": "Last date the renewals list covers (today + 30 days)",
+            "type": "string"
+          },
           "today": {
             "description": "Your local date (YYYY-MM-DD)",
             "type": "string"
@@ -5279,7 +5321,14 @@
           "goals",
           "goal_count",
           "group_balances",
-          "group_count"
+          "group_count",
+          "alerts",
+          "alert_count",
+          "renewals_through",
+          "renewals",
+          "renewal_count",
+          "recurring",
+          "recurring_note_code"
         ],
         "type": "object"
       },
@@ -5360,7 +5409,7 @@
             "type": "array"
           },
           "trend_granularity": {
-            "description": "Bucket size of trend (weeks start Monday)",
+            "description": "Bucket size of trend (weeks start on your week_start preference)",
             "enum": [
               "day",
               "week",
@@ -22019,12 +22068,15 @@
             "enum": [
               "balances",
               "cash_flow",
+              "alerts",
               "budgets",
               "upcoming",
+              "renewals",
               "income_vs_expense",
               "cash_flow_trend",
               "category_breakdown",
               "top_merchants",
+              "recurring",
               "goals",
               "group_balances",
               "recent_transactions",

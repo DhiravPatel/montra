@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"net"
@@ -242,7 +243,14 @@ type statusRecorder struct {
 	http.ResponseWriter
 	status int
 	bytes  int
+	// errBody keeps the start of an error response so the access log can
+	// name its stable codes (never messages or values).
+	errBody []byte
 }
+
+// maxErrBody bounds how much of an error body is kept for the access log
+// (validation errors list at most a few dozen details, well under this).
+const maxErrBody = 64 << 10
 
 func (s *statusRecorder) WriteHeader(code int) {
 	if s.status == 0 {
@@ -257,7 +265,33 @@ func (s *statusRecorder) Write(b []byte) (int, error) {
 	}
 	n, err := s.ResponseWriter.Write(b)
 	s.bytes += n
+	if s.status >= 400 && len(s.errBody) < maxErrBody {
+		s.errBody = append(s.errBody, b[:min(n, maxErrBody-len(s.errBody))]...)
+	}
 	return n, err
+}
+
+// errorCodes extracts the envelope's error code and the first detail's code
+// and field (stable identifiers like VALIDATION_ERROR, too_long and
+// body.amount). Messages, params and values are never read.
+func errorCodes(body []byte) (code, detail, field string) {
+	var env struct {
+		Error struct {
+			Code    string `json:"code"`
+			Details []struct {
+				Code  string `json:"code"`
+				Field string `json:"field"`
+			} `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &env) != nil {
+		return "", "", ""
+	}
+	code = env.Error.Code
+	if len(env.Error.Details) > 0 {
+		detail, field = env.Error.Details[0].Code, env.Error.Details[0].Field
+	}
+	return code, detail, field
 }
 
 func (s *statusRecorder) Flush() {
@@ -297,14 +331,26 @@ func AccessLog(metrics *observability.Metrics) func(http.Handler) http.Handler {
 			} else if strings.HasPrefix(pattern, "/health") || pattern == "/metrics" {
 				level = slog.LevelDebug
 			}
-			slog.Log(r.Context(), level, "http request",
+			attrs := []any{
 				slog.String("method", r.Method),
 				slog.String("route", pattern),
 				slog.Int("status", rec.status),
 				slog.Int("bytes", rec.bytes),
 				slog.Int64("duration_ms", dur.Milliseconds()),
 				slog.String("client", Client(r.Context()).Kind),
-			)
+			}
+			if rec.status >= 400 {
+				if code, detail, field := errorCodes(rec.errBody); code != "" {
+					attrs = append(attrs, slog.String("error_code", code))
+					if detail != "" {
+						attrs = append(attrs, slog.String("detail_code", detail))
+					}
+					if field != "" {
+						attrs = append(attrs, slog.String("detail_field", field))
+					}
+				}
+			}
+			slog.Log(r.Context(), level, "http request", attrs...)
 		})
 	}
 }

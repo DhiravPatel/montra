@@ -118,12 +118,40 @@ describe('ProfileSettingsPage — profile', () => {
   });
 
   it('saves who can see the profile and send requests', async () => {
-    const backend = settingsBackend();
+    // show_achievements is stored for a future display: it is neither offered nor sent.
+    const backend = settingsBackend(makeOwnProfile({ show_achievements: true }));
     const { user } = await openPage();
     const card = await findCard('Your profile', 'Save profile');
+    const visibility = within(card).getByRole('group', { name: 'Who can see your profile' });
+    expect(visibility).toHaveAccessibleDescription(
+      /Your profile is your photo, bio, interests and location\. Your balances and transactions are never part of it\. People you block, or who block you, never see it\./,
+    );
+    // Exactly who the server shows the profile to at each level (each option's name).
+    expect(
+      within(visibility)
+        .getAllByRole('radio')
+        .map((radio) => radio.getAttribute('value')),
+    ).toEqual(['private', 'connections', 'public']);
+    expect(
+      within(visibility).getByRole('radio', {
+        name: /^Private\s*Only you, people in an active group with you, and people you have a pending friend request with\.$/,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(visibility).getByRole('radio', {
+        name: /^Friends\s*Your friends, plus everyone a private profile is shown to: people in an active group with you and people you have a pending friend request with\.$/,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(visibility).getByRole('radio', {
+        name: /^Anyone on Montra\s*Anyone who is signed in to Montra\.$/,
+      }),
+    ).toBeInTheDocument();
+    expect(within(card).queryByLabelText(/achievements/i)).not.toBeInTheDocument();
+    expect(within(card).queryByText(/achievements/i)).not.toBeInTheDocument();
+
     await user.click(within(card).getByRole('radio', { name: /^Anyone on Montra/ }));
     await user.click(within(card).getByLabelText('Let people find me by my username'));
-    await user.click(within(card).getByLabelText('Show my challenge achievements on my profile'));
     await user.click(within(card).getByRole('radio', { name: /^Nobody/ }));
     await user.click(within(card).getByRole('button', { name: 'Save profile' }));
     await screen.findByText('Profile saved');
@@ -131,7 +159,6 @@ describe('ProfileSettingsPage — profile', () => {
       {
         profile_visibility: 'public',
         discoverable_by_username: false,
-        show_achievements: true,
         allow_friend_requests: 'nobody',
       },
     ]);
@@ -398,6 +425,56 @@ describe('ProfileSettingsPage — preferences', () => {
       expect(backend.preferencePatches).toHaveLength(2);
     });
     expect(backend.preferencePatches[1]).toEqual({ default_account_id: ACCOUNT_CARD });
+  });
+
+  it('saves a new formats locale and keeps it as the starting point', async () => {
+    const backend = settingsBackend();
+    const { user } = await openPage();
+    const card = await findCard('Region, money and display', 'Save preferences');
+    const formats = within(card).getByLabelText('Formats');
+    expect(formats).toHaveValue('en-IN');
+    await user.selectOptions(formats, 'hi-IN');
+    await user.click(within(card).getByRole('button', { name: 'Save preferences' }));
+    expect(await screen.findByText('Preferences saved')).toBeInTheDocument();
+    expect(backend.preferencePatches).toEqual([{ locale: 'hi-IN' }]);
+    expect(testBackend.preferences.locale).toBe('hi-IN');
+    expect(within(card).getByLabelText('Formats')).toHaveValue('hi-IN');
+    // Saved: saving again has nothing to send.
+    await user.click(within(card).getByRole('button', { name: 'Save preferences' }));
+    expect(
+      await screen.findByText('Nothing to save: you haven’t changed anything'),
+    ).toBeInTheDocument();
+    expect(backend.preferencePatches).toHaveLength(1);
+  });
+
+  it('saves a new time zone and computes time-dependent figures again', async () => {
+    testBackend.accounts = [makeAccount()];
+    const backend = settingsBackend();
+    let accountReads = 0;
+    server.use(
+      http.get(`${API}/accounts`, () => {
+        accountReads += 1;
+        return HttpResponse.json(envelope(testBackend.accounts));
+      }),
+    );
+    const { user } = await openPage();
+    const card = await findCard('Region, money and display', 'Save preferences');
+    await waitFor(() => {
+      expect(accountReads).toBeGreaterThan(0);
+    });
+    const before = accountReads;
+    const zone = within(card).getByLabelText('Time zone');
+    expect(zone).toHaveValue('Asia/Kolkata');
+    await user.selectOptions(zone, 'Europe/Paris');
+    await user.click(within(card).getByRole('button', { name: 'Save preferences' }));
+    expect(await screen.findByText('Preferences saved')).toBeInTheDocument();
+    expect(backend.preferencePatches).toEqual([{ timezone: 'Europe/Paris' }]);
+    expect(within(card).getByLabelText('Time zone')).toHaveValue('Europe/Paris');
+    expect(within(card).queryByText('Unknown time zone.')).not.toBeInTheDocument();
+    // Totals depend on the time zone, so finance data is fetched again.
+    await waitFor(() => {
+      expect(accountReads).toBeGreaterThan(before);
+    });
   });
 
   it('applies a saved theme across the app', async () => {

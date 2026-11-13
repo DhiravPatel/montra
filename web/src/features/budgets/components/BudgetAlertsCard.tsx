@@ -1,55 +1,18 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { hasErrorCode } from '@/shared/api/errors';
-import { Button } from '@/shared/components/Button';
-import { buttonClasses } from '@/shared/components/buttonStyles';
 import { Card } from '@/shared/components/Card';
 import { Icon } from '@/shared/components/Icon';
-import { Menu, MenuContent, MenuItem, MenuTrigger } from '@/shared/components/Menu';
 import { RadioGroup } from '@/shared/components/RadioGroup';
 import { ErrorState, LoadingState, PermissionDenied } from '@/shared/components/states';
-import { useToast } from '@/shared/components/toast/ToastContext';
 import { budgetPath } from '@/shared/config/paths';
 import { LoadMoreButton } from '@/shared/finance/components/LoadMoreButton';
-import type { BudgetAlert, BudgetAlertUpdate } from '@/shared/finance/types';
-import {
-  formatBasisPoints,
-  formatDateTime,
-  formatRelativeTime,
-  parseTimestamp,
-} from '@/shared/formatting/dates';
-import { describeError } from '@/shared/i18n/describeError';
+import { formatDateTime, formatRelativeTime, parseTimestamp } from '@/shared/formatting/dates';
 import { useI18n } from '@/shared/i18n/I18nContext';
-import type { Translate } from '@/shared/i18n/types';
-import { type AlertStatus, budgetsApi, useBudgetAlerts } from '../api';
+import { alertMessage, useBudgetAlertActions } from '../alertActions';
+import { type AlertStatus, useBudgetAlerts } from '../api';
 import { alertStatusLabel } from '../labels';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** An RFC 3339 instant `days` from now (for snoozing). */
-function snoozeUntil(days: number): string {
-  return new Date(Date.now() + days * DAY_MS).toISOString();
-}
-
-function alertMessage(alert: BudgetAlert, t: Translate, locale: string): string {
-  switch (alert.kind) {
-    case 'threshold':
-      return t('budgets.alerts.threshold', {
-        name: alert.budget_name,
-        percent: formatBasisPoints(alert.threshold * 100, locale),
-      });
-    case 'forecast_overspend':
-      return t('budgets.alerts.forecast', { name: alert.budget_name });
-    case 'unusual_spend':
-      return t('budgets.alerts.unusual', { name: alert.budget_name });
-  }
-}
-
-interface AlertChange {
-  alert: BudgetAlert;
-  body: BudgetAlertUpdate;
-}
+import { BudgetAlertButtons } from './BudgetAlertButtons';
 
 /**
  * Budget alerts (thresholds reached, possible overspend) with dismiss,
@@ -58,49 +21,9 @@ interface AlertChange {
  */
 export function BudgetAlertsCard({ budgetId }: { budgetId?: string }) {
   const { t, formatLocale } = useI18n();
-  const toast = useToast();
-  const queryClient = useQueryClient();
   const [status, setStatus] = useState<AlertStatus>('active');
   const alerts = useBudgetAlerts(status, budgetId ?? '');
-  const update = useMutation({
-    mutationFn: ({ alert, body }: AlertChange) => budgetsApi.updateAlert(alert.id, body),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['finance', 'budget-alerts'] }),
-  });
-
-  const change = (alert: BudgetAlert, body: BudgetAlertUpdate) => {
-    if (update.isPending) return;
-    update.mutate(
-      { alert, body },
-      {
-        onSuccess: () => {
-          let title: string;
-          if (body.status === 'dismissed') title = t('budgets.alerts.dismissed');
-          else if (body.status === 'active') title = t('budgets.alerts.reactivated');
-          else {
-            const until = parseTimestamp(body.snoozed_until);
-            title = t('budgets.alerts.snoozedUntil', {
-              when: until ? formatDateTime(until, formatLocale) : '',
-            });
-          }
-          toast.show({ tone: 'success', title });
-        },
-        onError: (error) => {
-          toast.show({
-            tone: 'danger',
-            title: t('budgets.alerts.updateFailed'),
-            description: describeError(error, t),
-          });
-        },
-      },
-    );
-  };
-
-  const snooze = (alert: BudgetAlert, days: number) => {
-    change(alert, {
-      status: 'snoozed',
-      snoozed_until: snoozeUntil(days),
-    });
-  };
+  const actions = useBudgetAlertActions();
 
   let content;
   if (alerts.isPending) {
@@ -136,7 +59,6 @@ export function BudgetAlertsCard({ budgetId }: { budgetId?: string }) {
             const message = alertMessage(alert, t, formatLocale);
             const raised = parseTimestamp(alert.triggered_at);
             const until = parseTimestamp(alert.snoozed_until);
-            const busy = update.isPending && update.variables.alert.id === alert.id;
             return (
               <li
                 key={alert.id}
@@ -173,65 +95,7 @@ export function BudgetAlertsCard({ budgetId }: { budgetId?: string }) {
                     </p>
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-wrap gap-2">
-                  {alert.status === 'active' ? (
-                    <Menu>
-                      <MenuTrigger
-                        className={buttonClasses('secondary', 'sm')}
-                        aria-label={`${t('budgets.alerts.snooze')}: ${message}`}
-                        disabled={busy}
-                      >
-                        <Icon name="bell-off" className="size-4" />
-                        {t('budgets.alerts.snooze')}
-                      </MenuTrigger>
-                      <MenuContent label={t('budgets.alerts.snooze')}>
-                        <MenuItem
-                          icon="clock"
-                          onSelect={() => {
-                            snooze(alert, 1);
-                          }}
-                        >
-                          {t('budgets.alerts.snoozeDay')}
-                        </MenuItem>
-                        <MenuItem
-                          icon="calendar"
-                          onSelect={() => {
-                            snooze(alert, 7);
-                          }}
-                        >
-                          {t('budgets.alerts.snoozeWeek')}
-                        </MenuItem>
-                      </MenuContent>
-                    </Menu>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      loading={busy}
-                      aria-label={`${t('budgets.alerts.reactivate')}: ${message}`}
-                      onClick={() => {
-                        change(alert, { status: 'active' });
-                      }}
-                    >
-                      <Icon name="bell" className="size-4" />
-                      {t('budgets.alerts.reactivate')}
-                    </Button>
-                  )}
-                  {alert.status !== 'dismissed' ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      loading={busy}
-                      aria-label={`${t('budgets.alerts.dismiss')}: ${message}`}
-                      onClick={() => {
-                        change(alert, { status: 'dismissed' });
-                      }}
-                    >
-                      <Icon name="x" className="size-4" />
-                      {t('budgets.alerts.dismiss')}
-                    </Button>
-                  ) : null}
-                </div>
+                <BudgetAlertButtons alert={alert} message={message} actions={actions} />
               </li>
             );
           })}

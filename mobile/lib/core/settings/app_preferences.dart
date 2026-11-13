@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
+import 'package:montra_mobile/core/formatting/dates.dart';
 
 /// The signed-in user's preferences as last read (`GET /me/preferences`) or
 /// saved (`PATCH /me/preferences`), without fetching anything itself. Null
@@ -190,6 +191,21 @@ final Provider<String?> numberFormatPreferenceProvider = Provider<String?>(
   (Ref ref) => ref.watch(
     preferencesSnapshotProvider.select(
       (PreferencesDto? p) => p?.numberFormat.json,
+    ),
+  ),
+);
+
+/// The account's date format and first day of the week (the language
+/// decides both until the preferences are known).
+final Provider<DateSettings> dateSettingsProvider = Provider<DateSettings>(
+  (Ref ref) => ref.watch(
+    preferencesSnapshotProvider.select(
+      (PreferencesDto? p) => p == null
+          ? DateSettings.languageDefault
+          : DateSettings.fromWire(
+              dateFormat: p.dateFormat.json,
+              weekStart: p.weekStart,
+            ),
     ),
   ),
 );

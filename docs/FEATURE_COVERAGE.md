@@ -1,16 +1,17 @@
 # Montra — Feature Coverage
 
 Per-section summary of `docs/REQUIREMENTS_TRACEABILITY.md` after the P13
-backend verification pass, the P13 client verification pass and the
-round-6 re-check (all 2026-11-12). Row-level evidence (test names, files, limitations) lives in
+backend verification pass, the P13 client verification pass, the
+round-6 re-check (all 2026-11-12) and the round-7 re-check (2026-11-13).
+Row-level evidence (test names, files, limitations) lives in
 the matrix; this page is the roll-up.
 
 **Status: backend and clients verified row by row.** The 67 rows whose
 Location includes web, mobile or `all` were re-checked against the web and
 mobile code and their test assertions; the last column of the table counts
 them per section. No row was upgraded on the strength of an agent report.
-The round-6 re-check (below) re-read the code and tests for the rows the
-round-6 work touched.
+The round-6 and round-7 re-checks (below) re-read the code and tests for
+the rows that work touched.
 
 ## How the backend was verified
 
@@ -58,6 +59,20 @@ real provider was contacted.
 | Mobile `flutter test` | +2037, all passed (adds `a11y_guidelines_test.dart` meetsGuideline on 11 screens, `profile_preferences_test.dart`, `app/accessibility_settings_test.dart`, `group_link_test.dart`, planning-card, multi-page receipt and router `next` tests) |
 | Mobile `flutter build apk --debug` | Built. iOS still unverified (no Xcode); emulator runs manual only |
 
+## Round 7 re-check (2026-11-13)
+
+| Check (main session, after the last code change) | Result |
+|---|---|
+| Backend `go test ./...`, golangci-lint, contract and docs checks | Passed, 0 issues, ok (a re-run after a final logging change was in progress; counted as passing on the main session's word). New in `tests/api/round6_test.go`: TestDashboardAlertsRenewalsRecurringAndLayout, TestMultiPageReceiptAndSummaryTimestamp, TestWeekStartBucketsSubscriptionsAndTrialEnd, TestInsightSingleReadOwnAnyStatus, a tightened TestCommunityInvitationNoticeAndInviterName; `internal/platform/httpx/accesslog_test.go` |
+| Web `vitest run` | 134 files, 1294 tests passed |
+| Web tsc (app and node), eslint, prettier, `check:api`, `pnpm build` | All ok |
+| Web Playwright, full run (desktop, phone and tablet Chromium) | 108 passed, 1 failed, 2 skipped. The failure (desktop `auth-journey` "expired access token…") was an e2e harness fault in `web/e2e/support/test.ts` (a route still in flight at test end, C-61) and skipped the 2 serial tests after it. After the fix, `auth-journey` passed 24/24 with `--repeat-each=2` on all three projects; every other spec passed on all three projects in the full run |
+| Mobile `dart format`, gen check, `flutter analyze` | 0 changed, ok, clean |
+| Mobile `flutter test` | 2098 passed (adds `planning_alerts_renewals_recurring_test.dart`, `income_form_test.dart`, `core/formatting/date_settings_test.dart`, onboarding goals, region and email-summaries tests) |
+| Mobile `flutter build apk --debug` | Built |
+| Mobile on-device journey `integration_test/app_journeys_test.dart` (Android emulator, live local API) | 7 of 8 runs passed: sign up, sign in, skip setup, account, expense, income, group with a shared expense, sign out. The first run failed once with an unreproduced 422 on POST /transactions; error codes are now in the access log so a recurrence can be diagnosed. Automated, but run locally only. iOS unverified (no Xcode) |
+| CI | New `.github/workflows/e2e.yml` (web e2e and mobile emulator jobs), `.github/actions/e2e-backend/action.yml`, `scripts/ci/e2e-stack.sh`. Steps reproduced locally on a throwaway database; configured, not yet run on GitHub |
+
 Statuses for client rows: `VERIFIED` means the backend evidence covers the
 server side and passing client tests cover every client clause on each
 client the row names. `TESTED` rows name the clauses no client test
@@ -73,10 +88,10 @@ Counts are rows in the matrix (415 in total).
 | 0. Product-wide rules (§0, §17) | 10 | 0 | 0 | 0 | 6 | 4 | 0 | 6 |
 | 1. Architecture, repo, environment (§1) | 19 | 0 | 5 | 7 | 4 | 3 | 0 | 1 |
 | 2. Roles, authorization, privacy (§3) | 14 | 0 | 0 | 1 | 7 | 6 | 0 | 1 |
-| 3. Authentication & lifecycle (§4.1, §20B.2) | 19 | 1 | 1 | 2 | 12 | 3 | 0 | 5 |
-| 4. Dashboard (§4.2, §20B.3) | 11 | 0 | 2 | 1 | 6 | 2 | 0 | 5 |
+| 3. Authentication & lifecycle (§4.1, §20B.2) | 19 | 1 | 0 | 2 | 13 | 3 | 0 | 5 |
+| 4. Dashboard (§4.2, §20B.3) | 11 | 0 | 0 | 0 | 7 | 4 | 0 | 5 |
 | 5. Accounts & payment methods (§4.3, §20B.4) | 16 | 0 | 0 | 3 | 11 | 2 | 0 | 1 |
-| 6. Transactions (§4.4, §20B.5, §18) | 24 | 0 | 0 | 3 | 12 | 9 | 0 | 1 |
+| 6. Transactions (§4.4, §20B.5, §18) | 24 | 0 | 0 | 3 | 11 | 10 | 0 | 1 |
 | 7. Categories, tags, merchants (§4.5, §20B.6) | 10 | 0 | 0 | 1 | 7 | 2 | 0 | 0 |
 | 8. Budgets (§4.6, §20B.7) | 11 | 0 | 1 | 2 | 6 | 2 | 0 | 1 |
 | 9. Recurring & bills (§4.7, §20B.8) | 11 | 0 | 0 | 0 | 5 | 6 | 0 | 1 |
@@ -100,19 +115,19 @@ Counts are rows in the matrix (415 in total).
 | 27. Security, privacy, operations (§12, §13) | 23 | 0 | 5 | 5 | 8 | 3 | 2 | 4 |
 | 28. Testing, deployment, a11y, l10n (§14–§16) | 18 | 1 | 4 | 7 | 5 | 1 | 0 | 4 |
 | 29. Critical workflows, docs, decisions (§18, §22, §23) | 12 | 0 | 1 | 2 | 6 | 3 | 0 | 0 |
-| **Total** | **415** | **2** | **36** | **50** | **221** | **100** | **6** | **67** |
+| **Total** | **415** | **2** | **33** | **49** | **222** | **103** | **6** | **67** |
 
 Status histogram for the whole matrix:
 
-| Status | After the backend pass | After the client pass | After round 6 |
-|---|---|---|---|
-| NOT_STARTED | 42 | 2 (AUTH-014 optional OAuth/passkeys; PA-001 no analytics pipeline) | 2 |
-| IN_PROGRESS | 52 | 40 | 36 |
-| IMPLEMENTED | 50 | 51 | 50 |
-| TESTED | 184 | 217 | 221 |
-| VERIFIED | 83 | 99 | 100 |
-| BLOCKED | 4 | 6 (adds MOB-005 push, PRIV-005 legal texts) | 6 |
-| Total | 415 | 415 | 415 |
+| Status | After the backend pass | After the client pass | After round 6 | After round 7 |
+|---|---|---|---|---|
+| NOT_STARTED | 42 | 2 (AUTH-014 optional OAuth/passkeys; PA-001 no analytics pipeline) | 2 | 2 |
+| IN_PROGRESS | 52 | 40 | 36 | 33 |
+| IMPLEMENTED | 50 | 51 | 50 | 49 |
+| TESTED | 184 | 217 | 221 | 222 |
+| VERIFIED | 83 | 99 | 100 | 103 |
+| BLOCKED | 4 | 6 (adds MOB-005 push, PRIV-005 legal texts) | 6 | 6 |
+| Total | 415 | 415 | 415 | 415 |
 
 Client rows changed in this pass (old → new): 15 to VERIFIED (GEN-001,
 GEN-004, GEN-005, DASH-008, BILL-003, SUB-004, SUB-007, IMP-002, ANL-008,
@@ -133,20 +148,40 @@ AUTH-010, TXN-006, MOB-001, MOB-004, WEB-010, A11Y-001 (TESTED) and
 BUD-008 (VERIFIED, new evidence). ARCH-015, WEB-009 and AUTHZ-011 are
 unchanged: the bundle check is still a manual grep.
 
+Rows changed in the round-7 re-check (old → new): DASH-001 IN_PROGRESS →
+VERIFIED (alerts card on both clients; alerts, renewals and recurring
+asserted at the API); DASH-002 IN_PROGRESS → TESTED (renewals and recurring
+widgets on both clients; the renewals widget is a 30-day list, not a
+calendar grid; AI summary deferred by owner decision); DASH-004
+IMPLEMENTED → VERIFIED (PATCH hide, reorder, reset and per-user
+persistence asserted); AUTH-011 IN_PROGRESS → TESTED (goals step on both
+clients; mobile week/month start and email summaries); TXN-006 TESTED →
+VERIFIED (mobile income form tests). Re-checked with new evidence but the
+same status: DASH-005 and DASH-009 (TESTED: planning-card freshness and
+month start still unasserted), SET-001 (TESTED: saving date format and
+week/month start from the mobile Preferences screen), RCPT-001 (TESTED:
+camera capture), TEST-003 (TESTED: CI configured, not yet run on GitHub;
+one mobile on-device journey), AUTH-001, AUTH-003 and AUTH-006 (TESTED:
+the emulator journey covers mobile sign-up and sign-out happy paths only),
+MOB-001, A11Y-001, BE-004, ANL-001, ANL-003 (TESTED), BUD-007
+(IMPLEMENTED: snooze and quiet hours still untested at the API), OPS-004
+(IN_PROGRESS: tracing), ARCH-005 and DEP-007 (IMPLEMENTED: CI not yet run),
+GEN-004, BILL-003, SUB-004 and WEB-011 (VERIFIED, new evidence).
+
 ## Notable gaps and limitations (clients)
 
-| Area | Gaps after the P13 client pass and the round-6 re-check |
+| Area | Gaps after the P13 client pass and the round-6 and round-7 re-checks |
 |---|---|
-| Mobile, all areas | No on-device integration tests; emulator runs were manual. iOS never built or run (no Xcode). `meetsGuideline` checks cover 11 screens in the light theme only; no TalkBack/VoiceOver review. |
-| Web, all areas | Axe runs in the browser and in jsdom, and Playwright covers phone, tablet and desktop widths, but Chromium only; no screen-reader review. E2E covers journeys 1–21 and 23–26 (22 is AI, deferred; journey 10's reminder delivery is not observable) and is not in CI (TEST-003). No automated bundle scan. 183 of 7,725 strings lack Hindi (count from the P13 pass). About ten small forms validate without a schema. |
-| Auth & onboarding | Mobile sign-up form and mobile sign-out are untested. Neither client has the optional goals onboarding step; mobile onboarding has no week/month start or notification step. Cookie Secure/SameSite never asserted. |
-| Dashboard | Budgets, coming-up, goals and group-balance cards are built and tested on both clients (round 6). Still missing: a web Home alerts card, and recurring and renewal-calendar widgets on both. The web layout-load alert is untested; the API's `generated_at` is never asserted. |
-| Accounts & transactions | Account restore is untested on both clients and close on mobile; adding income is untested on mobile (web covers it in a page test and e2e). |
+| Mobile, all areas | One on-device journey (sign up, sign in, skip setup, account, expense, income, shared group expense, sign out) on the Android emulator, 7 of 8 runs passed (one unreproduced 422 on POST /transactions); everything else is widget tests against mocks or manual emulator use. iOS never built or run (no Xcode). `meetsGuideline` checks cover 11 screens and 3 card/step states in the light theme only; no TalkBack/VoiceOver review. |
+| Web, all areas | Axe runs in the browser and in jsdom, and Playwright covers phone, tablet and desktop widths, but Chromium only; no screen-reader review. E2E covers journeys 1–21 and 23–26 (22 is AI, deferred; journey 10's reminder delivery is not observable); the e2e CI workflow is configured, not yet run on GitHub (TEST-003). No automated bundle scan. 183 of 7,725 strings lack Hindi (count from the P13 pass). About ten small forms validate without a schema. |
+| Auth & onboarding | Mobile sign-up and sign-out are covered only by the emulator journey's happy path (no validation, field-error, session-revocation or token-clearing assertions). Onboarding (round 7): goals step on both clients; mobile week/month start and email summaries. Untested: a changed currency or time zone saved from mobile onboarding, a successful time-zone change in web onboarding. Cookie Secure/SameSite never asserted. |
+| Dashboard | Every listed card is built and tested on both clients (alerts, renewals and recurring added in round 7). The renewals widget is a 30-day list, not a calendar grid; AI summary deferred. Untested: the subscription row's label on the recurring card, the planning cards' freshness (envelope timestamp on web, none on mobile), the web layout-load alert, a mobile no-activity state. |
+| Accounts & transactions | Account restore is untested on both clients and close on mobile. Mobile income tested since round 7. |
 | Budgets | Creation is one guided form, not a step-by-step wizard (BUD-010). |
-| Receipts | Mobile multi-page receipts built and tested (round 6). Camera capture itself is untested on mobile; web has no in-page camera; no API test creates a multi-page or PDF receipt. |
+| Receipts | Mobile multi-page receipts built and tested (round 6); the API test for a multi-page receipt with a PDF page added in round 7. Camera capture itself is untested on mobile; web has no in-page camera. |
 | Communities | Fixed 2026-11-12: mobile `safeLink` now refuses `user:password@` links like web (COMM-005 now VERIFIED). |
 | Integrations | Syncing, partial and failed labels are not asserted on either client. |
-| Settings & help | Profile and preferences screens built and tested on both clients (round 6). Untested: a web locale change, mobile date format and week/month start, a successful time-zone change. Help is five short topics; no guides, troubleshooting or status link. |
+| Settings & help | Profile and preferences screens built and tested on both clients (round 6); web locale and time-zone changes, mobile time-zone change and app-wide date format and week start tested in round 7. Untested: saving the date format, week start or month start from the mobile Preferences screen. Help is five short topics; no guides, troubleshooting or status link. |
 | Notifications | Mobile push is not built (needs owner Firebase/APNs credentials). Web push depends on the owner's VAPID keys. |
 | Product analytics | No analytics is collected (PA-001). Web onboarding copy corrected 2026-11-12 to say so, matching mobile. |
 | By owner decision | AI client screens deferred (AI backend off by default). Staff screens (support queue, platform moderation, admin usage) are web-only. |
@@ -158,10 +193,10 @@ unchanged: the bundle check is still a manual grep.
 | 1. Architecture | No seed data: `make seed` runs, but `supabase/seeds/` does not exist (ARCH-010). No `backend/`, `supabase/` or `contracts/` README. No web import-boundary lint rule found (ARCH-004). No documented hosted RLS verification step (ARCH-013). |
 | 2. Authorization | The RLS inventory test checks that RLS is enabled on every table and that there are no PUBLIC grants. It does not check FORCE RLS, that each table has a policy, or function grants (AUTHZ-010, downgraded). Attaching another user's file to a transaction is not tested (AUTHZ-014). |
 | 3. Auth & lifecycle | Deactivate/reactivate has no tests (AUTH-018). Security events are asserted only for email verification and the MFA alert (AUTH-017). Token expiry (verification, reset, access TTL) is not asserted. The storage purge on account deletion is not asserted, and the due job is enqueued by hand in the test. OAuth/passkeys are not built (optional). |
-| 4–6. Dashboard, accounts, transactions | No test for `PATCH /dashboard/widgets` (GET and `/dashboard/planning` are tested since round 6), account balance history, include-in-overview, `POST /transactions/{id}/duplicate`, bulk delete, saved filters, location text or attachment endpoints. Replay of `POST /transactions` itself is not asserted. |
+| 4–6. Dashboard, accounts, transactions | `PATCH /dashboard/widgets` tested since round 7. No test for account balance history, include-in-overview, `POST /transactions/{id}/duplicate`, bulk delete, saved filters, location text or attachment endpoints. Replay of `POST /transactions` itself is not asserted. |
 | 8. Budgets | Snooze and quiet hours are untested (BUD-007, downgraded). Current-period vs future-only edit semantics are untested (BUD-009, downgraded). No time-zone-change boundary test. Group/trip budget progress is not asserted. |
 | 9–10. Recurring, subscriptions | The 7-day retry window for failed auto-posts is not asserted. DST is covered by unit tests only. Group-shared subscriptions are untested. Unused-subscription hints need a usage source (blocked). |
-| 11. Receipts & storage | Multi-page and PDF receipts, date/total/merchant duplicate detection, extraction timeout and EXIF stripping are untested. There is no file scanner (`scan_status = skipped`) and no community-media file purpose. The Appwrite adapter is tested only against a double. |
+| 11. Receipts & storage | Date/total/merchant duplicate detection, extraction timeout and EXIF stripping are untested. There is no file scanner (`scan_status = skipped`) and no community-media file purpose. The Appwrite adapter is tested only against a double. |
 | 12. Imports | XLSX is unit-tested only. Category assignment on import rows and a successful one-to-many reconciliation via the API are untested. No provider adapters exist. |
 | 13. Analytics & reports | No payment-method distribution (ANL-002). The report generation timestamp and the timestamps of disclosed conversion rates are not asserted. |
 | 14–15. AI & insights | Everything runs against a scripted fake model; live-model quality, injection resistance and latency are unverified. Not tested: forecast ranges, estimates, the disclosure text, deleting one conversation, two insight rules (subscription price increase, missing recurring payment) and the "resolved" action. Seasonal patterns are not modelled. |
@@ -170,7 +205,7 @@ unchanged: the bundle check is still a manual grep.
 | 20. Integrations | Token refresh and the 20-page sync cap are untested. Only a sandbox adapter exists; no real provider. |
 | 26. Backend & jobs | No circuit breakers, tracing, admin job list, manual-retry endpoint, preview-generation or scanning jobs. Scheduler leader election and backoff timing are not exercised by tests. `domain/currency` has no unit tests, and there is no forecast domain package. |
 | 27. Security & ops | DAST/pentest, staging load test and restore drill are not done (need a hosted environment). TLS/`sslmode` for the hosted database is not documented. |
-| 28. Deployment | No mobile store-submission checklist (DEP-003). No per-feature release-gate checklist (TEST-005). CI has not been observed running. |
+| 28. Deployment | No mobile store-submission checklist (DEP-003). No per-feature release-gate checklist (TEST-005). CI has not been observed running; the e2e workflow added in round 7 is configured, not yet run on GitHub. |
 | Docs | Fixed 2026-11-12: ARCHITECTURE.md and ADR-009 now point to `backend/Dockerfile` and DEPLOYMENT.md §2 (bucket names in `config.go`). |
 
 Rows downgraded in the backend pass: AUTHZ-010 (VERIFIED → TESTED), BUD-007,
@@ -211,8 +246,12 @@ moved from NOT_STARTED to BLOCKED because they wait on owner decisions.
 
 ## Pending
 
-- Client gaps listed above (web Home alerts card, recurring and
-  renewal-calendar widgets, onboarding goals step and mobile onboarding
-  week/month start and notifications, E2E in CI, mobile on-device tests,
+- Run `.github/workflows/e2e.yml` on GitHub and record the result (TEST-003,
+  ARCH-005, DEP-007).
+- Watch the mobile journey for a repeat of the POST /transactions 422 and
+  read its logged error code (C-61).
+- Client gaps listed above (mobile sign-up validation and sign-out
+  revocation tests, mobile Preferences date format and week/month start,
+  more mobile on-device journeys, dark-theme guideline checks,
   screen-reader review, iOS).
 - Refresh the readiness report (DOC-002).

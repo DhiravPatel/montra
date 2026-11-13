@@ -503,6 +503,11 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
             errorText: _errors['visibility'],
             onTap: _pickVisibility,
           ),
+          const SizedBox(height: Insets.sm),
+          Text(
+            l10n.profileEditVisibilityBlocked,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: Insets.md),
           NoticeBanner(message: l10n.profileEditFinanceNote),
           const SizedBox(height: Insets.lg),

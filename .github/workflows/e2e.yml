@@ -1,0 +1,153 @@
+# Montra end-to-end tests against a throwaway local stack (PostgreSQL service
+# container + Go API + worker built from this commit). Validation only: this
+# workflow NEVER deploys, uses no repository secrets, and every key and role
+# password is generated inside the job (spec §15).
+name: e2e
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.f.outputs.web }}
+      mobile: ${{ steps.f.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: f
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            web: ['web/**', 'backend/**', 'supabase/**', 'contracts/**', 'scripts/ci/**', '.github/actions/e2e-backend/**', '.github/workflows/e2e.yml']
+            mobile: ['mobile/**', 'backend/**', 'supabase/**', 'contracts/**', 'scripts/ci/**', '.github/actions/e2e-backend/**', '.github/workflows/e2e.yml']
+
+  # Playwright journeys (web/e2e) on all three projects: desktop, phone and
+  # tablet Chromium, using Playwright's bundled Chromium.
+  web-e2e:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start throwaway API + worker
+        uses: ./.github/actions/e2e-backend
+        with:
+          api-port: '8080'
+          web-origin: http://localhost:5199
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - name: Install web dependencies
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        working-directory: web
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Playwright journeys (desktop, phone, tablet)
+        working-directory: web
+        env:
+          CI: 'true'
+          E2E_PORT: '5199'
+          # Vite (started by playwright.config.ts) proxies /api to this API.
+          MONTRA_API_PROXY_TARGET: http://127.0.0.1:8080
+          # Journeys that read verification links use the API's dev mailbox.
+          MONTRA_DEV_MAILBOX: ${{ github.workspace }}/.data/e2e-stack/mail
+        run: pnpm e2e
+      - name: Upload Playwright report and traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            web/playwright-report/
+            web/test-results/
+          retention-days: 14
+      - name: Upload API and worker logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-backend-logs
+          path: .data/e2e-stack/*.log
+          retention-days: 14
+      - name: Stop API + worker
+        if: always()
+        run: scripts/ci/e2e-stack.sh stop
+
+  # Flutter integration_test journeys on an Android emulator. The emulator
+  # reaches the runner's loopback (where the API listens) at 10.0.2.2.
+  mobile-e2e:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start throwaway API + worker
+        uses: ./.github/actions/e2e-backend
+        with:
+          api-port: '8080'
+      - name: Enable KVM for the Android emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - name: Flutter dependencies
+        working-directory: mobile
+        run: flutter pub get
+      - name: Integration tests on the emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          working-directory: mobile
+          script: flutter test integration_test -d emulator-5554 --dart-define=API_BASE_URL=http://10.0.2.2:8080 --reporter expanded
+      - name: Upload API and worker logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-e2e-backend-logs
+          path: .data/e2e-stack/*.log
+          retention-days: 14
+      - name: Stop API + worker
+        if: always()
+        run: scripts/ci/e2e-stack.sh stop
