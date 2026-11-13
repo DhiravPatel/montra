@@ -1,0 +1,1989 @@
+{
+ "_comment": "Curated knowledge-graph data for scripts/docs/gen_knowledge_graph.py. Every id must resolve to a node or the generator fails. Journeys follow spec §14; feature_area_domains maps docs/FEATURES.md §3 sections to DOMAINS keys.",
+ "feature_area_domains": {
+  "3.1": "identity",
+  "3.2": "identity",
+  "3.3": "analytics",
+  "3.4": "ledger",
+  "3.5": "ledger",
+  "3.6": "ledger",
+  "3.7": "budgets",
+  "3.8": "planning",
+  "3.9": "subscriptions",
+  "3.10": "receipts",
+  "3.11": "imports",
+  "3.12": "analytics",
+  "3.13": "insights",
+  "3.14": "insights",
+  "3.15": "goals",
+  "3.16": "social",
+  "3.17": "groups",
+  "3.18": "groups",
+  "3.19": "communities",
+  "3.20": "challenges",
+  "3.21": "moderation",
+  "3.22": "notifications",
+  "3.23": "integrations",
+  "3.24": "fx",
+  "3.25": "search",
+  "3.26": "identity",
+  "3.27": "support",
+  "3.28": "privacy",
+  "3.29": "privacy",
+  "3.30": "admin"
+ },
+ "providers": [
+  {
+   "id": "appwrite",
+   "label": "Appwrite storage",
+   "kind": "storage",
+   "status": "needs_owner_credentials",
+   "dev": "not used in development (local disk instead)",
+   "packages": [
+    "platform/storage"
+   ],
+   "configs": [
+    "STORAGE_PROVIDER",
+    "APPWRITE_ENDPOINT",
+    "APPWRITE_PROJECT_ID",
+    "APPWRITE_API_KEY",
+    "APPWRITE_TIMEOUT",
+    "APPWRITE_BUCKET_PRIVATE",
+    "APPWRITE_BUCKET_GROUP",
+    "APPWRITE_BUCKET_PUBLIC_MEDIA",
+    "APPWRITE_BUCKET_TEMP",
+    "APPWRITE_BUCKET_EXPORTS"
+   ]
+  },
+  {
+   "id": "local-disk",
+   "label": "Local disk storage",
+   "kind": "storage",
+   "status": "enabled_in_dev",
+   "dev": "default in development and test; refused elsewhere",
+   "packages": [
+    "platform/storage"
+   ],
+   "configs": [
+    "STORAGE_PROVIDER",
+    "STORAGE_LOCAL_DIR"
+   ]
+  },
+  {
+   "id": "smtp",
+   "label": "SMTP email",
+   "kind": "email",
+   "status": "needs_owner_credentials",
+   "dev": "dev mailbox instead",
+   "packages": [
+    "platform/email"
+   ],
+   "configs": [
+    "EMAIL_PROVIDER",
+    "EMAIL_FROM",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USERNAME",
+    "SMTP_PASSWORD"
+   ]
+  },
+  {
+   "id": "dev-mailbox",
+   "label": "Dev mailbox (files)",
+   "kind": "email",
+   "status": "enabled_in_dev",
+   "dev": "default in development and test; refused elsewhere",
+   "packages": [
+    "platform/email"
+   ],
+   "configs": [
+    "EMAIL_PROVIDER",
+    "DEV_MAIL_DIR"
+   ]
+  },
+  {
+   "id": "web-push",
+   "label": "Web push (VAPID)",
+   "kind": "push",
+   "status": "needs_owner_credentials",
+   "dev": "off without VAPID keys",
+   "packages": [
+    "notifications"
+   ],
+   "configs": [
+    "VAPID_PUBLIC_KEY",
+    "VAPID_PRIVATE_KEY",
+    "VAPID_SUBJECT"
+   ]
+  },
+  {
+   "id": "fcm",
+   "label": "Firebase Cloud Messaging",
+   "kind": "push",
+   "status": "needs_owner_credentials",
+   "dev": "off; mobile push is not built",
+   "packages": [
+    "notifications"
+   ],
+   "configs": [
+    "FCM_PROJECT_ID",
+    "FCM_CREDENTIALS_FILE"
+   ]
+  },
+  {
+   "id": "ecb",
+   "label": "ECB reference rates",
+   "kind": "fx",
+   "status": "optional_public",
+   "dev": "off by default (FX_PROVIDER=manual); public feed, no credentials",
+   "packages": [
+    "fx"
+   ],
+   "configs": [
+    "FX_PROVIDER",
+    "FX_ECB_URL"
+   ]
+  },
+  {
+   "id": "anthropic",
+   "label": "Anthropic API (AI)",
+   "kind": "ai",
+   "status": "needs_owner_credentials",
+   "dev": "off by default (AI_PROVIDER=disabled); AI clients deferred",
+   "packages": [
+    "ai",
+    "ai/llm"
+   ],
+   "configs": [
+    "AI_PROVIDER",
+    "ANTHROPIC_API_KEY",
+    "AI_MODEL",
+    "AI_VISION_MODEL",
+    "AI_TIMEOUT",
+    "AI_MAX_OUTPUT_TOKENS",
+    "AI_DAILY_REQUEST_CAP_PER_USER"
+   ]
+  },
+  {
+   "id": "turnstile",
+   "label": "Cloudflare Turnstile",
+   "kind": "captcha",
+   "status": "needs_owner_credentials",
+   "dev": "off without a secret key",
+   "packages": [
+    "auth",
+    "support"
+   ],
+   "configs": [
+    "TURNSTILE_SECRET_KEY"
+   ]
+  },
+  {
+   "id": "integrations-registry",
+   "label": "Integration adapters registry",
+   "kind": "integrations",
+   "status": "no_adapters_registered",
+   "dev": "no provider adapter is built; the registry is empty",
+   "packages": [
+    "integrations"
+   ],
+   "configs": [
+    "WEBHOOK_SECRETS"
+   ]
+  }
+ ],
+ "journeys": [
+  {
+   "id": "journey-01",
+   "number": 1,
+   "title": "Register and verify",
+   "domain": "identity",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Sign up with email, password and consents",
+     "web": [
+      "/sign-up"
+     ],
+     "mobile": [
+      "/sign-up"
+     ],
+     "ops": [
+      "auth-register"
+     ],
+     "writes": [
+      "users",
+      "user_credentials",
+      "profiles",
+      "user_consents",
+      "auth_tokens"
+     ],
+     "jobs": [
+      "auth.send_verification"
+     ]
+    },
+    {
+     "title": "Open the emailed verification link",
+     "web": [
+      "/verify-email"
+     ],
+     "mobile": [
+      "/verify-email"
+     ],
+     "ops": [
+      "auth-email-verify"
+     ],
+     "reads": [
+      "auth_tokens"
+     ],
+     "writes": [
+      "users",
+      "auth_tokens"
+     ]
+    },
+    {
+     "title": "Sign in and load the session",
+     "web": [
+      "/sign-in"
+     ],
+     "mobile": [
+      "/sign-in"
+     ],
+     "ops": [
+      "auth-login",
+      "auth-session"
+     ],
+     "reads": [
+      "user_credentials"
+     ],
+     "writes": [
+      "user_sessions",
+      "login_attempts"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/auth-journey.spec.ts::sign up, verify the email link and sign in",
+    "mobile/integration_test/app_journeys_test.dart::a new user signs up, skips setup, records money, shares a group expense and signs out",
+    "backend/tests/api/auth_test.go::TestRegistrationIsEnumerationSafe",
+    "backend/tests/api/auth_test.go::TestLoginRequiresVerifiedEmail"
+   ]
+  },
+  {
+   "id": "journey-02",
+   "number": 2,
+   "title": "Onboard without a bank connection",
+   "domain": "identity",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Walk through (or skip) the setup steps",
+     "web": [
+      "/onboarding"
+     ],
+     "mobile": [
+      "/onboarding"
+     ],
+     "ops": [
+      "me-onboarding-get",
+      "me-onboarding",
+      "me-preferences-update"
+     ],
+     "writes": [
+      "user_preferences",
+      "profiles"
+     ]
+    },
+    {
+     "title": "Create a first account and goal by hand",
+     "web": [
+      "/onboarding"
+     ],
+     "mobile": [
+      "/accounts/new"
+     ],
+     "ops": [
+      "accounts-create",
+      "goals-create"
+     ],
+     "writes": [
+      "financial_accounts",
+      "account_ledger_entries",
+      "transactions",
+      "goals"
+     ],
+     "events": [
+      "transaction.created",
+      "goal.changed"
+     ]
+    },
+    {
+     "title": "Land on the dashboard",
+     "web": [
+      "/dashboard"
+     ],
+     "mobile": [
+      "/home"
+     ],
+     "ops": [
+      "dashboard-summary",
+      "dashboard-widgets-get"
+     ],
+     "reads": [
+      "transactions",
+      "financial_accounts",
+      "dashboard_widgets"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/finance-journey.spec.ts::set up, record money and see it everywhere",
+    "mobile/integration_test/app_journeys_test.dart::a new user signs up, skips setup, records money, shares a group expense and signs out"
+   ]
+  },
+  {
+   "id": "journey-03",
+   "number": 3,
+   "title": "Create an account",
+   "domain": "ledger",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create an account with an opening balance",
+     "web": [
+      "/accounts/new"
+     ],
+     "mobile": [
+      "/accounts/new"
+     ],
+     "ops": [
+      "accounts-create"
+     ],
+     "writes": [
+      "financial_accounts",
+      "account_ledger_entries",
+      "transactions"
+     ],
+     "events": [
+      "transaction.created"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    },
+    {
+     "title": "Open the account and its balance",
+     "web": [
+      "/accounts/:accountId"
+     ],
+     "mobile": [
+      "/accounts/:accountId"
+     ],
+     "ops": [
+      "accounts-get",
+      "accounts-balance",
+      "accounts-transactions"
+     ],
+     "reads": [
+      "financial_accounts",
+      "account_ledger_entries",
+      "transactions"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/finance-journey.spec.ts::set up, record money and see it everywhere",
+    "mobile/integration_test/app_journeys_test.dart::a new user signs up, skips setup, records money, shares a group expense and signs out",
+    "backend/tests/api/finance_test.go::TestAccountLifecycleAndIdempotency"
+   ]
+  },
+  {
+   "id": "journey-04",
+   "number": 4,
+   "title": "Add income and expense",
+   "domain": "ledger",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Record an expense or income (Idempotency-Key)",
+     "web": [
+      "/transactions/new"
+     ],
+     "mobile": [
+      "/transactions/new"
+     ],
+     "ops": [
+      "transactions-create"
+     ],
+     "writes": [
+      "transactions",
+      "account_ledger_entries",
+      "transaction_tags",
+      "idempotency_keys"
+     ],
+     "events": [
+      "transaction.created"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    },
+    {
+     "title": "See it in the list and on the dashboard",
+     "web": [
+      "/transactions",
+      "/dashboard"
+     ],
+     "mobile": [
+      "/transactions",
+      "/home"
+     ],
+     "ops": [
+      "transactions-list",
+      "dashboard-summary"
+     ],
+     "reads": [
+      "transactions",
+      "account_ledger_entries"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/money-journeys.spec.ts::income is recorded and an edit is saved with its history (journeys 4 and 5)",
+    "web/e2e/finance-journey.spec.ts::set up, record money and see it everywhere",
+    "mobile/integration_test/app_journeys_test.dart::a new user signs up, skips setup, records money, shares a group expense and signs out"
+   ]
+  },
+  {
+   "id": "journey-05",
+   "number": 5,
+   "title": "Edit and delete a transaction",
+   "domain": "ledger",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Edit with the record version",
+     "web": [
+      "/transactions/:transactionId/edit"
+     ],
+     "mobile": [
+      "/transactions/:id/edit"
+     ],
+     "ops": [
+      "transactions-update"
+     ],
+     "writes": [
+      "transactions",
+      "transaction_audit_events",
+      "account_ledger_entries"
+     ],
+     "events": [
+      "transaction.updated"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    },
+    {
+     "title": "Read the change history",
+     "web": [
+      "/transactions/:transactionId"
+     ],
+     "mobile": [
+      "/transactions/:id"
+     ],
+     "ops": [
+      "transactions-get",
+      "transactions-audit"
+     ],
+     "reads": [
+      "transaction_audit_events"
+     ]
+    },
+    {
+     "title": "Delete (void) and restore",
+     "web": [
+      "/transactions/:transactionId"
+     ],
+     "mobile": [
+      "/transactions/:id"
+     ],
+     "ops": [
+      "transactions-delete",
+      "transactions-restore"
+     ],
+     "writes": [
+      "transactions",
+      "account_ledger_entries"
+     ],
+     "events": [
+      "transaction.voided",
+      "transaction.restored"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/money-journeys.spec.ts::income is recorded and an edit is saved with its history (journeys 4 and 5)",
+    "backend/tests/api/finance_test.go::TestTransactionEditVoidRestoreAndAudit"
+   ]
+  },
+  {
+   "id": "journey-06",
+   "number": 6,
+   "title": "Transfer between accounts",
+   "domain": "ledger",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create a transfer (optionally with a fee or FX)",
+     "web": [
+      "/transfers/new"
+     ],
+     "mobile": [
+      "/transactions/transfer"
+     ],
+     "ops": [
+      "transactions-transfer"
+     ],
+     "writes": [
+      "transfers",
+      "transactions",
+      "account_ledger_entries"
+     ],
+     "events": [
+      "transfer.created"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    },
+    {
+     "title": "Delete and restore it as one unit",
+     "mobile": [
+      "/transactions/transfers/:transferId"
+     ],
+     "ops": [
+      "transfers-get",
+      "transfers-delete",
+      "transfers-restore"
+     ],
+     "writes": [
+      "transfers",
+      "transactions",
+      "account_ledger_entries"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/finance-journey.spec.ts::set up, record money and see it everywhere",
+    "backend/tests/api/finance_test.go::TestTransfersFXVoidAsUnit"
+   ]
+  },
+  {
+   "id": "journey-07",
+   "number": 7,
+   "title": "Refund an expense",
+   "domain": "ledger",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Record a refund against the original expense",
+     "web": [
+      "/transactions/:transactionId"
+     ],
+     "mobile": [
+      "/transactions/:id/refund"
+     ],
+     "ops": [
+      "transactions-refund"
+     ],
+     "reads": [
+      "transactions"
+     ],
+     "writes": [
+      "transactions",
+      "account_ledger_entries"
+     ],
+     "events": [
+      "transaction.created"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/finance-journey.spec.ts::set up, record money and see it everywhere",
+    "backend/tests/api/finance_test.go::TestRefundCapsAndAnalyticsReconcile"
+   ]
+  },
+  {
+   "id": "journey-08",
+   "number": 8,
+   "title": "Budget and threshold alert",
+   "domain": "budgets",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create a budget with alert thresholds",
+     "web": [
+      "/budgets/new"
+     ],
+     "mobile": [
+      "/budgets/new"
+     ],
+     "ops": [
+      "budgets-create"
+     ],
+     "writes": [
+      "budgets",
+      "budget_allocations"
+     ]
+    },
+    {
+     "title": "Spend against it",
+     "web": [
+      "/transactions/new"
+     ],
+     "mobile": [
+      "/transactions/new"
+     ],
+     "ops": [
+      "transactions-create"
+     ],
+     "writes": [
+      "transactions"
+     ],
+     "events": [
+      "transaction.created"
+     ]
+    },
+    {
+     "title": "Worker evaluates progress and raises one alert per threshold",
+     "jobs": [
+      "budgets.evaluate",
+      "notifications.deliver"
+     ],
+     "reads": [
+      "budgets",
+      "transactions"
+     ],
+     "writes": [
+      "budget_alerts",
+      "budget_period_snapshots",
+      "notifications"
+     ],
+     "notifications": [
+      "budget/budget_*"
+     ]
+    },
+    {
+     "title": "See and dismiss or snooze the alert",
+     "web": [
+      "/budgets/:budgetId",
+      "/dashboard",
+      "/notifications"
+     ],
+     "mobile": [
+      "/budget-alerts",
+      "/notifications"
+     ],
+     "ops": [
+      "budgets-get",
+      "budget-alerts-list",
+      "budget-alerts-update",
+      "notifications-list"
+     ],
+     "reads": [
+      "budget_alerts",
+      "notifications"
+     ],
+     "writes": [
+      "budget_alerts"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/money-journeys.spec.ts::spending past a budget threshold raises an alert (journey 8)",
+    "web/e2e/planning-journey.spec.ts::plan ahead: budget, bill, calendar, goal, subscription and categories",
+    "backend/tests/api/budgets_test.go::TestBudgetProgressAlertsDedupeAndRefunds"
+   ]
+  },
+  {
+   "id": "journey-09",
+   "number": 9,
+   "title": "Recurring bill",
+   "domain": "planning",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create a bill with its schedule",
+     "web": [
+      "/planning/bills/new"
+     ],
+     "mobile": [
+      "/bills/new"
+     ],
+     "ops": [
+      "bills-create"
+     ],
+     "writes": [
+      "bills",
+      "recurring_rules"
+     ]
+    },
+    {
+     "title": "Worker generates occurrences and due reminders",
+     "jobs": [
+      "recurring.generate",
+      "notifications.deliver"
+     ],
+     "reads": [
+      "bills",
+      "recurring_rules"
+     ],
+     "writes": [
+      "recurring_occurrences",
+      "notifications"
+     ],
+     "notifications": [
+      "recurring/recurring_due_soon",
+      "recurring/recurring_overdue"
+     ]
+    },
+    {
+     "title": "Mark it paid from an account",
+     "web": [
+      "/planning/bills/:billId"
+     ],
+     "mobile": [
+      "/bills/:id/pay"
+     ],
+     "ops": [
+      "bills-mark-paid",
+      "bills-payment-candidates"
+     ],
+     "writes": [
+      "transactions",
+      "recurring_occurrences",
+      "account_ledger_entries"
+     ],
+     "events": [
+      "transaction.created"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    },
+    {
+     "title": "See it on the planning calendar",
+     "web": [
+      "/planning"
+     ],
+     "mobile": [
+      "/calendar"
+     ],
+     "ops": [
+      "calendar"
+     ],
+     "reads": [
+      "recurring_occurrences",
+      "bills"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/planning-journey.spec.ts::plan ahead: budget, bill, calendar, goal, subscription and categories",
+    "backend/tests/api/planning_test.go::TestBillsLinkPaymentOverdueRemindersAndSkip"
+   ]
+  },
+  {
+   "id": "journey-10",
+   "number": 10,
+   "title": "Subscription reminder",
+   "domain": "subscriptions",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Add a subscription with its renewal date",
+     "web": [
+      "/subscriptions/new"
+     ],
+     "mobile": [
+      "/subscriptions/new"
+     ],
+     "ops": [
+      "subscriptions-create"
+     ],
+     "writes": [
+      "subscriptions",
+      "subscription_events"
+     ]
+    },
+    {
+     "title": "Worker sends renewal and trial-ending reminders once",
+     "jobs": [
+      "subscriptions.renewals",
+      "notifications.deliver"
+     ],
+     "reads": [
+      "subscriptions"
+     ],
+     "writes": [
+      "notifications"
+     ],
+     "notifications": [
+      "subscription/renewal_due",
+      "subscription/trial_ending"
+     ]
+    },
+    {
+     "title": "See renewals on the calendar and dashboard",
+     "web": [
+      "/planning",
+      "/dashboard"
+     ],
+     "mobile": [
+      "/calendar",
+      "/home"
+     ],
+     "ops": [
+      "calendar",
+      "dashboard-planning"
+     ],
+     "reads": [
+      "subscriptions"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/money-journeys.spec.ts::a subscription keeps its renewal reminders and shows on the calendar (journey 10)",
+    "web/e2e/planning-journey.spec.ts::plan ahead: budget, bill, calendar, goal, subscription and categories",
+    "backend/tests/api/planning_test.go::TestSubscriptionTrialAndRenewalRemindersOnce"
+   ]
+  },
+  {
+   "id": "journey-11",
+   "number": 11,
+   "title": "Upload and review a receipt",
+   "domain": "receipts",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Upload the receipt pages (intent, content, complete)",
+     "web": [
+      "/receipts"
+     ],
+     "mobile": [
+      "/receipts/new"
+     ],
+     "ops": [
+      "files-upload-intent",
+      "files-upload-content",
+      "files-complete",
+      "receipts-create"
+     ],
+     "writes": [
+      "files",
+      "receipts",
+      "receipt_files"
+     ],
+     "events": [
+      "file.ready"
+     ]
+    },
+    {
+     "title": "Optionally read it (extraction job)",
+     "web": [
+      "/receipts/:receiptId"
+     ],
+     "mobile": [
+      "/receipts/:id"
+     ],
+     "ops": [
+      "receipts-process"
+     ],
+     "jobs": [
+      "receipts.extract"
+     ],
+     "writes": [
+      "receipt_extractions",
+      "receipt_line_items"
+     ],
+     "notifications": [
+      "receipt/receipt_ready"
+     ]
+    },
+    {
+     "title": "Review the values by hand",
+     "web": [
+      "/receipts/:receiptId"
+     ],
+     "mobile": [
+      "/receipts/:id/review"
+     ],
+     "ops": [
+      "receipts-review"
+     ],
+     "writes": [
+      "receipts",
+      "receipt_line_items"
+     ]
+    },
+    {
+     "title": "Link to a transaction or create one",
+     "web": [
+      "/receipts/:receiptId"
+     ],
+     "mobile": [
+      "/receipts/:id/match",
+      "/receipts/:id/record"
+     ],
+     "ops": [
+      "receipts-match-candidates",
+      "receipts-match",
+      "receipts-create-transaction"
+     ],
+     "writes": [
+      "receipts",
+      "transactions",
+      "transaction_attachments"
+     ],
+     "events": [
+      "transaction.created"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/imports-receipts-journey.spec.ts::11. upload a receipt, enter it by hand and link it to its transaction",
+    "backend/tests/api/imports_test.go::TestReceiptsExtractionReviewMatchAndCreate"
+   ]
+  },
+  {
+   "id": "journey-12",
+   "number": 12,
+   "title": "Import and reconcile a statement",
+   "domain": "imports",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Upload a statement file and start an import",
+     "web": [
+      "/imports/new"
+     ],
+     "mobile": [
+      "/imports/new"
+     ],
+     "ops": [
+      "files-upload-intent",
+      "files-upload-content",
+      "files-complete",
+      "imports-create"
+     ],
+     "writes": [
+      "files",
+      "import_batches"
+     ],
+     "jobs": [
+      "imports.parse",
+      "imports.normalize"
+     ]
+    },
+    {
+     "title": "Review rows, mapping and duplicates",
+     "web": [
+      "/imports/:importId"
+     ],
+     "mobile": [
+      "/imports/:id/rows",
+      "/imports/:id/mapping"
+     ],
+     "ops": [
+      "imports-get",
+      "imports-rows",
+      "imports-mapping",
+      "imports-row-update"
+     ],
+     "reads": [
+      "import_rows"
+     ],
+     "writes": [
+      "import_rows",
+      "import_batches"
+     ]
+    },
+    {
+     "title": "Confirm: rows become transactions",
+     "web": [
+      "/imports/:importId"
+     ],
+     "mobile": [
+      "/imports/:id"
+     ],
+     "ops": [
+      "imports-confirm"
+     ],
+     "jobs": [
+      "imports.process"
+     ],
+     "writes": [
+      "transactions",
+      "import_rows",
+      "account_ledger_entries"
+     ],
+     "notifications": [
+      "import/import_*"
+     ]
+    },
+    {
+     "title": "Reconcile the account against statement lines",
+     "web": [
+      "/accounts/:accountId/reconcile"
+     ],
+     "mobile": [
+      "/accounts/:accountId/reconcile"
+     ],
+     "ops": [
+      "accounts-statement-lines",
+      "reconciliation-candidates",
+      "reconciliation-match-create",
+      "accounts-reconcile"
+     ],
+     "writes": [
+      "reconciliation_matches",
+      "reconciliation_match_items",
+      "account_reconciliations"
+     ]
+    },
+    {
+     "title": "Undo an import if needed",
+     "web": [
+      "/imports/:importId"
+     ],
+     "mobile": [
+      "/imports/:id"
+     ],
+     "ops": [
+      "imports-rollback"
+     ],
+     "jobs": [
+      "imports.rollback"
+     ],
+     "writes": [
+      "transactions",
+      "import_batches"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/imports-receipts-journey.spec.ts::12. import a statement, catch duplicates and reconcile the account",
+    "web/e2e/imports-receipts-journey.spec.ts::12. reject malformed statements and unsafe file names, then undo an import",
+    "backend/tests/api/imports_test.go::TestStatementImportDuplicatesIdempotencyAndReimport",
+    "backend/tests/api/imports_test.go::TestReconciliationMatchesUnmatchAndBalance"
+   ]
+  },
+  {
+   "id": "journey-13",
+   "number": 13,
+   "title": "Create a goal and contribute",
+   "domain": "goals",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create a savings goal",
+     "web": [
+      "/goals/new"
+     ],
+     "mobile": [
+      "/goals/new"
+     ],
+     "ops": [
+      "goals-create"
+     ],
+     "writes": [
+      "goals"
+     ],
+     "events": [
+      "goal.changed"
+     ],
+     "jobs": [
+      "goals.evaluate"
+     ]
+    },
+    {
+     "title": "Add a contribution",
+     "web": [
+      "/goals/:goalId"
+     ],
+     "mobile": [
+      "/goals/:id/contribute"
+     ],
+     "ops": [
+      "goals-contributions-add"
+     ],
+     "writes": [
+      "goal_contributions",
+      "goal_milestones"
+     ],
+     "events": [
+      "goal.changed"
+     ],
+     "jobs": [
+      "goals.evaluate"
+     ],
+     "notifications": [
+      "goal/goal_milestone"
+     ]
+    },
+    {
+     "title": "See progress and forecast",
+     "web": [
+      "/goals/:goalId"
+     ],
+     "mobile": [
+      "/goals/:id"
+     ],
+     "ops": [
+      "goals-get",
+      "goals-forecast"
+     ],
+     "reads": [
+      "goals",
+      "goal_contributions"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/planning-journey.spec.ts::plan ahead: budget, bill, calendar, goal, subscription and categories",
+    "web/e2e/finance-journey.spec.ts::set up, record money and see it everywhere",
+    "backend/tests/api/planning_test.go::TestGoalsContributionsForecastSharingAndCalendar"
+   ]
+  },
+  {
+   "id": "journey-14",
+   "number": 14,
+   "title": "Create a group and invite",
+   "domain": "groups",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create a group",
+     "web": [
+      "/groups/new"
+     ],
+     "mobile": [
+      "/groups/new"
+     ],
+     "ops": [
+      "groups-create"
+     ],
+     "writes": [
+      "groups",
+      "group_members"
+     ],
+     "events": [
+      "group.activity"
+     ]
+    },
+    {
+     "title": "Invite by link or email",
+     "web": [
+      "/groups/:groupId/settings"
+     ],
+     "mobile": [
+      "/groups/:id/settings"
+     ],
+     "ops": [
+      "groups-invitations-create"
+     ],
+     "writes": [
+      "group_invitations"
+     ],
+     "events": [
+      "group.activity"
+     ],
+     "jobs": [
+      "groups.notify_activity"
+     ],
+     "notifications": [
+      "group/invitation_created"
+     ]
+    },
+    {
+     "title": "Invitee previews and accepts",
+     "web": [
+      "/groups/join"
+     ],
+     "mobile": [
+      "/groups/join"
+     ],
+     "ops": [
+      "group-invitations-preview",
+      "group-invitations-accept-link"
+     ],
+     "writes": [
+      "group_members",
+      "group_invitations"
+     ],
+     "events": [
+      "group.activity"
+     ],
+     "jobs": [
+      "groups.notify_activity"
+     ],
+     "notifications": [
+      "group/member_joined"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/groups-journey.spec.ts::a group from invitation to settling up, then a removed member is shut out",
+    "mobile/integration_test/app_journeys_test.dart::a new user signs up, skips setup, records money, shares a group expense and signs out",
+    "backend/tests/api/groups_test.go::TestGroupMembershipInvitationsRolesAndIsolation"
+   ]
+  },
+  {
+   "id": "journey-15",
+   "number": 15,
+   "title": "Equal, exact and itemized splits",
+   "domain": "groups",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Add a group expense with a split method",
+     "web": [
+      "/groups/:groupId/expenses/new"
+     ],
+     "mobile": [
+      "/groups/:groupId/expenses/new"
+     ],
+     "ops": [
+      "groups-expenses-create"
+     ],
+     "writes": [
+      "group_expenses",
+      "group_expense_payers",
+      "group_expense_shares",
+      "group_expense_items",
+      "group_expense_item_shares"
+     ],
+     "events": [
+      "group_expense.created",
+      "group.activity"
+     ],
+     "jobs": [
+      "budgets.evaluate",
+      "groups.notify_activity"
+     ],
+     "notifications": [
+      "group/expense_added"
+     ]
+    },
+    {
+     "title": "Open the expense and its shares",
+     "web": [
+      "/groups/:groupId/expenses/:expenseId"
+     ],
+     "mobile": [
+      "/groups/:groupId/expenses/:expenseId"
+     ],
+     "ops": [
+      "groups-expenses-get",
+      "groups-expenses-list"
+     ],
+     "reads": [
+      "group_expenses",
+      "group_expense_shares"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/groups-journey.spec.ts::a group from invitation to settling up, then a removed member is shut out",
+    "mobile/integration_test/app_journeys_test.dart::a new user signs up, skips setup, records money, shares a group expense and signs out",
+    "backend/tests/api/groups_test.go::TestGroupSplitsBalancesAndSettlementLifecycle"
+   ]
+  },
+  {
+   "id": "journey-16",
+   "number": 16,
+   "title": "Settlement suggestion and partial settlement",
+   "domain": "groups",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "See balances and suggested payments",
+     "web": [
+      "/groups/:groupId/balances"
+     ],
+     "mobile": [
+      "/groups/:groupId/balances"
+     ],
+     "ops": [
+      "groups-balances",
+      "groups-settlement-suggestions"
+     ],
+     "reads": [
+      "group_expense_shares",
+      "group_expense_payers",
+      "settlements"
+     ]
+    },
+    {
+     "title": "Record a partial payment",
+     "web": [
+      "/groups/:groupId/balances"
+     ],
+     "mobile": [
+      "/groups/:groupId/settlements/new"
+     ],
+     "ops": [
+      "groups-settlements-create"
+     ],
+     "writes": [
+      "settlements"
+     ],
+     "events": [
+      "settlement.changed",
+      "group.activity"
+     ],
+     "jobs": [
+      "groups.sync_settlement",
+      "groups.notify_activity"
+     ],
+     "notifications": [
+      "settlement/settlement_reported",
+      "settlement/settlement_proposed"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/groups-journey.spec.ts::a group from invitation to settling up, then a removed member is shut out",
+    "backend/tests/api/groups_test.go::TestGroupSplitsBalancesAndSettlementLifecycle"
+   ]
+  },
+  {
+   "id": "journey-17",
+   "number": 17,
+   "title": "Confirm a settlement",
+   "domain": "groups",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Payee confirms (or disputes) the payment",
+     "web": [
+      "/groups/:groupId/settlements/:settlementId"
+     ],
+     "mobile": [
+      "/groups/:groupId/settlements/:settlementId"
+     ],
+     "ops": [
+      "groups-settlements-get",
+      "groups-settlements-confirm",
+      "groups-settlements-dispute"
+     ],
+     "writes": [
+      "settlements"
+     ],
+     "events": [
+      "settlement.changed",
+      "group.activity"
+     ],
+     "jobs": [
+      "groups.notify_activity"
+     ],
+     "notifications": [
+      "settlement/settlement_confirmed",
+      "settlement/settlement_disputed"
+     ]
+    },
+    {
+     "title": "Balances update from confirmed settlements only",
+     "web": [
+      "/groups/:groupId/balances"
+     ],
+     "mobile": [
+      "/groups/:groupId/balances"
+     ],
+     "ops": [
+      "groups-balances"
+     ],
+     "reads": [
+      "settlements"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/groups-journey.spec.ts::a group from invitation to settling up, then a removed member is shut out",
+    "backend/tests/api/groups_test.go::TestGroupSplitsBalancesAndSettlementLifecycle"
+   ]
+  },
+  {
+   "id": "journey-18",
+   "number": 18,
+   "title": "Household budget",
+   "domain": "groups",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create a group budget for the household",
+     "web": [
+      "/budgets/new"
+     ],
+     "mobile": [
+      "/budgets/new"
+     ],
+     "ops": [
+      "budgets-create"
+     ],
+     "writes": [
+      "budgets",
+      "budget_allocations"
+     ]
+    },
+    {
+     "title": "Members' shared expenses count toward it",
+     "web": [
+      "/groups/:groupId/expenses/new"
+     ],
+     "mobile": [
+      "/groups/:groupId/expenses/new"
+     ],
+     "ops": [
+      "groups-expenses-create"
+     ],
+     "writes": [
+      "group_expenses",
+      "group_expense_shares"
+     ],
+     "events": [
+      "group_expense.created"
+     ],
+     "jobs": [
+      "budgets.evaluate"
+     ]
+    },
+    {
+     "title": "Every member sees the shared budget's progress",
+     "web": [
+      "/budgets/:budgetId"
+     ],
+     "mobile": [
+      "/budgets/:id"
+     ],
+     "ops": [
+      "budgets-get",
+      "budgets-list"
+     ],
+     "reads": [
+      "budgets",
+      "group_expenses",
+      "group_members"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/groups-journey.spec.ts::a household budget counts every member’s shared expenses",
+    "web/e2e/groups-journey.spec.ts::household members can see a budget shared with the group",
+    "backend/tests/api/budgets_test.go::TestSharedBudgetMembersSeeTotalsNotTransactions"
+   ]
+  },
+  {
+   "id": "journey-19",
+   "number": 19,
+   "title": "Public and private community",
+   "domain": "communities",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Create a community with a visibility",
+     "web": [
+      "/communities/new"
+     ],
+     "mobile": [
+      "/communities/new"
+     ],
+     "ops": [
+      "communities-create"
+     ],
+     "writes": [
+      "communities",
+      "community_members"
+     ]
+    },
+    {
+     "title": "Find and join (private: request approval)",
+     "web": [
+      "/communities",
+      "/communities/:communityRef"
+     ],
+     "mobile": [
+      "/communities",
+      "/communities/:ref"
+     ],
+     "ops": [
+      "communities-list",
+      "communities-get",
+      "communities-join"
+     ],
+     "writes": [
+      "community_members"
+     ],
+     "events": [
+      "community.member_pending"
+     ],
+     "jobs": [
+      "communities.notify_membership"
+     ],
+     "notifications": [
+      "community/community_join_request"
+     ]
+    },
+    {
+     "title": "Moderator approves the request",
+     "web": [
+      "/communities/:communityRef/settings"
+     ],
+     "mobile": [
+      "/communities/:ref/members"
+     ],
+     "ops": [
+      "communities-members",
+      "communities-members-approve"
+     ],
+     "writes": [
+      "community_members"
+     ],
+     "events": [
+      "community.member_decided"
+     ],
+     "jobs": [
+      "communities.notify_membership"
+     ],
+     "notifications": [
+      "community/community_membership"
+     ]
+    },
+    {
+     "title": "Invite someone to an invitation-only community",
+     "web": [
+      "/communities/:communityRef/settings",
+      "/communities/join"
+     ],
+     "mobile": [
+      "/communities/:ref/settings",
+      "/communities/join"
+     ],
+     "ops": [
+      "communities-invitations-create",
+      "community-invitations-preview",
+      "community-invitations-accept-link"
+     ],
+     "writes": [
+      "community_invitations",
+      "community_members"
+     ],
+     "events": [
+      "community.invitation_created"
+     ],
+     "jobs": [
+      "communities.notify_invitation"
+     ],
+     "notifications": [
+      "community/community_invitation"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/community-journey.spec.ts::public, private and invitation-only communities: find, join, approve and invite",
+    "backend/tests/api/communities_test.go::TestCommunitiesMembershipPostsPollsAndSafety"
+   ]
+  },
+  {
+   "id": "journey-20",
+   "number": 20,
+   "title": "Post and comment",
+   "domain": "communities",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Write a post",
+     "web": [
+      "/communities/:communityRef"
+     ],
+     "mobile": [
+      "/communities/:ref/posts/new"
+     ],
+     "ops": [
+      "communities-posts-create"
+     ],
+     "writes": [
+      "community_posts"
+     ],
+     "events": [
+      "community.post_created"
+     ],
+     "jobs": [
+      "communities.notify_mentions"
+     ],
+     "notifications": [
+      "community/mention"
+     ]
+    },
+    {
+     "title": "Comment and reply",
+     "web": [
+      "/posts/:postId"
+     ],
+     "mobile": [
+      "/posts/:id"
+     ],
+     "ops": [
+      "posts-get",
+      "posts-comments-create"
+     ],
+     "writes": [
+      "community_comments"
+     ],
+     "events": [
+      "community.comment_created"
+     ],
+     "jobs": [
+      "communities.notify_comment",
+      "communities.notify_mentions"
+     ],
+     "notifications": [
+      "community/*"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/community-journey.spec.ts::a post with comments and a reply, seen by both people, with notifications",
+    "backend/tests/api/communities_test.go::TestCommunitiesMembershipPostsPollsAndSafety"
+   ]
+  },
+  {
+   "id": "journey-21",
+   "number": 21,
+   "title": "Join a challenge with opt-in progress",
+   "domain": "challenges",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Join privately",
+     "web": [
+      "/challenges/:challengeId"
+     ],
+     "mobile": [
+      "/challenges/:id"
+     ],
+     "ops": [
+      "challenges-get",
+      "challenges-join"
+     ],
+     "writes": [
+      "challenge_participants"
+     ]
+    },
+    {
+     "title": "Check in progress",
+     "web": [
+      "/challenges/:challengeId"
+     ],
+     "mobile": [
+      "/challenges/:id"
+     ],
+     "ops": [
+      "challenges-progress"
+     ],
+     "writes": [
+      "challenge_progress_events",
+      "challenge_participants"
+     ],
+     "events": [
+      "challenge.milestone",
+      "challenge.completed"
+     ],
+     "jobs": [
+      "challenges.notify_milestone",
+      "challenges.notify_completed"
+     ],
+     "notifications": [
+      "challenge/challenge_milestone",
+      "challenge/challenge_completed"
+     ]
+    },
+    {
+     "title": "Opt in to the leaderboard",
+     "web": [
+      "/challenges/:challengeId"
+     ],
+     "mobile": [
+      "/challenges/:id"
+     ],
+     "ops": [
+      "challenges-participation",
+      "challenges-leaderboard"
+     ],
+     "writes": [
+      "challenge_participants"
+     ],
+     "reads": [
+      "challenge_participants"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/community-journey.spec.ts::a community challenge: join privately, check in, then opt in to the leaderboard",
+    "backend/tests/api/communities_test.go::TestChallengesOptInProgressAndLeaderboard"
+   ]
+  },
+  {
+   "id": "journey-22",
+   "number": 22,
+   "title": "Ask a grounded AI question",
+   "domain": "insights",
+   "status": "deferred",
+   "steps": [
+    {
+     "title": "Ask a question about one's own data (API only; no client screen)",
+     "ops": [
+      "ai-preferences-get",
+      "ai-ask"
+     ],
+     "reads": [
+      "transactions",
+      "user_preferences"
+     ],
+     "writes": [
+      "ai_conversations",
+      "ai_messages",
+      "ai_usage"
+     ]
+    }
+   ],
+   "tests": [
+    "backend/tests/api/ai_test.go::TestAIGroundingVerificationInjectionAndIsolation"
+   ],
+   "note": "AI client screens are deferred by owner decision; the backend endpoint is tested with a fake model."
+  },
+  {
+   "id": "journey-23",
+   "number": 23,
+   "title": "Export my data",
+   "domain": "privacy",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Request an export (recent re-authentication)",
+     "web": [
+      "/settings/privacy"
+     ],
+     "mobile": [
+      "/privacy"
+     ],
+     "ops": [
+      "auth-reauthenticate",
+      "me-export-request"
+     ],
+     "writes": [
+      "data_exports"
+     ],
+     "jobs": [
+      "privacy.export"
+     ]
+    },
+    {
+     "title": "Worker builds the ZIP and notifies",
+     "jobs": [
+      "privacy.export",
+      "notifications.deliver"
+     ],
+     "writes": [
+      "files",
+      "data_exports",
+      "notifications"
+     ],
+     "notifications": [
+      "export/data_export_ready"
+     ]
+    },
+    {
+     "title": "Download it through a signed, expiring link",
+     "web": [
+      "/settings/privacy"
+     ],
+     "mobile": [
+      "/privacy"
+     ],
+     "ops": [
+      "me-exports-list",
+      "me-export-get",
+      "files-access"
+     ],
+     "reads": [
+      "data_exports",
+      "files"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/privacy-journey.spec.ts::export my data and download the ZIP (journey 23)",
+    "backend/tests/api/privacy_test.go::TestDataExportContainsDataButNoSecrets"
+   ]
+  },
+  {
+   "id": "journey-24",
+   "number": 24,
+   "title": "Request account deletion",
+   "domain": "privacy",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Schedule deletion after re-authentication",
+     "web": [
+      "/settings/privacy"
+     ],
+     "mobile": [
+      "/privacy/delete"
+     ],
+     "ops": [
+      "auth-reauthenticate",
+      "me-deletion-request"
+     ],
+     "writes": [
+      "account_deletion_requests"
+     ],
+     "notifications": [
+      "account/deletion_scheduled"
+     ]
+    },
+    {
+     "title": "See the grace period, or cancel",
+     "web": [
+      "/settings/privacy"
+     ],
+     "mobile": [
+      "/privacy/delete"
+     ],
+     "ops": [
+      "me-deletion-status",
+      "me-deletion-cancel"
+     ],
+     "writes": [
+      "account_deletion_requests"
+     ]
+    },
+    {
+     "title": "After the grace period the worker deletes the account",
+     "jobs": [
+      "privacy.deletion_due",
+      "privacy.delete_account",
+      "files.delete"
+     ],
+     "writes": [
+      "users",
+      "account_deletion_requests"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/privacy-journey.spec.ts::schedule account deletion, see the grace period, then cancel it (journey 24)",
+    "backend/tests/api/privacy_test.go::TestAccountDeletionLifecycle"
+   ]
+  },
+  {
+   "id": "journey-25",
+   "number": 25,
+   "title": "Cross-user access is denied",
+   "domain": "platform",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "Another person requests my records by ID",
+     "web": [
+      "/transactions/:transactionId",
+      "/accounts/:accountId"
+     ],
+     "ops": [
+      "transactions-get",
+      "accounts-get",
+      "transactions-update"
+     ],
+     "reads": [
+      "transactions",
+      "financial_accounts"
+     ],
+     "policies": [
+      "transactions.app_owner_all",
+      "financial_accounts.app_owner_all"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/money-journeys.spec.ts::another person cannot see or change my records (journey 25)",
+    "backend/tests/rls/rls_test.go::TestOwnerIsolation",
+    "backend/tests/rls/rls_test.go::TestNoIdentitySeesNothing"
+   ]
+  },
+  {
+   "id": "journey-26",
+   "number": 26,
+   "title": "Removed group member is denied",
+   "domain": "groups",
+   "status": "implemented",
+   "steps": [
+    {
+     "title": "An admin removes a member",
+     "web": [
+      "/groups/:groupId/settings"
+     ],
+     "mobile": [
+      "/groups/:id/settings"
+     ],
+     "ops": [
+      "groups-members-remove"
+     ],
+     "writes": [
+      "group_members"
+     ],
+     "events": [
+      "group.activity"
+     ],
+     "jobs": [
+      "groups.notify_activity"
+     ],
+     "notifications": [
+      "group/member_removed"
+     ]
+    },
+    {
+     "title": "The removed member can no longer read the group",
+     "web": [
+      "/groups/:groupId"
+     ],
+     "ops": [
+      "groups-get",
+      "groups-expenses-list"
+     ],
+     "reads": [
+      "groups",
+      "group_members"
+     ],
+     "policies": [
+      "groups.app_groups_select",
+      "group_expenses.app_group_select",
+      "group_members.app_members_select"
+     ]
+    }
+   ],
+   "tests": [
+    "web/e2e/groups-journey.spec.ts::a group from invitation to settling up, then a removed member is shut out",
+    "backend/tests/rls/rls_test.go::TestGroupMembershipBoundaries",
+    "backend/tests/api/groups_test.go::TestGroupMembershipInvitationsRolesAndIsolation"
+   ]
+  }
+ ]
+}
