@@ -8,6 +8,8 @@ import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
 import 'package:montra_mobile/core/widgets/error_messages.dart';
@@ -42,6 +44,7 @@ class ReconciliationScreen extends ConsumerWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
+          actions: const <Widget>[HelpGuideButton(HelpGuide.reconciliation)],
           title: Text(
             account == null ? l10n.reconTitle : l10n.reconTitleOf(account.name),
           ),

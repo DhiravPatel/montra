@@ -3,6 +3,7 @@ package api_test
 import (
 	"context"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -209,5 +210,36 @@ func TestBudgetForecastAlertFollowsTheClock(t *testing.T) {
 	s.RunJobs(t)
 	if k := kinds(); len(k) != 1 {
 		t.Fatalf("forecast alert repeated: %v", k)
+	}
+}
+
+// Budget alerts page with a cursor through a separate SQL text (query plan
+// review R-F); paging returns every alert once, in the unpaged order, with
+// and without the budget filter.
+func TestBudgetAlertCursorPagingMatchesUnpagedList(t *testing.T) {
+	s := apitest.New(t, nil)
+	c, _ := s.Login(t, s.Register(t, "alertpager"))
+	acct := createAccount(t, c, map[string]any{"name": "Bank", "account_type": "bank", "currency": "INR", "opening_balance": "100000"})["id"].(string)
+	var budgets []string
+	for _, name := range []string{"First", "Second"} {
+		budgets = append(budgets, c.Do(t, http.MethodPost, "/budgets", map[string]any{"name": name, "budget_type": "total", "period": "monthly",
+			"currency": "INR", "limit": "10000", "alert_forecast": false}).Expect(t, http.StatusCreated).Data()["id"].(string))
+	}
+	createTx(t, c, map[string]any{"type": "expense", "account_id": acct, "amount": "7600"}) // 50% and 75% on both budgets
+	s.RunJobs(t)
+	for _, path := range []string{"/budget-alerts?status=", "/budget-alerts?budget_id=" + budgets[1]} {
+		all := ids(c.Do(t, http.MethodGet, path+"&limit=100", nil).Expect(t, http.StatusOK).List(), "id")
+		want := 4
+		if strings.Contains(path, "budget_id") {
+			want = 2
+		}
+		if len(all) != want {
+			t.Fatalf("%s listed %d alerts, want %d", path, len(all), want)
+		}
+		for _, size := range []int{1, 3} {
+			if got := pageAll(t, c, path, size); !slices.Equal(got, all) {
+				t.Fatalf("%s paged by %d = %v, want %v", path, size, got, all)
+			}
+		}
 	}
 }

@@ -1,6 +1,7 @@
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/auth/auth_state.dart';
 import 'package:montra_mobile/core/auth/session_tokens.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
 
 /// Route paths. Deep links use the same paths as the web portal so one
 /// emailed URL works for both clients.
@@ -296,6 +297,16 @@ abstract final class AppRoutes {
   static const String help = '/help';
   static const String newSupportRequest = '/help/new';
   static String supportRequestDetail(String id) => '/help/requests/${_seg(id)}';
+
+  /// Help guides, optionally only one topic's (`?topic=`).
+  static const String helpGuides = HelpGuide.listPath;
+  static String helpGuidesTopic(String topic) => Uri(
+    path: helpGuides,
+    queryParameters: <String, String>{'topic': topic},
+  ).toString();
+
+  /// One help guide.
+  static String helpGuide(HelpGuide guide) => guide.path;
 
   /// Contact form for people who are signed out (public).
   static const String contact = '/contact';

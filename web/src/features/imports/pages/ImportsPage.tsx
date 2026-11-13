@@ -17,6 +17,7 @@ import { loadedImports, useImports } from '../api';
 import { ImportStatusBadge } from '../components/ImportBadges';
 import { isReviewable } from '../status';
 import type { ImportBatch } from '../types';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 /** Statement import history with each import's status, counts and dates (spec §4.10). */
 export function ImportsPage() {
@@ -92,6 +93,7 @@ export function ImportsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="imports" />}
         title={t('imports.title')}
         description={t('imports.description')}
         actions={newImport}

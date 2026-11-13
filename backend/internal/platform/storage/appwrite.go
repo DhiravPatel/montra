@@ -15,6 +15,7 @@ import (
 	"github.com/appwrite/sdk-for-go/file"
 	awstorage "github.com/appwrite/sdk-for-go/storage"
 
+	"montra/backend/internal/platform/breaker"
 	"montra/backend/internal/platform/config"
 )
 
@@ -31,6 +32,14 @@ type Appwrite struct {
 	buckets config.BucketNames
 	timeout time.Duration
 	retries int
+	breaker *breaker.Breaker
+}
+
+// storageFailure counts only provider unavailability (network, timeouts,
+// 429 and 5xx) against the breaker; a missing object or a rejected request
+// says nothing about the provider's health.
+func storageFailure(err error) bool {
+	return breaker.DefaultIsFailure(err) && errors.Is(err, ErrUnavailable)
 }
 
 // NewAppwrite builds the adapter from configuration.
@@ -53,7 +62,8 @@ func NewAppwriteWithEndpoint(endpoint, project, key string, b config.BucketNames
 		appwrite.WithKey(key),
 		appwrite.WithTimeout(timeout),
 	)
-	return &Appwrite{svc: awstorage.New(c), buckets: b, timeout: timeout, retries: 2}, nil
+	return &Appwrite{svc: awstorage.New(c), buckets: b, timeout: timeout, retries: 2,
+		breaker: breaker.New("storage.appwrite", breaker.Options{IsFailure: storageFailure})}, nil
 }
 
 // Provider implements Store.
@@ -84,8 +94,19 @@ func classify(err error) error {
 func retryable(err error) bool { return errors.Is(err, ErrUnavailable) }
 
 // call runs an SDK call (which has no context support) with a deadline and
-// bounded retries for transient failures.
+// bounded retries for transient failures, through the storage circuit
+// breaker: while Appwrite keeps failing, calls fail fast with
+// ErrUnavailable (STORAGE_UNAVAILABLE for API callers; jobs retry with
+// backoff).
 func (a *Appwrite) call(ctx context.Context, fn func() error) error {
+	err := a.breaker.Do(ctx, func(ctx context.Context) error { return a.callWithRetries(ctx, fn) })
+	if breaker.IsOpen(err) {
+		return fmt.Errorf("%w: %w", ErrUnavailable, err)
+	}
+	return err
+}
+
+func (a *Appwrite) callWithRetries(ctx context.Context, fn func() error) error {
 	var last error
 	for attempt := 0; attempt <= a.retries; attempt++ {
 		if attempt > 0 {

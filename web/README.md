@@ -85,7 +85,7 @@ src/
     validation/   zod schemas, password policy mirror
     formatting/   exact money formatting and exact decimal input parsing
                   (decimal.ts), calendar dates, locale names
-    i18n/         catalogs (en, hi scaffold), translator, provider
+    i18n/         catalogs per namespace (en, hi), loaders, translator, provider
     accessibility/ skip link, live-region announcer, route announcer
     theme/        light/dark/system preference
     config/ currency/ hooks/ utils/
@@ -109,10 +109,14 @@ build/            Vite plugin that checks vercel.json CSP against VITE_API_BASE_
 
 **Adding a feature:** create `src/features/<name>/` (api.ts with query keys
 and calls via `api` + `apiData`, components/, pages/), add its routes under
-the AppShell branch in `src/app/router/routes.tsx` (lazy), add a
+the AppShell branch in `src/app/router/routes.tsx` (with `page()`), add a
 `primaryNavigation` entry in `src/app/layouts/navigation.ts` only when the
 screen works end to end, and add strings under a `<feature>.` prefix in
-`src/shared/i18n/locales/en.ts`. Every async view renders loading, empty,
+`src/shared/i18n/locales/en/<feature>.ts` (and `hi/<feature>.ts`). Then run
+`pnpm i18n:gen`: each namespace (one per key prefix) is its own chunk, loaded
+with the routes whose modules use it; `core.ts` holds only what the first
+screen needs. `pnpm check:i18n` (and a unit test) fail when the generated
+loaders are stale or the first screen uses a lazy namespace. Every async view renders loading, empty,
 error (with retry), success and permission-denied states (see
 `SessionsCard.tsx`).
 

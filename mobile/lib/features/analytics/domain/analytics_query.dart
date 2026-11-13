@@ -20,6 +20,9 @@ enum AnalyticsReport {
   /// Top merchants by spending.
   merchants('merchants'),
 
+  /// Spending by payment method.
+  paymentMethods('payment-methods'),
+
   /// Assets, liabilities and net worth.
   accounts('accounts'),
 
@@ -53,7 +56,12 @@ enum AnalyticsReport {
   /// Whether the report covers a chosen period (and one currency at a
   /// time); the others describe the current state.
   bool get usesPeriod => switch (this) {
-    cashFlow || categories || expenses || income || merchants => true,
+    cashFlow ||
+    categories ||
+    expenses ||
+    income ||
+    merchants ||
+    paymentMethods => true,
     accounts || budgets || goals || subscriptions || recurring => false,
   };
 

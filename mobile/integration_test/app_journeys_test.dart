@@ -90,6 +90,44 @@ void main() {
     expect(find.text(expenseNote), findsWidgets);
     expect(find.text(incomeNote), findsWidgets);
 
+    step('save, apply and delete a saved filter');
+    await openTab(tester, l10n.navTransactions);
+    await tapOn(tester, find.byTooltip(l10n.searchOpen));
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byType(TextField),
+      ),
+      'groceries',
+    );
+    await settle(tester, 20);
+    await waitFor(tester, find.text(expenseNote));
+    FocusManager.instance.primaryFocus?.unfocus();
+    await settle(tester);
+    await tapOn(tester, find.byTooltip(l10n.savedFiltersOpen));
+    await tapOn(tester, button(l10n.savedFiltersSaveCurrent));
+    await enter(tester, l10n.savedFiltersNameLabel, 'Groceries $stamp');
+    await tapOn(tester, button(l10n.savedFiltersSaveAction));
+    await waitFor(tester, find.text('Groceries $stamp'));
+    await tapOn(tester, find.text('Groceries $stamp'));
+    await waitFor(
+      tester,
+      find.text(l10n.savedFiltersApplied('Groceries $stamp')),
+    );
+    await tapOn(tester, find.byTooltip(l10n.savedFiltersOpen));
+    await tapOn(
+      tester,
+      find.byTooltip(l10n.savedFiltersDeleteTooltip('Groceries $stamp')),
+    );
+    await tapOn(tester, button(l10n.actionDelete), last: true);
+    await waitFor(
+      tester,
+      find.text(l10n.savedFiltersDeleted('Groceries $stamp')),
+    );
+    // Close the sheet by tapping above it.
+    await tester.tapAt(const Offset(20, 40));
+    await settle(tester);
+
     step('create a group and add a shared expense');
     await openTab(tester, l10n.navTogether);
     await tapOn(tester, find.text(l10n.groupsTitle));
@@ -104,6 +142,16 @@ void main() {
     await tapOn(tester, button(l10n.gxAddExpense));
     await waitForGone(tester, field(l10n.descriptionLabel));
     await waitFor(tester, find.text(sharedNote));
+
+    step('read a help guide');
+    await backToTabs(tester);
+    await openTab(tester, l10n.navProfile);
+    await scrollTo(tester, find.text(l10n.helpTitle));
+    await tapOn(tester, find.text(l10n.helpTitle));
+    await scrollTo(tester, find.text(l10n.helpGuideTopicCalculations));
+    await tapOn(tester, find.text(l10n.helpGuideTopicCalculations));
+    await tapOn(tester, find.text(l10n.helpGuideBudgetsTitle));
+    await scrollTo(tester, find.text(l10n.helpGuideBudgetsRolloverTitle));
 
     step('sign out');
     await backToTabs(tester);

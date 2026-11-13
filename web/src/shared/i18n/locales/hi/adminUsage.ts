@@ -1,0 +1,65 @@
+import type { NamespaceTranslation } from '../../types';
+import type en from '../en/adminUsage';
+
+/** Hindi `adminUsage` messages; missing keys fall back to English. */
+const messages = {
+  // Operator usage dashboard (round 5)
+  'adminUsage.title': 'उपयोग',
+  'adminUsage.description': 'संचालकों के लिए प्लेटफ़ॉर्म की गतिविधि और लागत के संकेतक।',
+  'adminUsage.privacy.title': 'सिर्फ़ कुल गिनती',
+  'adminUsage.privacy.body':
+    'यह पेज कभी भी लोग, रिकॉर्ड या रकम नहीं दिखाता। एडमिन पहुँच की जाँच सर्वर करता है।',
+  'adminUsage.windowLegend': 'समय अवधि',
+  'adminUsage.lastDays': { one: 'पिछला {count} दिन', other: 'पिछले {count} दिन' },
+  'adminUsage.loading': 'उपयोग लोड हो रहा है…',
+  'adminUsage.error': 'हम उपयोग लोड नहीं कर सके',
+  'adminUsage.forbidden.title': 'यह पेज Montra एडमिन के लिए है',
+  'adminUsage.forbidden.body': 'आपके खाते को एडमिन पहुँच नहीं है।',
+  'adminUsage.staleTitle': 'ये आँकड़े पुराने हो सकते हैं',
+  'adminUsage.staleBody':
+    'नए आँकड़े लोड नहीं हो सके, इसलिए आखिरी बार लोड हुए आँकड़े दिखाए जा रहे हैं।',
+  'adminUsage.now.title': 'अभी',
+  'adminUsage.rightNow': 'अभी का कुल',
+  'adminUsage.window.title': { one: 'पिछले {count} दिन में', other: 'पिछले {count} दिनों में' },
+  'adminUsage.activeAccounts': 'सक्रिय खाते',
+  'adminUsage.activeAccountsHelp': 'निष्क्रिय या हटाए नहीं गए',
+  'adminUsage.pendingDeletion': 'हटाए जा रहे खाते',
+  'adminUsage.supportOpen': 'खुले सहायता अनुरोध',
+  'adminUsage.supportOpenHelp': 'खुले या जिन पर काम जारी है',
+  'adminUsage.storage': 'सहेजी गई फ़ाइलें',
+  'adminUsage.files': { one: '{count} फ़ाइल', other: '{count} फ़ाइलें' },
+  'adminUsage.newAccounts': 'नए खाते',
+  'adminUsage.transactionsCreated': 'बनाए गए लेन-देन',
+  'adminUsage.emailsSent': 'भेजे गए ईमेल',
+  'adminUsage.imports': 'स्टेटमेंट आयात',
+  'adminUsage.reports': 'रिपोर्ट',
+  'adminUsage.aiRequests': 'AI अनुरोध',
+  'adminUsage.aiCost': 'लागत {cost}',
+  'adminUsage.daily.title': 'रोज़ की गतिविधि',
+  'adminUsage.daily.description': 'हर माप का अपना चार्ट, अपने पैमाने पर।',
+  'adminUsage.daily.summary': '{from} से {to} तक की रोज़ की गिनती।',
+  'adminUsage.daily.newUsers': 'नए खाते',
+  'adminUsage.daily.transactions': 'बनाए गए लेन-देन',
+  'adminUsage.daily.emailsSent': 'भेजे गए ईमेल',
+  'adminUsage.daily.empty.title': 'दिखाने के लिए कोई दिन नहीं',
+  'adminUsage.daily.empty.body': 'सर्वर ने इस अवधि के लिए रोज़ की कोई गिनती नहीं भेजी।',
+  'adminUsage.storageByArea.title': 'क्षेत्र के अनुसार स्टोरेज',
+  'adminUsage.storageByArea.area': 'क्षेत्र',
+  'adminUsage.storageByArea.size': 'आकार',
+  'adminUsage.notifications.title': 'सूचनाओं की डिलीवरी',
+  'adminUsage.notifications.channel': 'चैनल',
+  'adminUsage.notifications.status': 'स्थिति',
+  'adminUsage.count': 'गिनती',
+  'adminUsage.jobs.title': 'बैकग्राउंड जॉब',
+  'adminUsage.jobs.status': 'स्थिति',
+  'adminUsage.deadJobs.title': 'जो जॉब पूरे नहीं हो सके',
+  'adminUsage.deadJobs.description': {
+    one: 'पिछले {count} दिन में हर कोशिश में विफल रहे जॉब, प्रकार के अनुसार।',
+    other: 'पिछले {count} दिनों में हर कोशिश में विफल रहे जॉब, प्रकार के अनुसार।',
+  },
+  'adminUsage.deadJobs.type': 'जॉब का प्रकार',
+  'adminUsage.deadJobs.none': 'इस अवधि में कोई जॉब नहीं रुका।',
+  'adminUsage.none': 'दिखाने के लिए कुछ नहीं।',
+} as const satisfies NamespaceTranslation<typeof en>;
+
+export default messages;

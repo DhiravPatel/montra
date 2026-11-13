@@ -1,0 +1,218 @@
+import type { NamespaceTranslation } from '../../types';
+import type en from '../en/reconciliation';
+
+/** Hindi `reconciliation` messages; missing keys fall back to English. */
+const messages = {
+  // Reconciliation
+  'reconciliation.accountAction': 'मिलान करें',
+  'reconciliation.documentTitle': 'खाते का मिलान',
+  'reconciliation.title': '{name} का मिलान करें',
+  'reconciliation.description':
+    'Montra की तुलना अपने बैंक स्टेटमेंट से करें। अंतर Montra निकालता है; आपकी पुष्टि के बिना कुछ नहीं बदलता।',
+  'reconciliation.back': '{name} पर वापस',
+  'reconciliation.loading': 'खाता लोड हो रहा है…',
+  'reconciliation.error': 'हम यह खाता लोड नहीं कर सके',
+  'reconciliation.notFound': 'खाता नहीं मिला',
+  'reconciliation.notFoundBody': 'हो सकता है इसे हटा दिया गया हो, या लिंक गलत हो।',
+  'reconciliation.toAccounts': 'सभी खाते',
+  'reconciliation.ownerOnly': 'केवल मालिक ही इस खाते का मिलान कर सकते हैं',
+  'reconciliation.lastReconciled': 'आखिरी मिलान {date}',
+  'reconciliation.lastImport': 'आखिरी स्टेटमेंट आयात {date}।',
+  'reconciliation.ownerOnlyBody':
+    'यह खाता आपके साथ साझा किया गया है। इसके मालिक इसे बैंक स्टेटमेंट से जाँचते हैं।',
+  'reconciliation.form.title': 'स्टेटमेंट बैलेंस जाँचें',
+  'reconciliation.form.description': 'अपने स्टेटमेंट पर छपा अंतिम बैलेंस दर्ज करें।',
+  'reconciliation.form.current': 'आज Montra में बैलेंस:',
+  'reconciliation.form.date': 'स्टेटमेंट की तारीख',
+  'reconciliation.form.dateHelp': 'अंतिम बैलेंस की तारीख।',
+  'reconciliation.form.import': 'स्टेटमेंट आयात',
+  'reconciliation.form.importHelp':
+    'जाँच को किसी आयात से जोड़ें, और केवल उसकी पंक्तियों के सुझाव देखें।',
+  'reconciliation.form.noImport': 'कोई नहीं',
+  'reconciliation.form.importPeriod': 'स्टेटमेंट {period}',
+  'reconciliation.form.importCreated': '{date} को आयात किया गया',
+  'reconciliation.form.kind': 'स्टेटमेंट में दिखता है',
+  'reconciliation.form.kindOwed': 'आपकी बकाया राशि',
+  'reconciliation.form.kindOwedHelp':
+    'धनात्मक राशि, जैसा कार्ड और लोन स्टेटमेंट में आमतौर पर दिखता है।',
+  'reconciliation.form.kindBalance': 'बैलेंस',
+  'reconciliation.form.kindBalanceHelp': 'जब आप पर पैसा बकाया हो तो ऋणात्मक।',
+  'reconciliation.form.owed': 'स्टेटमेंट पर बकाया राशि',
+  'reconciliation.form.owedHelp':
+    'जैसा दिखता है वैसा, माइनस के बिना दर्ज करें। माइनस तभी लगाएँ जब कार्ड में क्रेडिट हो।',
+  'reconciliation.form.balance': 'स्टेटमेंट पर अंतिम बैलेंस',
+  'reconciliation.form.balanceHelp': 'बैलेंस ऋणात्मक हो (जैसे ओवरड्राफ़्ट) तो माइनस चिह्न लगाएँ।',
+  'reconciliation.form.notes': 'नोट्स',
+  'reconciliation.form.submit': 'बैलेंस जाँचें',
+  'reconciliation.result.title': '{date} का स्टेटमेंट',
+  'reconciliation.result.statement': 'स्टेटमेंट बैलेंस',
+  'reconciliation.result.ledger': 'Montra में बैलेंस',
+  'reconciliation.result.difference': 'अंतर',
+  'reconciliation.result.liabilityNote':
+    'बैलेंस के रूप में दिखाया गया: ऋणात्मक का मतलब है आप पर बकाया है।',
+  'reconciliation.result.balancedTitle': 'मिलान सही',
+  'reconciliation.result.reconciledCount': {
+    one: 'इस तारीख तक का {count} लेन-देन अब मिलान किया हुआ चिह्नित है।',
+    other: 'इस तारीख तक के {count} लेन-देन अब मिलान किए हुए चिह्नित हैं।',
+  },
+  'reconciliation.result.unbalancedTitle': 'अभी मिलान नहीं हुआ',
+  'reconciliation.result.unbalancedBody':
+    'छूटे, दोहराए या गलत तारीख वाले लेन-देन देखें, नीचे दिए सुझाए गए मिलान की पुष्टि करें, या स्टेटमेंट आयात करें। आप कभी भी फिर से जाँच सकते हैं।',
+  'reconciliation.result.unreconciled': {
+    one: 'इस तारीख तक का {count} लेन-देन अभी मिलान नहीं हुआ।',
+    other: 'इस तारीख तक के {count} लेन-देन अभी मिलान नहीं हुए।',
+  },
+  'reconciliation.result.unmatchedRows': {
+    one: 'स्टेटमेंट आयात की {count} पंक्ति अभी मिलाई नहीं गई।',
+    other: 'स्टेटमेंट आयात की {count} पंक्तियाँ अभी मिलाई नहीं गईं।',
+  },
+  'reconciliation.result.announceBalanced': 'मिलान सही। स्टेटमेंट Montra से मेल खाता है।',
+  'reconciliation.result.announceUnbalanced': 'मिलान नहीं हुआ। अंतर: {difference}।',
+  'reconciliation.status.balanced': 'मिलान सही',
+  'reconciliation.status.unbalanced': 'मिलान नहीं',
+  'reconciliation.candidates.title': 'सुझाए गए मिलान',
+  'reconciliation.candidates.description':
+    'Montra को ऐसे रिकॉर्ड मिले जो एक ही पैसे जैसे लगते हैं। सही वाले की पुष्टि करें; तब तक कुछ नहीं बदलता।',
+  'reconciliation.candidates.loading': 'मिलान खोजे जा रहे हैं…',
+  'reconciliation.candidates.error': 'हम सुझाव लोड नहीं कर सके',
+  'reconciliation.candidates.empty': 'अभी कोई सुझाव नहीं',
+  'reconciliation.candidates.emptyBody':
+    'सुझाव तब दिखते हैं जब कोई स्टेटमेंट पंक्ति, लंबित शुल्क या हाथ से दर्ज प्रविष्टि आपके किसी लेन-देन जैसी लगे।',
+  'reconciliation.candidates.noDescription': 'कोई विवरण नहीं',
+  'reconciliation.candidates.viewTransaction': 'लेन-देन देखें',
+  'reconciliation.candidates.confidence': 'भरोसा: {percent}',
+  'reconciliation.candidates.why': 'क्यों: {reasons}',
+  'reconciliation.candidates.keep': 'कौन सा रखें?',
+  'reconciliation.candidates.keepManual': 'जो आपने दर्ज किया',
+  'reconciliation.candidates.keepImported': 'जो आयात हुआ',
+  'reconciliation.candidates.confirm': 'मिलान की पुष्टि करें',
+  'reconciliation.candidates.confirmLabel': 'मिलान की पुष्टि करें: {title}',
+  'reconciliation.candidates.done': 'मिलान की पुष्टि हुई',
+  'reconciliation.kind.statement_to_ledger': 'स्टेटमेंट पंक्तियाँ और आपके लेन-देन',
+  'reconciliation.kind.pending_to_posted': 'लंबित शुल्क जो पोस्ट हो गए',
+  'reconciliation.kind.manual_to_imported': 'दो बार दर्ज',
+  'reconciliation.effect.statement_to_ledger':
+    'पुष्टि करने पर स्टेटमेंट पंक्ति आपके लेन-देन से मिलाई गई चिह्नित होगी। कुछ जोड़ा या हटाया नहीं जाता।',
+  'reconciliation.effect.pending_to_posted':
+    'पुष्टि करने पर लंबित शुल्क हट जाएगा, क्योंकि पोस्ट हुआ शुल्क उसकी जगह लेता है। आप इसे पूर्ववत कर सकते हैं।',
+  'reconciliation.effect.manual_to_imported':
+    'पुष्टि करने पर एक प्रति रहेगी और दूसरी हटेगी। आप इसे पूर्ववत कर सकते हैं।',
+  'reconciliation.side.statement': 'स्टेटमेंट पर',
+  'reconciliation.side.ledger': 'Montra में',
+  'reconciliation.side.pending': 'लंबित',
+  'reconciliation.side.posted': 'पोस्ट हुआ',
+  'reconciliation.side.manual': 'आपने दर्ज किया',
+  'reconciliation.side.imported': 'आयात हुआ',
+  'reconciliation.reason.sameAmount': 'एक जैसी राशि और दिशा',
+  'reconciliation.reason.sameDate': 'एक ही तारीख',
+  'reconciliation.reason.oneDay': 'एक दिन का अंतर',
+  'reconciliation.reason.threeDays': '3 दिन के भीतर',
+  'reconciliation.reason.week': 'एक हफ़्ते के भीतर',
+  'reconciliation.reason.sameReference': 'एक ही संदर्भ',
+  'reconciliation.reason.similarDescription': 'मिलता-जुलता विवरण',
+  'reconciliation.reason.amountsAddUp': 'राशियाँ बिल्कुल बराबर जुड़ती हैं',
+  'reconciliation.reason.allWithinWeek': 'सब एक हफ़्ते के भीतर',
+  'reconciliation.reason.pendingReplaced': 'पोस्ट हुआ लेन-देन लंबित वाले की जगह लेता है',
+  'reconciliation.reason.enteredTwice': 'एक ही लेन-देन हाथ से दर्ज भी हुआ और आयात भी',
+  'reconciliation.reason.amountsDiffer': 'राशियाँ अलग हैं ({pending} लंबित, {posted} पोस्ट)',
+  'reconciliation.reason.amountsDifferGeneric': 'लंबित और पोस्ट राशियाँ अलग हैं',
+  'reconciliation.reason.datesFarApart':
+    'तारीखों में एक हफ़्ते से ज़्यादा का अंतर (हाथ से मिलाया गया)',
+  'reconciliation.reason.datesFarApartDays': {
+    one: 'तारीखों में {count} दिन का अंतर (हाथ से मिलाया गया)',
+    other: 'तारीखों में {count} दिन का अंतर (हाथ से मिलाया गया)',
+  },
+  'reconciliation.matches.title': 'पुष्टि किए गए मिलान',
+  'reconciliation.matches.description':
+    'हर मिलान ने क्या बदला। पूर्ववत करने पर सब पहले जैसा हो जाता है।',
+  'reconciliation.matches.loading': 'मिलान लोड हो रहे हैं…',
+  'reconciliation.matches.error': 'हम मिलान लोड नहीं कर सके',
+  'reconciliation.matches.empty': 'अभी कोई मिलान नहीं',
+  'reconciliation.matches.emptyBody': 'आपके पुष्टि किए मिलान यहाँ दिखेंगे।',
+  'reconciliation.matches.showUndone': 'पूर्ववत किए मिलान दिखाएँ',
+  'reconciliation.matches.confirmed': 'पुष्टि हुई',
+  'reconciliation.matches.statusUndone': 'पूर्ववत',
+  'reconciliation.matches.when': '{date} को पुष्टि हुई',
+  'reconciliation.matches.undoneWhen': '{date} को पूर्ववत',
+  'reconciliation.matches.statementLine': 'स्टेटमेंट पंक्ति',
+  'reconciliation.matches.transaction': 'लेन-देन',
+  'reconciliation.matches.undo': 'मिलान पूर्ववत करें',
+  'reconciliation.matches.undoLabel': 'मिलान पूर्ववत करें: {kind}',
+  'reconciliation.matches.undoTitle': 'यह मिलान पूर्ववत करें?',
+  'reconciliation.matches.undoBody':
+    'हटाए गए लेन-देन वापस आएँगे और स्टेटमेंट पंक्ति पहले जैसी हो जाएगी। और कुछ नहीं बदलता।',
+  'reconciliation.matches.undoConfirm': 'मिलान पूर्ववत करें',
+  'reconciliation.matches.keep': 'मिलान रखें',
+  'reconciliation.matches.undone': 'मिलान पूर्ववत किया गया',
+  'reconciliation.matches.total': 'मिलाई गई राशि:',
+  'reconciliation.matches.noneLoadedYet': 'अभी कोई पुष्टि किया मिलान लोड नहीं हुआ',
+  'reconciliation.history.reconciledCount': {
+    one: '{count} लेन-देन मिलाया गया',
+    other: '{count} लेन-देन मिलाए गए',
+  },
+  'reconciliation.history.unmatchedCount': {
+    one: '{count} स्टेटमेंट पंक्ति मिलाई नहीं गई',
+    other: '{count} स्टेटमेंट पंक्तियाँ मिलाई नहीं गईं',
+  },
+  'reconciliation.history.unreconciledCount': {
+    one: '{count} लेन-देन मिलाया नहीं गया',
+    other: '{count} लेन-देन मिलाए नहीं गए',
+  },
+  'reconciliation.lines.title': 'मिलाने के लिए स्टेटमेंट पंक्तियाँ',
+  'reconciliation.lines.description':
+    'आपके स्टेटमेंट आयात की वे पंक्तियाँ जो न आयात हुईं न मिलाई गईं, उन समेत जिनके लिए Montra को कोई सुझाव नहीं मिला। किसी एक को उसके लेन-देन से मिलाएँ।',
+  'reconciliation.lines.show': 'पंक्तियाँ दिखाएँ',
+  'reconciliation.lines.unmatched': 'मिलाई नहीं गईं',
+  'reconciliation.lines.matchedLines': 'मिलाई गईं',
+  'reconciliation.lines.loading': 'स्टेटमेंट पंक्तियाँ लोड हो रही हैं…',
+  'reconciliation.lines.error': 'हम स्टेटमेंट पंक्तियाँ लोड नहीं कर सके',
+  'reconciliation.lines.emptyUnmatched': 'हर स्टेटमेंट पंक्ति का हिसाब हो गया',
+  'reconciliation.lines.emptyUnmatchedBody':
+    'पंक्तियाँ यहाँ तब दिखती हैं जब कोई आयात कुछ छोड़ दे (दोहराव, छोड़ी गई या विफल पंक्तियाँ)।',
+  'reconciliation.lines.emptyMatched': 'कोई मिलाई गई पंक्ति नहीं',
+  'reconciliation.lines.row': 'पंक्ति {number}',
+  'reconciliation.lines.matchedBadge': 'मिलाई गई',
+  'reconciliation.lines.viewImport': 'आयात देखें',
+  'reconciliation.lines.match': 'हाथ से मिलाएँ',
+  'reconciliation.lines.matchLabel': 'हाथ से मिलाएँ: {title}',
+  'reconciliation.lines.pickTitle': 'स्टेटमेंट पंक्ति मिलाएँ',
+  'reconciliation.lines.pickBody':
+    'वह लेन-देन चुनें जिससे {date} की यह पंक्ति जुड़ी है। कुछ नया दर्ज नहीं होता।',
+  'reconciliation.lines.pickHelp':
+    'इस खाते के उसी दिशा वाले लेन-देन जो अभी मिलाए नहीं गए, पंक्ति की तारीख के आसपास। राशियाँ एक जैसी होनी चाहिए।',
+  'reconciliation.lines.pickConfirm': 'पंक्ति मिलाएँ',
+  'reconciliation.lines.matched': 'स्टेटमेंट पंक्ति मिला दी गई',
+  'reconciliation.itemEffect.none': 'मिलाया गया चिह्नित',
+  'reconciliation.itemEffect.voided': 'हटाया गया (वापस लाया जा सकता है)',
+  'reconciliation.itemEffect.row_skipped': 'मिलाया गया मानकर अलग रखा गया',
+  'reconciliation.history.title': 'मिलान का इतिहास',
+  'reconciliation.history.description': 'आपकी पिछली बैलेंस जाँचें, नया स्टेटमेंट पहले।',
+  'reconciliation.history.loading': 'इतिहास लोड हो रहा है…',
+  'reconciliation.history.error': 'हम इतिहास लोड नहीं कर सके',
+  'reconciliation.history.empty': 'अभी कोई जाँच नहीं',
+  'reconciliation.history.emptyBody': 'शुरू करने के लिए ऊपर स्टेटमेंट बैलेंस जाँचें।',
+  'reconciliation.history.caption': 'पिछली बैलेंस जाँचें',
+  'reconciliation.history.date': 'स्टेटमेंट की तारीख',
+  'reconciliation.history.result': 'नतीजा',
+  'reconciliation.history.checked': '{date} को जाँचा',
+  'reconciliation.history.import': 'एक आयात से',
+  'reconciliation.errors.direction_mismatch':
+    'स्टेटमेंट पंक्ति और लेन-देन एक ही दिशा में होने चाहिए (दोनों पैसा अंदर या दोनों पैसा बाहर)।',
+  'reconciliation.errors.invalid_match_shape':
+    'एक स्टेटमेंट पंक्ति को कई लेन-देन से, या कई पंक्तियों को एक लेन-देन से मिलाएँ।',
+  'reconciliation.errors.invalid_pair':
+    'इन दो रिकॉर्ड को इस तरह नहीं मिलाया जा सकता। सुझाव फिर से लोड करें और दोबारा कोशिश करें।',
+  'reconciliation.errors.sums_differ':
+    'दोनों तरफ़ की राशि बराबर नहीं है: स्टेटमेंट पर {statement} और Montra में {ledger}।',
+  'reconciliation.errors.sums_differ_generic': 'दोनों तरफ़ की राशि बराबर नहीं है।',
+  'reconciliation.errors.alreadyMatched': 'इनमें से एक रिकॉर्ड पहले से किसी दूसरे मिलान में है।',
+  'reconciliation.errors.changed':
+    'यह पहले ही मिलाया या बदला जा चुका है। हमने सूची फिर से लोड की है।',
+  'reconciliation.errors.notFound': 'यह मिलान अब मौजूद नहीं है।',
+  'reconciliation.errors.duplicate_item':
+    'एक मिलान में हर लेन-देन और स्टेटमेंट की हर पंक्ति केवल एक बार चुनी जा सकती है।',
+  'reconciliation.errors.transaction_already_matched':
+    'आपका चुना हुआ एक लेन-देन पहले से किसी मिलान में है या उसका मिलान हो चुका है। हमने सूची ताज़ा कर दी है।',
+} as const satisfies NamespaceTranslation<typeof en>;
+
+export default messages;

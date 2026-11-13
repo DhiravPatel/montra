@@ -14,6 +14,7 @@ export const ANALYTICS_VIEWS = [
   'cash-flow',
   'categories',
   'merchants',
+  'payment-methods',
   'compare',
   'accounts',
   'plans',
@@ -26,6 +27,7 @@ export const PERIOD_VIEWS: ReadonlySet<AnalyticsView> = new Set([
   'cash-flow',
   'categories',
   'merchants',
+  'payment-methods',
   'compare',
 ]);
 

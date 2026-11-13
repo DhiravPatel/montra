@@ -1,14 +1,12 @@
 import type { RouteObject } from 'react-router';
 import { LandingPage } from '@/features/marketing/pages/LandingPage';
 import { NotFoundPage } from '@/features/marketing/pages/NotFoundPage';
-import { PrivacyPage } from '@/features/marketing/pages/PrivacyPage';
-import { SecurityInfoPage } from '@/features/marketing/pages/SecurityInfoPage';
-import { TermsPage } from '@/features/marketing/pages/TermsPage';
 import { RouteErrorBoundary } from '../error-boundaries/RouteErrorBoundary';
 import { PublicOnlyRoute } from '../guards/PublicOnlyRoute';
 import { RequireAuth } from '../guards/RequireAuth';
 import { PublicLayout } from '../layouts/PublicLayout';
 import { RootLayout } from '../layouts/RootLayout';
+import { page } from './lazyPage';
 import { LegacyRedirect } from './LegacyRedirect';
 import { RouteLoading } from './RouteLoading';
 
@@ -16,9 +14,11 @@ import { RouteLoading } from './RouteLoading';
 const wide = { wide: true } as const;
 
 /**
- * Route tree. Public information pages load eagerly (first-visit entry);
- * forms and the signed-in area are code-split so their dependencies (form
- * validation, dialogs, QR codes) only load when needed.
+ * Route tree. The landing and not-found pages load eagerly (first-visit
+ * entry); everything else is code-split so its dependencies (form
+ * validation, dialogs, QR codes) and its messages only load when needed.
+ * `page()` loads a route module together with the message namespaces it
+ * uses (routeMessages.gen.ts, from `pnpm i18n:gen`).
  *
  * New features add their routes under the AppShell branch and their
  * navigation entry in app/layouts/navigation.ts. Guided flows without the
@@ -34,56 +34,42 @@ export const routes: RouteObject[] = [
         element: <PublicLayout />,
         children: [
           { index: true, element: <LandingPage /> },
-          { path: 'privacy', element: <PrivacyPage /> },
-          { path: 'security', element: <SecurityInfoPage /> },
-          { path: 'terms', element: <TermsPage /> },
+          { path: 'privacy', lazy: page('@/features/marketing/pages/PrivacyPage', 'PrivacyPage') },
+          {
+            path: 'security',
+            lazy: page('@/features/marketing/pages/SecurityInfoPage', 'SecurityInfoPage'),
+          },
+          { path: 'terms', lazy: page('@/features/marketing/pages/TermsPage', 'TermsPage') },
           {
             path: 'verify-email',
-            lazy: async () => ({
-              Component: (await import('@/features/auth/pages/VerifyEmailPage')).VerifyEmailPage,
-            }),
+            lazy: page('@/features/auth/pages/VerifyEmailPage', 'VerifyEmailPage'),
           },
           {
             path: 'forgot-password',
-            lazy: async () => ({
-              Component: (await import('@/features/auth/pages/ForgotPasswordPage'))
-                .ForgotPasswordPage,
-            }),
+            lazy: page('@/features/auth/pages/ForgotPasswordPage', 'ForgotPasswordPage'),
           },
           {
             path: 'unsubscribe',
-            lazy: async () => ({
-              Component: (await import('@/features/notifications/pages/UnsubscribePage'))
-                .UnsubscribePage,
-            }),
+            lazy: page('@/features/notifications/pages/UnsubscribePage', 'UnsubscribePage'),
           },
           {
             path: 'contact',
-            lazy: async () => ({
-              Component: (await import('@/features/support/pages/ContactPage')).ContactPage,
-            }),
+            lazy: page('@/features/support/pages/ContactPage', 'ContactPage'),
           },
           {
             path: 'reset-password',
-            lazy: async () => ({
-              Component: (await import('@/features/auth/pages/ResetPasswordPage'))
-                .ResetPasswordPage,
-            }),
+            lazy: page('@/features/auth/pages/ResetPasswordPage', 'ResetPasswordPage'),
           },
           {
             element: <PublicOnlyRoute />,
             children: [
               {
                 path: 'sign-in',
-                lazy: async () => ({
-                  Component: (await import('@/features/auth/pages/SignInPage')).SignInPage,
-                }),
+                lazy: page('@/features/auth/pages/SignInPage', 'SignInPage'),
               },
               {
                 path: 'sign-up',
-                lazy: async () => ({
-                  Component: (await import('@/features/auth/pages/SignUpPage')).SignUpPage,
-                }),
+                lazy: page('@/features/auth/pages/SignUpPage', 'SignUpPage'),
               },
             ],
           },
@@ -94,664 +80,521 @@ export const routes: RouteObject[] = [
         element: <RequireAuth />,
         children: [
           {
-            lazy: async () => ({ Component: (await import('../layouts/FocusLayout')).FocusLayout }),
+            lazy: page('@/app/layouts/FocusLayout', 'FocusLayout'),
             children: [
               {
                 path: 'onboarding',
-                lazy: async () => ({
-                  Component: (await import('@/features/onboarding/pages/OnboardingPage'))
-                    .OnboardingPage,
-                }),
+                lazy: page('@/features/onboarding/pages/OnboardingPage', 'OnboardingPage'),
               },
             ],
           },
           {
-            lazy: async () => ({ Component: (await import('../layouts/AppShell')).AppShell }),
+            lazy: page('@/app/layouts/AppShell', 'AppShell'),
             children: [
               {
                 path: 'dashboard',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/dashboard/pages/DashboardPage'))
-                    .DashboardPage,
-                }),
+                lazy: page('@/features/dashboard/pages/DashboardPage', 'DashboardPage'),
               },
               {
                 path: 'transactions',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/transactions/pages/TransactionsPage'))
-                    .TransactionsPage,
-                }),
+                lazy: page('@/features/transactions/pages/TransactionsPage', 'TransactionsPage'),
               },
               {
                 path: 'transactions/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/transactions/pages/TransactionCreatePage'))
-                    .TransactionCreatePage,
-                }),
+                lazy: page(
+                  '@/features/transactions/pages/TransactionCreatePage',
+                  'TransactionCreatePage',
+                ),
               },
               {
                 path: 'transactions/:transactionId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/transactions/pages/TransactionDetailPage'))
-                    .TransactionDetailPage,
-                }),
+                lazy: page(
+                  '@/features/transactions/pages/TransactionDetailPage',
+                  'TransactionDetailPage',
+                ),
               },
               {
                 path: 'transactions/:transactionId/edit',
-                lazy: async () => ({
-                  Component: (await import('@/features/transactions/pages/TransactionEditPage'))
-                    .TransactionEditPage,
-                }),
+                lazy: page(
+                  '@/features/transactions/pages/TransactionEditPage',
+                  'TransactionEditPage',
+                ),
               },
               {
                 path: 'transfers/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/transactions/pages/TransferCreatePage'))
-                    .TransferCreatePage,
-                }),
+                lazy: page(
+                  '@/features/transactions/pages/TransferCreatePage',
+                  'TransferCreatePage',
+                ),
               },
               {
                 path: 'accounts',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/accounts/pages/AccountsPage')).AccountsPage,
-                }),
+                lazy: page('@/features/accounts/pages/AccountsPage', 'AccountsPage'),
               },
               {
                 path: 'accounts/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/accounts/pages/AccountCreatePage'))
-                    .AccountCreatePage,
-                }),
+                lazy: page('@/features/accounts/pages/AccountCreatePage', 'AccountCreatePage'),
               },
               {
                 path: 'accounts/payment-methods',
-                lazy: async () => ({
-                  Component: (await import('@/features/payment-methods/pages/PaymentMethodsPage'))
-                    .PaymentMethodsPage,
-                }),
+                lazy: page(
+                  '@/features/payment-methods/pages/PaymentMethodsPage',
+                  'PaymentMethodsPage',
+                ),
               },
               {
                 path: 'accounts/:accountId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/accounts/pages/AccountDetailPage'))
-                    .AccountDetailPage,
-                }),
+                lazy: page('@/features/accounts/pages/AccountDetailPage', 'AccountDetailPage'),
               },
               {
                 path: 'accounts/:accountId/edit',
-                lazy: async () => ({
-                  Component: (await import('@/features/accounts/pages/AccountEditPage'))
-                    .AccountEditPage,
-                }),
+                lazy: page('@/features/accounts/pages/AccountEditPage', 'AccountEditPage'),
               },
               {
                 path: 'categories',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/categories/pages/CategoriesPage'))
-                    .CategoriesPage,
-                }),
+                lazy: page('@/features/categories/pages/CategoriesPage', 'CategoriesPage'),
               },
               {
                 path: 'categories/rules',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/categories/pages/CategoryRulesPage'))
-                    .CategoryRulesPage,
-                }),
+                lazy: page('@/features/categories/pages/CategoryRulesPage', 'CategoryRulesPage'),
               },
               {
                 path: 'categories/tags',
-                lazy: async () => ({
-                  Component: (await import('@/features/categories/pages/TagsPage')).TagsPage,
-                }),
+                lazy: page('@/features/categories/pages/TagsPage', 'TagsPage'),
               },
               {
                 path: 'categories/merchants',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/categories/pages/MerchantsPage'))
-                    .MerchantsPage,
-                }),
+                lazy: page('@/features/categories/pages/MerchantsPage', 'MerchantsPage'),
               },
               {
                 path: 'categories/merchants/:merchantId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/categories/pages/MerchantDetailPage'))
-                    .MerchantDetailPage,
-                }),
+                lazy: page('@/features/categories/pages/MerchantDetailPage', 'MerchantDetailPage'),
               },
               {
                 path: 'budgets',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/budgets/pages/BudgetsPage')).BudgetsPage,
-                }),
+                lazy: page('@/features/budgets/pages/BudgetsPage', 'BudgetsPage'),
               },
               {
                 path: 'budgets/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/budgets/pages/BudgetCreatePage'))
-                    .BudgetCreatePage,
-                }),
+                lazy: page('@/features/budgets/pages/BudgetCreatePage', 'BudgetCreatePage'),
               },
               {
                 path: 'budgets/:budgetId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/budgets/pages/BudgetDetailPage'))
-                    .BudgetDetailPage,
-                }),
+                lazy: page('@/features/budgets/pages/BudgetDetailPage', 'BudgetDetailPage'),
               },
               {
                 path: 'budgets/:budgetId/edit',
-                lazy: async () => ({
-                  Component: (await import('@/features/budgets/pages/BudgetEditPage'))
-                    .BudgetEditPage,
-                }),
+                lazy: page('@/features/budgets/pages/BudgetEditPage', 'BudgetEditPage'),
               },
               {
                 path: 'planning',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/PlanningCalendarPage'))
-                    .PlanningCalendarPage,
-                }),
+                lazy: page(
+                  '@/features/planning/pages/PlanningCalendarPage',
+                  'PlanningCalendarPage',
+                ),
               },
               {
                 path: 'planning/bills',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/BillsPage')).BillsPage,
-                }),
+                lazy: page('@/features/planning/pages/BillsPage', 'BillsPage'),
               },
               {
                 path: 'planning/bills/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/BillCreatePage'))
-                    .BillCreatePage,
-                }),
+                lazy: page('@/features/planning/pages/BillCreatePage', 'BillCreatePage'),
               },
               {
                 path: 'planning/bills/:billId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/BillDetailPage'))
-                    .BillDetailPage,
-                }),
+                lazy: page('@/features/planning/pages/BillDetailPage', 'BillDetailPage'),
               },
               {
                 path: 'planning/bills/:billId/edit',
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/BillEditPage')).BillEditPage,
-                }),
+                lazy: page('@/features/planning/pages/BillEditPage', 'BillEditPage'),
               },
               {
                 path: 'planning/recurring',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/RecurringRulesPage'))
-                    .RecurringRulesPage,
-                }),
+                lazy: page('@/features/planning/pages/RecurringRulesPage', 'RecurringRulesPage'),
               },
               {
                 path: 'planning/recurring/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/RecurringRuleCreatePage'))
-                    .RecurringRuleCreatePage,
-                }),
+                lazy: page(
+                  '@/features/planning/pages/RecurringRuleCreatePage',
+                  'RecurringRuleCreatePage',
+                ),
               },
               {
                 path: 'planning/recurring/:ruleId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/RecurringRuleDetailPage'))
-                    .RecurringRuleDetailPage,
-                }),
+                lazy: page(
+                  '@/features/planning/pages/RecurringRuleDetailPage',
+                  'RecurringRuleDetailPage',
+                ),
               },
               {
                 path: 'planning/recurring/:ruleId/edit',
-                lazy: async () => ({
-                  Component: (await import('@/features/planning/pages/RecurringRuleEditPage'))
-                    .RecurringRuleEditPage,
-                }),
+                lazy: page(
+                  '@/features/planning/pages/RecurringRuleEditPage',
+                  'RecurringRuleEditPage',
+                ),
               },
               {
                 path: 'subscriptions',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/subscriptions/pages/SubscriptionsPage'))
-                    .SubscriptionsPage,
-                }),
+                lazy: page('@/features/subscriptions/pages/SubscriptionsPage', 'SubscriptionsPage'),
               },
               {
                 path: 'subscriptions/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/subscriptions/pages/SubscriptionCreatePage'))
-                    .SubscriptionCreatePage,
-                }),
+                lazy: page(
+                  '@/features/subscriptions/pages/SubscriptionCreatePage',
+                  'SubscriptionCreatePage',
+                ),
               },
               {
                 path: 'subscriptions/review',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/subscriptions/pages/SubscriptionReviewPage'))
-                    .SubscriptionReviewPage,
-                }),
+                lazy: page(
+                  '@/features/subscriptions/pages/SubscriptionReviewPage',
+                  'SubscriptionReviewPage',
+                ),
               },
               {
                 path: 'subscriptions/:subscriptionId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/subscriptions/pages/SubscriptionDetailPage'))
-                    .SubscriptionDetailPage,
-                }),
+                lazy: page(
+                  '@/features/subscriptions/pages/SubscriptionDetailPage',
+                  'SubscriptionDetailPage',
+                ),
               },
               {
                 path: 'subscriptions/:subscriptionId/edit',
-                lazy: async () => ({
-                  Component: (await import('@/features/subscriptions/pages/SubscriptionEditPage'))
-                    .SubscriptionEditPage,
-                }),
+                lazy: page(
+                  '@/features/subscriptions/pages/SubscriptionEditPage',
+                  'SubscriptionEditPage',
+                ),
               },
               {
                 path: 'goals',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/goals/pages/GoalsPage')).GoalsPage,
-                }),
+                lazy: page('@/features/goals/pages/GoalsPage', 'GoalsPage'),
               },
               {
                 path: 'goals/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/goals/pages/GoalCreatePage')).GoalCreatePage,
-                }),
+                lazy: page('@/features/goals/pages/GoalCreatePage', 'GoalCreatePage'),
               },
               {
                 path: 'goals/:goalId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/goals/pages/GoalDetailPage')).GoalDetailPage,
-                }),
+                lazy: page('@/features/goals/pages/GoalDetailPage', 'GoalDetailPage'),
               },
               {
                 path: 'goals/:goalId/edit',
-                lazy: async () => ({
-                  Component: (await import('@/features/goals/pages/GoalEditPage')).GoalEditPage,
-                }),
+                lazy: page('@/features/goals/pages/GoalEditPage', 'GoalEditPage'),
               },
               {
                 path: 'receipts',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/receipts/pages/ReceiptsPage')).ReceiptsPage,
-                }),
+                lazy: page('@/features/receipts/pages/ReceiptsPage', 'ReceiptsPage'),
               },
               {
                 path: 'receipts/:receiptId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/receipts/pages/ReceiptDetailPage'))
-                    .ReceiptDetailPage,
-                }),
+                lazy: page('@/features/receipts/pages/ReceiptDetailPage', 'ReceiptDetailPage'),
               },
               {
                 path: 'imports',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/imports/pages/ImportsPage')).ImportsPage,
-                }),
+                lazy: page('@/features/imports/pages/ImportsPage', 'ImportsPage'),
               },
               {
                 path: 'imports/new',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/imports/pages/ImportCreatePage'))
-                    .ImportCreatePage,
-                }),
+                lazy: page('@/features/imports/pages/ImportCreatePage', 'ImportCreatePage'),
               },
               {
                 path: 'imports/:importId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/imports/pages/ImportDetailPage'))
-                    .ImportDetailPage,
-                }),
+                lazy: page('@/features/imports/pages/ImportDetailPage', 'ImportDetailPage'),
               },
               {
                 path: 'accounts/:accountId/reconcile',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/reconciliation/pages/ReconciliationPage'))
-                    .ReconciliationPage,
-                }),
+                lazy: page(
+                  '@/features/reconciliation/pages/ReconciliationPage',
+                  'ReconciliationPage',
+                ),
               },
               {
                 path: 'analytics',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/analytics/pages/AnalyticsPage'))
-                    .AnalyticsPage,
-                }),
+                lazy: page('@/features/analytics/pages/AnalyticsPage', 'AnalyticsPage'),
               },
               {
                 path: 'reports',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/reports/pages/ReportsPage')).ReportsPage,
-                }),
+                lazy: page('@/features/reports/pages/ReportsPage', 'ReportsPage'),
               },
               {
                 path: 'settings/exchange-rates',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/fx/pages/ExchangeRatesPage'))
-                    .ExchangeRatesPage,
-                }),
+                lazy: page('@/features/fx/pages/ExchangeRatesPage', 'ExchangeRatesPage'),
               },
               {
                 path: 'friends',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/social/pages/FriendsPage')).FriendsPage,
-                }),
+                lazy: page('@/features/social/pages/FriendsPage', 'FriendsPage'),
               },
               {
                 path: 'groups',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/groups/pages/GroupsPage')).GroupsPage,
-                }),
+                lazy: page('@/features/groups/pages/GroupsPage', 'GroupsPage'),
               },
               {
                 path: 'groups/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/groups/pages/GroupCreatePage'))
-                    .GroupCreatePage,
-                }),
+                lazy: page('@/features/groups/pages/GroupCreatePage', 'GroupCreatePage'),
               },
               {
                 path: 'groups/join',
-                lazy: async () => ({
-                  Component: (await import('@/features/groups/pages/GroupJoinPage')).GroupJoinPage,
-                }),
+                lazy: page('@/features/groups/pages/GroupJoinPage', 'GroupJoinPage'),
               },
               {
                 path: 'groups/:groupId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/groups/pages/GroupDetailPage'))
-                    .GroupDetailPage,
-                }),
+                lazy: page('@/features/groups/pages/GroupDetailPage', 'GroupDetailPage'),
               },
               {
                 path: 'groups/:groupId/settings',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/groups/pages/GroupSettingsPage'))
-                    .GroupSettingsPage,
-                }),
+                lazy: page('@/features/groups/pages/GroupSettingsPage', 'GroupSettingsPage'),
               },
               {
                 path: 'groups/:groupId/expenses',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/GroupExpensesPage'))
-                    .GroupExpensesPage,
-                }),
+                lazy: page('@/features/group-money/pages/GroupExpensesPage', 'GroupExpensesPage'),
               },
               {
                 path: 'groups/:groupId/expenses/new',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/GroupExpenseCreatePage'))
-                    .GroupExpenseCreatePage,
-                }),
+                lazy: page(
+                  '@/features/group-money/pages/GroupExpenseCreatePage',
+                  'GroupExpenseCreatePage',
+                ),
               },
               {
                 path: 'groups/:groupId/expenses/:expenseId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/GroupExpenseDetailPage'))
-                    .GroupExpenseDetailPage,
-                }),
+                lazy: page(
+                  '@/features/group-money/pages/GroupExpenseDetailPage',
+                  'GroupExpenseDetailPage',
+                ),
               },
               {
                 path: 'groups/:groupId/expenses/:expenseId/edit',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/GroupExpenseEditPage'))
-                    .GroupExpenseEditPage,
-                }),
+                lazy: page(
+                  '@/features/group-money/pages/GroupExpenseEditPage',
+                  'GroupExpenseEditPage',
+                ),
               },
               {
                 path: 'groups/:groupId/balances',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/GroupBalancesPage'))
-                    .GroupBalancesPage,
-                }),
+                lazy: page('@/features/group-money/pages/GroupBalancesPage', 'GroupBalancesPage'),
               },
               {
                 path: 'groups/:groupId/settlements/:settlementId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/SettlementDetailPage'))
-                    .SettlementDetailPage,
-                }),
+                lazy: page(
+                  '@/features/group-money/pages/SettlementDetailPage',
+                  'SettlementDetailPage',
+                ),
               },
               {
                 path: 'groups/:groupId/recurring',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/GroupRecurringPage'))
-                    .GroupRecurringPage,
-                }),
+                lazy: page('@/features/group-money/pages/GroupRecurringPage', 'GroupRecurringPage'),
               },
               {
                 path: 'groups/:groupId/reports',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/group-money/pages/GroupReportsPage'))
-                    .GroupReportsPage,
-                }),
+                lazy: page('@/features/group-money/pages/GroupReportsPage', 'GroupReportsPage'),
               },
               {
                 path: 'communities',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/communities/pages/CommunitiesPage'))
-                    .CommunitiesPage,
-                }),
+                lazy: page('@/features/communities/pages/CommunitiesPage', 'CommunitiesPage'),
               },
               {
                 path: 'communities/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/communities/pages/CommunityCreatePage'))
-                    .CommunityCreatePage,
-                }),
+                lazy: page(
+                  '@/features/communities/pages/CommunityCreatePage',
+                  'CommunityCreatePage',
+                ),
               },
               {
                 path: 'communities/join',
-                lazy: async () => ({
-                  Component: (await import('@/features/communities/pages/CommunityJoinPage'))
-                    .CommunityJoinPage,
-                }),
+                lazy: page('@/features/communities/pages/CommunityJoinPage', 'CommunityJoinPage'),
               },
               {
                 path: 'communities/:communityRef',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/communities/pages/CommunityPage'))
-                    .CommunityPage,
-                }),
+                lazy: page('@/features/communities/pages/CommunityPage', 'CommunityPage'),
               },
               {
                 path: 'communities/:communityRef/settings',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/communities/pages/CommunitySettingsPage'))
-                    .CommunitySettingsPage,
-                }),
+                lazy: page(
+                  '@/features/communities/pages/CommunitySettingsPage',
+                  'CommunitySettingsPage',
+                ),
               },
               {
                 path: 'communities/:communityRef/moderation',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/communities/pages/CommunityModerationPage'))
-                    .CommunityModerationPage,
-                }),
+                lazy: page(
+                  '@/features/communities/pages/CommunityModerationPage',
+                  'CommunityModerationPage',
+                ),
               },
               {
                 path: 'posts/:postId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/communities/pages/PostPage')).PostPage,
-                }),
+                lazy: page('@/features/communities/pages/PostPage', 'PostPage'),
               },
               {
                 path: 'challenges',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/challenges/pages/ChallengesPage'))
-                    .ChallengesPage,
-                }),
+                lazy: page('@/features/challenges/pages/ChallengesPage', 'ChallengesPage'),
               },
               {
                 path: 'challenges/new',
-                lazy: async () => ({
-                  Component: (await import('@/features/challenges/pages/ChallengeCreatePage'))
-                    .ChallengeCreatePage,
-                }),
+                lazy: page(
+                  '@/features/challenges/pages/ChallengeCreatePage',
+                  'ChallengeCreatePage',
+                ),
               },
               {
                 path: 'challenges/:challengeId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/challenges/pages/ChallengeDetailPage'))
-                    .ChallengeDetailPage,
-                }),
+                lazy: page(
+                  '@/features/challenges/pages/ChallengeDetailPage',
+                  'ChallengeDetailPage',
+                ),
               },
               {
                 path: 'settings/moderation',
-                lazy: async () => ({
-                  Component: (await import('@/features/moderation/pages/MyModerationPage'))
-                    .MyModerationPage,
-                }),
+                lazy: page('@/features/moderation/pages/MyModerationPage', 'MyModerationPage'),
               },
               {
                 path: 'staff/moderation',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/moderation/pages/PlatformModerationPage'))
-                    .PlatformModerationPage,
-                }),
+                lazy: page(
+                  '@/features/moderation/pages/PlatformModerationPage',
+                  'PlatformModerationPage',
+                ),
               },
               {
                 path: 'notifications',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/notifications/pages/NotificationsPage'))
-                    .NotificationsPage,
-                }),
+                lazy: page('@/features/notifications/pages/NotificationsPage', 'NotificationsPage'),
               },
               {
                 path: 'settings/notifications',
-                lazy: async () => ({
-                  Component: (
-                    await import('@/features/notifications/pages/NotificationSettingsPage')
-                  ).NotificationSettingsPage,
-                }),
+                lazy: page(
+                  '@/features/notifications/pages/NotificationSettingsPage',
+                  'NotificationSettingsPage',
+                ),
               },
               {
                 path: 'settings/integrations',
-                lazy: async () => ({
-                  Component: (await import('@/features/integrations/pages/IntegrationsPage'))
-                    .IntegrationsPage,
-                }),
+                lazy: page('@/features/integrations/pages/IntegrationsPage', 'IntegrationsPage'),
               },
               {
                 path: 'settings/integrations/:provider/callback',
-                lazy: async () => ({
-                  Component: (await import('@/features/integrations/pages/IntegrationCallbackPage'))
-                    .IntegrationCallbackPage,
-                }),
+                lazy: page(
+                  '@/features/integrations/pages/IntegrationCallbackPage',
+                  'IntegrationCallbackPage',
+                ),
               },
               {
                 path: 'search',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/search/pages/SearchPage')).SearchPage,
-                }),
+                lazy: page('@/features/search/pages/SearchPage', 'SearchPage'),
               },
               {
                 path: 'insights',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/insights/pages/InsightsPage')).InsightsPage,
-                }),
+                lazy: page('@/features/insights/pages/InsightsPage', 'InsightsPage'),
               },
               {
                 path: 'help',
-                lazy: async () => ({
-                  Component: (await import('@/features/support/pages/HelpPage')).HelpPage,
-                }),
+                lazy: page('@/features/support/pages/HelpPage', 'HelpPage'),
+              },
+              {
+                path: 'help/guides',
+                lazy: page('@/features/support/pages/GuidesPage', 'GuidesPage'),
+              },
+              {
+                path: 'help/guides/:guideId',
+                handle: wide,
+                lazy: page('@/features/support/pages/GuidePage', 'GuidePage'),
               },
               {
                 path: 'help/requests/:requestId',
-                lazy: async () => ({
-                  Component: (await import('@/features/support/pages/SupportRequestPage'))
-                    .SupportRequestPage,
-                }),
+                lazy: page('@/features/support/pages/SupportRequestPage', 'SupportRequestPage'),
               },
               {
                 path: 'staff/support',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/support/pages/SupportQueuePage'))
-                    .SupportQueuePage,
-                }),
+                lazy: page('@/features/support/pages/SupportQueuePage', 'SupportQueuePage'),
               },
               {
                 path: 'staff/usage',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/admin/pages/AdminUsagePage')).AdminUsagePage,
-                }),
+                lazy: page('@/features/admin/pages/AdminUsagePage', 'AdminUsagePage'),
+              },
+              {
+                path: 'staff/jobs',
+                handle: wide,
+                lazy: page('@/features/admin/pages/AdminJobsPage', 'AdminJobsPage'),
+              },
+              {
+                path: 'staff/jobs/:jobId',
+                handle: wide,
+                lazy: page('@/features/admin/pages/AdminJobDetailPage', 'AdminJobDetailPage'),
               },
               {
                 path: 'settings/privacy',
-                lazy: async () => ({
-                  Component: (await import('@/features/privacy/pages/PrivacySettingsPage'))
-                    .PrivacySettingsPage,
-                }),
+                lazy: page('@/features/privacy/pages/PrivacySettingsPage', 'PrivacySettingsPage'),
               },
               {
                 path: 'settings/limits',
-                lazy: async () => ({
-                  Component: (await import('@/features/privacy/pages/LimitsPage')).LimitsPage,
-                }),
+                lazy: page('@/features/privacy/pages/LimitsPage', 'LimitsPage'),
               },
               {
                 path: 'insights/:insightId',
                 handle: wide,
-                lazy: async () => ({
-                  Component: (await import('@/features/insights/pages/InsightsPage')).InsightsPage,
-                }),
+                lazy: page('@/features/insights/pages/InsightsPage', 'InsightsPage'),
               },
               {
                 // The return address providers are given (WEB_APP_URL/integrations/{provider}/callback).
                 path: 'integrations/:provider/callback',
-                lazy: async () => ({
-                  Component: (await import('@/features/integrations/pages/IntegrationCallbackPage'))
-                    .IntegrationCallbackPage,
-                }),
+                lazy: page(
+                  '@/features/integrations/pages/IntegrationCallbackPage',
+                  'IntegrationCallbackPage',
+                ),
               },
               // App-neutral deep links used in notifications and emails.
               {
@@ -784,25 +627,19 @@ export const routes: RouteObject[] = [
               },
               {
                 path: 'account',
-                lazy: async () => ({
-                  Component: (await import('@/features/account/pages/AccountOverviewPage'))
-                    .AccountOverviewPage,
-                }),
+                lazy: page('@/features/account/pages/AccountOverviewPage', 'AccountOverviewPage'),
               },
               {
                 path: 'settings/profile',
-                lazy: async () => ({
-                  Component: (await import('@/features/settings/pages/ProfileSettingsPage'))
-                    .ProfileSettingsPage,
-                }),
+                lazy: page('@/features/settings/pages/ProfileSettingsPage', 'ProfileSettingsPage'),
               },
               { path: 'settings', element: <LegacyRedirect to={() => '/settings/profile'} /> },
               {
                 path: 'settings/security',
-                lazy: async () => ({
-                  Component: (await import('@/features/settings/pages/SecuritySettingsPage'))
-                    .SecuritySettingsPage,
-                }),
+                lazy: page(
+                  '@/features/settings/pages/SecuritySettingsPage',
+                  'SecuritySettingsPage',
+                ),
               },
             ],
           },

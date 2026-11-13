@@ -5,6 +5,7 @@ import { ChangePasswordCard } from '../components/ChangePasswordCard';
 import { SessionsCard } from '../components/SessionsCard';
 import { SignOutEverywhereCard } from '../components/SignOutEverywhereCard';
 import { TwoStepCard } from '../components/TwoStepCard';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 export function SecuritySettingsPage() {
   const t = useT();
@@ -12,6 +13,7 @@ export function SecuritySettingsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="twoStep" />}
         title={t('settings.security.title')}
         description={t('settings.security.description')}
       />

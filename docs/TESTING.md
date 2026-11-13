@@ -36,6 +36,78 @@ Normal behavior, invalid input, unauthorized access (User A vs User B),
 boundary conditions, concurrency (where relevant), duplicate requests
 (idempotency), rollback on failure, failure recovery, financial accuracy.
 
+## Per-feature release gate (TEST-005)
+
+A feature is ready for a release only when every gate below has evidence:
+a test that ran (with the command and date in
+`docs/IMPLEMENTATION_STATUS.md`, test results log), a CI run on the
+release commit, or a document. "Not applicable" is allowed only with a
+one-line reason. Hosted-only gates (H1–H3) are owner-run and cannot be
+satisfied locally. Record the result per feature in
+`docs/FEATURE_COVERAGE.md`.
+
+### Gates
+
+| # | Gate | Evidence |
+|---|---|---|
+| G1 | Scope: every spec row for the feature in `REQUIREMENTS_TRACEABILITY.md` is implemented and verified, or deferred with the owner's written agreement | traceability rows, `FEATURE_COVERAGE.md` |
+| G2 | Behavior: API tests for the normal path, invalid input (422 with the documented `details[0].code`), boundary values, duplicate requests (idempotency replay and key reuse), stale `version` (409 `VERSION_CONFLICT`), rollback on failure and failure recovery ("Required coverage per feature") | `backend/tests/api`, `make test-integration` |
+| G3 | Isolation: User A cannot read, change or infer User B's records through any operation (404/403, no counts or names leaked). Group and community scopes are tested for members, former members and outsiders | API tests; `backend/tests/rls` for each new table or policy; `TestAuthorizationInventory`; `docs/AUTHORIZATION_MATRIX.md` row per operation |
+| G4 | Money accuracy: amounts in minor units with the currency exponent (INR, JPY, KWD cases), exact decimal strings in the API, totals that reconcile with the ledger, and unit or fuzz tests for new arithmetic in `internal/domain` | domain tests, API tests |
+| G5 | Schema: the migration is additive and forward-only, RLS is on and the privileges are as intended in `DATA_DICTIONARY.md`, sqlc and docs are regenerated, and queries on high-volume tables are index-backed (`QUERY_PLAN_REVIEW.md`), with cursor pagination and caps on every list | `make docs-check`, `make sqlc` diff, plan review |
+| G6 | Background work: every job has a handler (`TestJobInventory`), retries are idempotent, scheduled work recovers after an outage (injected clock), and notification texts carry no amounts (apitest guard) | API tests, `docs/BACKGROUND_JOBS.md` |
+| G7 | Contract: `make contract-check` is clean. The web and mobile generated types are current, and the mobile endpoint contract test covers every call the app makes | CI `backend`, `web`, `mobile` jobs |
+| G8 | Web: component tests with MSW (unmocked requests fail), lint (type-aware, jsx-a11y, module boundaries) and typecheck clean, the primary flow in a Playwright journey on the desktop, phone and tablet projects, and axe clean on new screens | `pnpm test`, `pnpm lint`, `make e2e` |
+| G9 | Mobile: unit and widget tests in `mobile/test/features/<feature>` (errors, empty, loading, large text), `flutter analyze` and `make mobile-imports` clean, and the primary flow exercised on a device or emulator (the `integration_test` journey or a recorded manual run) | `flutter test`, `make e2e-mobile` |
+| G10 | Security and privacy: threat-model entry for new inputs, files or providers; no personal values in logs (`TestLogsNeverContainPersonalValues` covers the new paths); the feature's data is in the export and removed by account deletion; a retention window is set where it applies | `docs/THREAT_MODEL.md`, privacy and retention API tests |
+| G11 | Boundaries and quality: golangci-lint (incl. depguard), gofmt, `go vet`, govulncheck, `pnpm audit` and the secrets scan are clean. New cross-module imports are added to the allowlists deliberately | CI |
+| G12 | Documentation: `FEATURES.md` section, generated error-code tables, data dictionary and knowledge graph, and runbook entries for new alerts or jobs | `make docs-check`, review |
+| H1 | Providers: the real adapter (Appwrite, SMTP, push, AI, FX, bank or aggregator) is verified against the hosted provider by the owner | owner-run provider test or checklist (`DEPLOYMENT.md`) |
+| H2 | Staging: smoke test of the feature's primary flow on staging, web and both mobile platforms, with the hosted RLS checks done (`DEPLOYMENT.md` §1.2) | staging run record |
+| H3 | Load: if the feature adds a high-volume read or write path, it is in the load-test mix and meets ADR-025 (read p95 < 500 ms, write p95 < 800 ms, errors < 1 %) at staging volume | `make load-test` (staging, owner-approved target) |
+
+### Where each feature's evidence lives
+
+Primary suites per feature domain (the domains of
+`docs/KNOWLEDGE_GRAPH.md`). Backend API files are in `backend/tests/api`,
+web journeys in `web/e2e`, and mobile tests in `mobile/test/features`
+unless noted. The cross-cutting files (`round6_test.go`, `round8_test.go`,
+`logging_test.go`, `retention_test.go`, `contract_test.go`,
+`client_contract_test.go`), `backend/tests/rls`, `web/e2e/accessibility.spec.ts`,
+`public.spec.ts`, `resilience.spec.ts` and the mobile
+`a11y_guidelines_test.dart`/`large_text_test.dart` apply to every feature.
+
+| Feature domain | Backend API | Web (`web/e2e`) | Mobile |
+|---|---|---|---|
+| Identity, auth & profile | `auth_test.go`, `coverage_account_test.go` | `auth-journey.spec.ts` | `auth/`, `settings/`, `onboarding/`; on-device `integration_test/app_journeys_test.dart` |
+| Accounts, transactions & categories | `finance_test.go`, `coverage_finance_test.go`, `organize_test.go` | `finance-journey.spec.ts`, `money-journeys.spec.ts` | `accounts/`, `transactions/`, `labels/`, `payment_methods/`; on-device journey |
+| Multi-currency | `reports_fx_fixes_test.go` | `money-journeys.spec.ts` (foreign-currency account) | `fx/` |
+| Budgets | `budgets_test.go`, `coverage_budgets_test.go` | `money-journeys.spec.ts`, `planning-journey.spec.ts`, `groups-journey.spec.ts` (household budget) | `budgets/` |
+| Recurring, bills & calendar | `planning_test.go`, `planning_fixes_test.go`, `coverage_planning_test.go` | `planning-journey.spec.ts` | `recurring/`, `bills/`, `calendar/` |
+| Subscriptions | `planning_test.go`, `subs_goals_fixes_test.go` | `money-journeys.spec.ts`, `planning-journey.spec.ts` | `subscriptions/` |
+| Goals & savings | `planning_test.go`, `subs_goals_fixes_test.go` | `planning-journey.spec.ts` | `goals/` |
+| Dashboard, analytics & reports | `reports_test.go`, `reports_fx_fixes_test.go` | `money-journeys.spec.ts` (CSV report) | `dashboard/`, `analytics/`, `reports/` |
+| Imports & reconciliation | `imports_test.go`, `imports_recon_fixes_test.go` | `imports-receipts-journey.spec.ts` | `imports/`, `reconciliation/` |
+| Receipts & files | `files_test.go`, `coverage_files_test.go`, `receipts_social_fixes_test.go` | `imports-receipts-journey.spec.ts` | `receipts/` |
+| Groups, splits & settlements | `groups_test.go`, `groups_fixes_test.go`, `coverage_groups_test.go` | `groups-journey.spec.ts` | `groups/`, `group_money/`; on-device journey (group expense) |
+| Friends & social graph | `coverage_social_test.go`, `receipts_social_fixes_test.go` | — | `social/`, `people/` |
+| Communities | `communities_test.go`, `community_moderation_fixes_test.go` | `community-journey.spec.ts` | `communities/` |
+| Challenges | `communities_test.go` | `community-journey.spec.ts` (challenge) | `challenges/` |
+| Moderation | `community_moderation_fixes_test.go` | — | `moderation/` |
+| Notifications | `notifications_test.go`, `notifications_fixes_test.go`, `coverage_notifications_test.go` | `community-journey.spec.ts`, `money-journeys.spec.ts` (alerts and reminders) | `notifications/` |
+| Insights & AI | `ai_test.go`, `insights_more_test.go`, `insights_fixes_test.go`, `coverage_insights_test.go` | — | `insights/` |
+| Integrations | `integrations_test.go` | — | `integrations/` |
+| Search | `search_support_test.go` | — | `search/` |
+| Help & support | `search_support_test.go` | — | `support/` |
+| Privacy & fair use | `privacy_test.go`, `privacy_fixes_test.go`, `retention_test.go`, `fairuse_admin_test.go` | `privacy-journey.spec.ts` | `privacy/` |
+| Admin & cost | `fairuse_admin_test.go` | — | — (web only) |
+| Platform & cross-cutting | `logging_test.go`, `contract_test.go`, `client_contract_test.go` | `public.spec.ts`, `resilience.spec.ts`, `accessibility.spec.ts` | `a11y_guidelines_test.dart`, `large_text_test.dart` |
+
+A dash means no dedicated journey exists yet. For those features, G8 or G9
+needs a journey or a recorded manual run before release. H1–H3 are open
+for every feature until the owner runs them on staging
+(`docs/READINESS_REPORT.md`).
+
 ## Synthetic data rules
 
 Seeds and fixtures are deterministic and clearly synthetic (names like

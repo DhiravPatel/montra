@@ -394,6 +394,8 @@ class _TransactionFilterScreenState
               icon: Icons.credit_card_outlined,
               value: _f.paymentMethodId == null
                   ? l10n.filterAny
+                  : _f.withoutPaymentMethod
+                  ? l10n.paymentNone
                   : (methods[_f.paymentMethodId]?.label ??
                         l10n.filterOneSelected),
               onTap: () async {

@@ -9,6 +9,7 @@ export const analyticsKeys = {
   income: (query: object) => ['finance', 'analytics', 'income', query] as const,
   categories: (query: object) => ['finance', 'analytics', 'categories', query] as const,
   merchants: (query: object) => ['finance', 'analytics', 'merchants', query] as const,
+  paymentMethods: (query: object) => ['finance', 'analytics', 'payment-methods', query] as const,
   accounts: (overviewOnly: boolean) =>
     ['finance', 'analytics', 'accounts', { overviewOnly }] as const,
   compare: (query: object) => ['finance', 'analytics', 'compare', query] as const,

@@ -21,8 +21,8 @@ migrate: ## Apply migrations to montra_dev (prints target first)
 migrate-status: ## Show migration status for montra_dev
 	cd backend && go run ./cmd/migrate status
 
-seed: ## Load deterministic synthetic seed data into montra_dev
-	cd backend && go run ./cmd/migrate seed
+seed: ## Load deterministic demo users and data (demo.*@example.com) into montra_dev; idempotent; development/test only
+	cd backend && go run ./cmd/seed
 
 db-reset-dev: ## DESTRUCTIVE for montra_dev only: drop schema montra and re-migrate (asks for confirmation)
 	@read -p "Type montra_dev to confirm reset of schema montra in montra_dev: " c; cd backend && go run ./cmd/migrate reset -confirm $$c
@@ -48,20 +48,24 @@ contract-check: ## Fail if the committed contract is out of date
 	cd backend && go run ./cmd/openapi -check -out ../contracts/openapi/montra.v1.json
 
 .PHONY: docs docs-check
-docs: ## Regenerate generated docs (error-code tables in docs/API.md, knowledge graph in docs/knowledge-graph)
+docs: ## Regenerate generated docs (error codes in docs/API.md, docs/DATA_DICTIONARY.md, knowledge graph)
 	python3 scripts/docs/gen_error_codes.py
+	python3 scripts/docs/gen_data_dictionary.py
 	python3 scripts/docs/gen_knowledge_graph.py
 
-docs-check: ## Fail if generated docs are out of date (error codes, knowledge graph + its parser tests)
+docs-check: ## Fail if generated docs are out of date (error codes, data dictionary, knowledge graph + parser tests)
 	python3 scripts/docs/gen_error_codes.py --check
+	python3 -B -m unittest scripts/docs/test_gen_data_dictionary.py
+	python3 scripts/docs/gen_data_dictionary.py --check
 	python3 -B -m unittest scripts/docs/test_gen_knowledge_graph.py
 	python3 scripts/docs/gen_knowledge_graph.py --check
 
 fmt: ## Format Go code
 	cd backend && gofmt -w ./cmd ./internal ./tests
 
-lint: ## Lint Go code
+lint: ## Lint Go code (incl. depguard dependency boundaries; main packages only under cmd/)
 	cd backend && go vet ./... && $(GOLANGCI) run ./...
+	@! grep -rl --include='*.go' '^package main$$' backend/internal backend/tests || { echo "package main belongs under backend/cmd only (ARCH-004)"; exit 1; }
 
 test-backend: ## Go unit tests (no database)
 	cd backend && go test ./internal/...
@@ -107,7 +111,7 @@ e2e-mobile: ## Flutter integration_test journeys on the running Android emulator
 	cd mobile && $(FLUTTER) test integration_test --no-uninstall --dart-define=API_BASE_URL=http://10.0.2.2:8080
 
 # ------------------------------------------------------------------ mobile
-.PHONY: mobile mobile-test mobile-analyze gen-mobile-api
+.PHONY: mobile mobile-test mobile-analyze mobile-imports gen-mobile-api
 mobile: ## Run the Flutter app on the Android emulator (reaches the host API at 10.0.2.2; the app adds /api/v1)
 	cd mobile && $(FLUTTER) run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 
@@ -120,8 +124,11 @@ mobile-test: ## Flutter tests
 mobile-analyze: ## Flutter static analysis
 	cd mobile && $(FLUTTER) analyze
 
+mobile-imports: ## Mobile module boundaries: lib/features and lib/core import rules (ARCH-004)
+	cd mobile && dart run tool/check_imports.dart
+
 # --------------------------------------------------------------- aggregate
 .PHONY: test check
 test: test-backend test-integration web-test mobile-test ## All test suites
 
-check: contract-check docs-check lint test web-lint web-build mobile-analyze ## Everything CI runs
+check: contract-check docs-check lint test web-lint web-build mobile-analyze mobile-imports ## Everything CI runs

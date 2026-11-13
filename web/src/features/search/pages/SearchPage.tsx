@@ -10,6 +10,7 @@ import { Spinner } from '@/shared/components/Spinner';
 import { EmptyState, ErrorState, LoadingState, PermissionDenied } from '@/shared/components/states';
 import { paths } from '@/shared/config/paths';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
+import { SavedFilters } from '@/shared/savedFilters/SavedFilters';
 import { useT } from '@/shared/i18n/I18nContext';
 import { useSearchResults } from '../api';
 import { RecentSearches } from '../components/RecentSearches';
@@ -17,6 +18,7 @@ import { SearchResultSections } from '../components/SearchResultSections';
 import { SEARCH_PAGE_INPUT_ID, sectionHeadingId } from '../ids';
 import { scopeLabel, sortLabel } from '../labels';
 import {
+  fromSavedSearch,
   isSearchable,
   isSearchScope,
   isSearchSort,
@@ -30,7 +32,9 @@ import {
   SEARCH_MIN_LENGTH,
   SEARCH_SECTIONS,
   SEARCH_SORTS,
+  type SavedSearch,
   type SearchLocationState,
+  toSavedSearch,
 } from '../query';
 import { SEARCH_SHORTCUT, useSearchShortcut } from '../shortcut';
 import type { RecentSearch, SearchRequest, SearchScope, SearchSection, SearchSort } from '../types';
@@ -206,6 +210,14 @@ export function SearchPage() {
     inputRef.current?.focus();
   };
 
+  // Running a saved search remembers it in recent searches, like submitting it.
+  const runSaved = (saved: SavedSearch) => {
+    setText(saved.q);
+    setScope(saved.scope);
+    setSort(saved.sort);
+    setActive({ q: saved.q, save: true });
+  };
+
   const showMore = (section: SearchSection) => {
     changeScope(section);
     setShowMoreFocus({ section });
@@ -285,7 +297,18 @@ export function SearchPage() {
 
   return (
     <>
-      <PageHeader title={t('search.title')} description={t('search.description')} />
+      <PageHeader
+        title={t('search.title')}
+        description={t('search.description')}
+        actions={
+          <SavedFilters
+            scope="search"
+            current={toSavedSearch(text, scope, sort) as Readonly<Record<string, unknown>> | null}
+            parse={fromSavedSearch}
+            onApply={runSaved}
+          />
+        }
+      />
       <form
         role="search"
         aria-label={t('search.form.label')}

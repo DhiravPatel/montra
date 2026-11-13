@@ -67,6 +67,8 @@ export const paths = Object.freeze({
   contact: '/contact',
   staffSupport: '/staff/support',
   staffUsage: '/staff/usage',
+  /** Background jobs (JOB-007, platform admins). */
+  staffJobs: '/staff/jobs',
   privacySettings: '/settings/privacy',
   limits: '/settings/limits',
 });
@@ -116,6 +118,7 @@ export const postPath = (id: string) => `/posts/${encodeURIComponent(id)}`;
 export const challengePath = (id: string) => `${paths.challenges}/${encodeURIComponent(id)}`;
 /** One insight on the insights page (highlighted there). */
 export const insightPath = (id: string) => `${paths.insights}/${encodeURIComponent(id)}`;
+export const staffJobPath = (id: string) => `${paths.staffJobs}/${encodeURIComponent(id)}`;
 export const supportRequestPath = (id: string) =>
   `${paths.help}/requests/${encodeURIComponent(id)}`;
 export const integrationCallbackPath = (provider: string) =>

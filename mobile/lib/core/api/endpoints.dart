@@ -1157,6 +1157,11 @@ abstract final class ApiEndpoints {
     '/analytics/income',
     requiresAuth: true,
   );
+  static const ApiEndpoint analyticsPaymentMethods = ApiEndpoint(
+    'GET',
+    '/analytics/payment-methods',
+    requiresAuth: true,
+  );
   static const ApiEndpoint analyticsMerchants = ApiEndpoint(
     'GET',
     '/analytics/merchants',
@@ -1970,6 +1975,23 @@ abstract final class ApiEndpoints {
     requiresAuth: true,
   );
 
+  // Saved filters (transactions list and search; no update, no cap).
+  static const ApiEndpoint listSavedFilters = ApiEndpoint(
+    'GET',
+    '/saved-filters',
+    requiresAuth: true,
+  );
+  static const ApiEndpoint createSavedFilter = ApiEndpoint(
+    'POST',
+    '/saved-filters',
+    requiresAuth: true,
+  );
+  static const ApiEndpoint deleteSavedFilter = ApiEndpoint(
+    'DELETE',
+    '/saved-filters/{id}',
+    requiresAuth: true,
+  );
+
   // Round 5: search and insights (deterministic insights only; no AI generation).
   static const ApiEndpoint search = ApiEndpoint(
     'GET',
@@ -2314,6 +2336,7 @@ abstract final class ApiEndpoints {
     analyticsExpenses,
     analyticsIncome,
     analyticsMerchants,
+    analyticsPaymentMethods,
     analyticsBudgets,
     analyticsGoals,
     analyticsSubscriptions,
@@ -2471,6 +2494,9 @@ abstract final class ApiEndpoints {
     integrationStatus,
     syncIntegration,
     disconnectIntegration,
+    listSavedFilters,
+    createSavedFilter,
+    deleteSavedFilter,
     search,
     recentSearches,
     clearRecentSearches,

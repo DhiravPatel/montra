@@ -92,6 +92,19 @@ class AnalyticsApi {
         decodeEnvelopeMerchantReport(json).data,
   );
 
+  /// `GET /analytics/payment-methods`: net spending per payment method,
+  /// with a bucket (`key: unspecified`) for spending without one. Pass
+  /// [currency] so the ranking stays within one currency.
+  Future<PaymentMethodReport> paymentMethods(
+    DateRangeChoice range, {
+    String? currency,
+  }) => _client.send(
+    ApiEndpoints.analyticsPaymentMethods,
+    query: <String, Object?>{...rangeQuery(range), 'currency': currency},
+    decode: (Map<String, Object?> json) =>
+        decodeEnvelopePaymentMethodReport(json).data,
+  );
+
   /// `GET /analytics/accounts`: assets, liabilities and net worth per
   /// currency (only accounts in the overview when [overviewOnly]).
   Future<AccountsReport> accounts({bool overviewOnly = false}) => _client.send(

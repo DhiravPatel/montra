@@ -7,11 +7,13 @@ import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/auth/auth_controller.dart';
 import 'package:montra_mobile/core/files/file_policy.dart';
 import 'package:montra_mobile/core/files/file_source.dart';
+import 'package:montra_mobile/core/files/image_preparer.dart';
 import 'package:montra_mobile/core/files/sha256.dart';
 
 /// Where an upload is.
 enum UploadStage {
-  /// Checking the file and computing its checksum on the device.
+  /// Preparing the file (photos are scaled down and their metadata
+  /// removed), checking it and computing its checksum on the device.
   checking,
 
   /// Asking the server for an upload (`POST /files/upload-intent`).
@@ -50,23 +52,30 @@ class FileRejected implements Exception {
 ///
 /// The result is the ready [FileDto], whose `id` the caller then links
 /// (`POST /receipts`, `POST /transactions/{id}/attachments`,
-/// `POST /imports`). Files are checked against the purpose's limits first
-/// ([FileRejected]); server refusals surface as `ApiException`s.
+/// `POST /imports`). Photos are first prepared by [ImagePreparer] (scaled to
+/// at most 2048 px, re-encoded, location removed); the size and checksum
+/// sent are those of the prepared bytes, which are exactly the bytes sent.
+/// Files are then checked against the purpose's limits ([FileRejected]);
+/// server refusals surface as `ApiException`s.
 class FileUploader {
-  /// Creates the uploader over [client]; [checksum] is injectable for
-  /// tests.
-  FileUploader(this._client, {Future<String> Function(Uint8List)? checksum})
-    : _checksum = checksum ?? _isolateChecksum;
+  /// Creates the uploader over [client]; [checksum] and [preparer] are
+  /// injectable for tests.
+  FileUploader(
+    this._client, {
+    Future<String> Function(Uint8List)? checksum,
+    this._preparer = const ImagePreparer(),
+  }) : _checksum = checksum ?? _isolateChecksum;
 
   final ApiClient _client;
   final Future<String> Function(Uint8List bytes) _checksum;
+  final ImagePreparer _preparer;
 
   /// Uploads [file] for [purpose]. [onStage] reports progress through the
   /// steps and [onProgress] the share of bytes sent (0–1). Cancelling
   /// [cancelToken] stops the transfer; an unfinished upload expires on the
   /// server. Group purposes (`group_attachment`) need the [groupId].
   Future<FileDto> upload(
-    PickedFile file,
+    PickedFile picked,
     UploadPurpose purpose, {
     String? groupId,
     void Function(UploadStage stage)? onStage,
@@ -74,6 +83,7 @@ class FileUploader {
     CancelToken? cancelToken,
   }) async {
     onStage?.call(UploadStage.checking);
+    final PickedFile file = await _preparer.prepare(picked, purpose);
     final FileProblem? problem = purpose.check(file.name, file.sizeBytes);
     if (problem != null) {
       throw FileRejected(problem, purpose);
@@ -147,5 +157,8 @@ class FileUploader {
 
 /// The uploader used by screens. Overridden in tests.
 final Provider<FileUploader> fileUploaderProvider = Provider<FileUploader>(
-  (Ref ref) => FileUploader(ref.watch(apiClientProvider)),
+  (Ref ref) => FileUploader(
+    ref.watch(apiClientProvider),
+    preparer: ref.watch(imagePreparerProvider),
+  ),
 );

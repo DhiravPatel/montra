@@ -10,6 +10,7 @@ import { DeactivateCard } from '../components/DeactivateCard';
 import { DeletionCard } from '../components/DeletionCard';
 import { ExportCard } from '../components/ExportCard';
 import { useLimits } from '../hooks';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 /**
  * Privacy & data: optional consents, a full data export, deactivation and
@@ -25,6 +26,7 @@ export function PrivacySettingsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="privacy" />}
         title={t('privacySettings.title')}
         description={
           <>

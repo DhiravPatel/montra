@@ -110,8 +110,8 @@ The `code` field is a closed enum in the contract (`ErrorObject.code`).
 | `TIMEOUT` | 504 (499 if the client cancelled) | Retry later |
 | `INTERNAL_ERROR` | 500 | Unexpected; report `request_id` |
 | `SERVICE_UNAVAILABLE` | 503 | Dependency down; retry later |
-| `STORAGE_UNAVAILABLE` | 503 | File storage not configured/unavailable |
-| `PROVIDER_UNAVAILABLE` | 503 | External provider (captcha, AI, FX) unavailable |
+| `STORAGE_UNAVAILABLE` | 503 | File storage not configured/unavailable (also while its circuit breaker is open) |
+| `PROVIDER_UNAVAILABLE` | 503 | External provider (captcha, AI, FX, integrations) unavailable, including while its circuit breaker is open; retry later |
 | `FEATURE_NOT_CONFIGURED` | 503 | Optional integration not configured in this environment |
 
 Three different codes share HTTP 401 on purpose (`UNAUTHENTICATED`,
@@ -584,6 +584,30 @@ refresh.
     group_name, outcome: ownership_transfer | deleted}, text}]`.
 - **`GET /admin/usage?days=30`:** platform admins only. Aggregate counts
   and a daily series, never personal data.
+- **Operator jobs (JOB-007), platform admins only** (`staff: admin`;
+  users and support staff get 403 `FORBIDDEN`):
+  - `GET /admin/jobs` (`admin-jobs-list`) pages jobs newest first
+    (`cursor`, `limit` 1–200, default 50; `meta.next_cursor` /
+    `has_more`). Filters: `status` (`queued`, `running`, `succeeded`,
+    `failed`, `dead`, `cancelled`), `type` (exact, e.g.
+    `notifications.deliver`), `from` / `to` (UTC creation dates,
+    inclusive; `to` before `from` is 422 on `query.to`). Each job:
+    `id, type, queue, status, priority, attempts, max_attempts,
+    last_error_code?, user_scoped, cancel_requested, retryable,
+    run_after, created_at, updated_at, started_at?, finished_at?`.
+  - `GET /admin/jobs/{id}` (`admin-jobs-get`) → `{job, attempts:
+    [{attempt, worker_id, outcome?, error_code?, started_at,
+    finished_at?, duration_ms?}]}`, oldest attempt first; unknown → 404.
+  - `POST /admin/jobs/{id}/retry` (`admin-jobs-retry`, `Idempotency-Key`
+    required, `write` rate policy) re-queues a `failed` or `dead` job
+    with at least one more attempt and returns the job (`status:
+    queued`). Same key → the original result with `Idempotent-Replayed:
+    true`. Any other status → 422 `DOMAIN_RULE_VIOLATION`
+    `job_not_retryable` with params `status`, `from`, `to`. Audited.
+  - Never returned: payloads, results, error messages, dedupe keys or
+    the person a job acts for (`user_scoped` says only whether there is
+    one). Error codes include `provider_circuit_open` (an open circuit
+    breaker refused the provider call; see OPERATIONS.md).
 - **`GET /analytics/compare`:** takes `from`, `to`, `compare_from`,
   `compare_to` and the usual analytics filters. It returns per-currency
   totals for both periods, the change of each total (`change`), and
@@ -662,6 +686,20 @@ refresh.
   the list is grouped by currency (alphabetical), largest first.
   Categories (and the dashboard's top merchants and categories) are
   ranked per currency the same way.
+- **`GET /analytics/payment-methods`** (`analytics-payment-methods`,
+  ANL-002) is net spending per payment method with the same range,
+  `from`/`to` and filters as `/analytics/categories` and the
+  `/analytics/expenses` types (refunds and reimbursements reduce it; a
+  refund without its own payment method reduces the payment method of
+  the purchase it refunds). `{window, payment_methods: [{payment_method_id?,
+  key, label, kind, network?, masked_hint?, archived, currency,
+  net_expense, count, share_bp, drill_down_path}]}`, grouped by currency
+  (alphabetical), largest first, up to 100 per currency; currencies are
+  never added together. Spending without a payment method is the bucket
+  with `key` and `kind` `unspecified` (no `payment_method_id`; localize
+  its `label` by key). Archived payment methods keep their spending.
+  `GET /transactions?payment_method_id=none` lists transactions without
+  a payment method (the bucket's drill-down).
 - **`GET /analytics/categories?kind=income`** gives income per category
   with the `/analytics/income` types (`kind=expense`, the default, is net
   spending). Each category has `amount` (net expense or income, by
@@ -897,6 +935,10 @@ refresh.
   trials count once they convert. A trial whose first charge falls on its
   end date appears once in the calendar, as `trial_end` with that charge's
   amount.
+- **Achieved goals:** a goal that reaches its target becomes `achieved` and
+  reopens (`active`) if a withdrawal takes it below target; a goal marked
+  achieved by hand (`POST /goals/{id}/achieve`) stays achieved, and
+  withdrawals are still accepted.
 - **Weekly analytics buckets** (`series_granularity`/`trend_granularity`
   `week`) start on your `week_start` preference.
 - **Avatar:** `PATCH /me {"avatar_file_id"}` takes a ready file you uploaded
@@ -940,7 +982,7 @@ fallback.
 
 <!-- BEGIN GENERATED: error codes (scripts/docs/gen_error_codes.py) -->
 
-### 422 `DOMAIN_RULE_VIOLATION` (106 codes)
+### 422 `DOMAIN_RULE_VIOLATION` (107 codes)
 
 | Code | Example message |
 |---|---|
@@ -992,6 +1034,7 @@ fallback.
 | `invitation_only` | This community is invitation only. |
 | `items_exceed_total` | Items add up to more than the total. |
 | `items_need_amount` | At least one item needs an amount. |
+| `job_not_retryable` | Only failed or dead jobs can be retried. |
 | `join_challenge_first` | Join the challenge first. |
 | `join_community_first` | Join the community to take part. |
 | `leaderboard_opt_in_required` | Join the challenge and choose to appear on the leaderboard to see it. |

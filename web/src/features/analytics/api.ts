@@ -13,6 +13,7 @@ import type {
   Comparison,
   GoalReport,
   MerchantReport,
+  PaymentMethodReport,
   RecurringReport,
   SubscriptionSummary,
 } from './types';
@@ -72,6 +73,15 @@ export const analyticsApi = {
   ): Promise<MerchantReport> =>
     apiData(
       api.GET('/analytics/merchants', {
+        params: { query },
+        querySerializer: commaSeparatedArrays,
+        ...signalOption(signal),
+      }),
+    ),
+  /** Net spending per payment method, per currency (ANL-002). */
+  paymentMethods: (query: AnalyticsQuery, signal?: AbortSignal): Promise<PaymentMethodReport> =>
+    apiData(
+      api.GET('/analytics/payment-methods', {
         params: { query },
         querySerializer: commaSeparatedArrays,
         ...signalOption(signal),
@@ -147,6 +157,15 @@ export function useMerchants(query: AnalyticsQuery & { limit?: number }, enabled
   return useQuery({
     queryKey: analyticsKeys.merchants(query),
     queryFn: ({ signal }) => analyticsApi.merchants(query, signal),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function usePaymentMethodBreakdown(query: AnalyticsQuery, enabled = true) {
+  return useQuery({
+    queryKey: analyticsKeys.paymentMethods(query),
+    queryFn: ({ signal }) => analyticsApi.paymentMethods(query, signal),
     enabled,
     placeholderData: keepPreviousData,
   });

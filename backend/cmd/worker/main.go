@@ -43,6 +43,12 @@ func run() error {
 		return err
 	}
 	cfg.ServiceName = "montra-worker"
+	// config.Load checked the worker URL; the app-role URL was swapped out above.
+	if appURL != "" {
+		if err := config.CheckDatabaseTLS(cfg.Env, "DATABASE_URL", appURL); err != nil {
+			return err
+		}
+	}
 	slog.SetDefault(logging.New(os.Stdout, cfg.LogLevel, cfg.LogFormat))
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

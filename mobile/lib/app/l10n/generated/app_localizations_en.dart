@@ -18462,4 +18462,921 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileEditVisibilityBlocked =>
       'People you block never see your profile, whatever you choose here, and you don\'t see theirs.';
+
+  @override
+  String get savedFiltersOpen => 'Saved filters';
+
+  @override
+  String get savedSearchesOpen => 'Saved searches';
+
+  @override
+  String get savedFiltersTitle => 'Saved filters';
+
+  @override
+  String get savedSearchesTitle => 'Saved searches';
+
+  @override
+  String get savedFiltersSaveCurrent => 'Save current filters';
+
+  @override
+  String get savedSearchesSaveCurrent => 'Save this search';
+
+  @override
+  String get savedFiltersNothingToSave =>
+      'Search or choose filters first, then save them here.';
+
+  @override
+  String get savedSearchesNothingToSave =>
+      'Type at least 2 characters to save a search.';
+
+  @override
+  String get savedFiltersEmpty =>
+      'Nothing saved yet. What you save is kept with your account, so it’s on the web too.';
+
+  @override
+  String get savedFiltersSaveTitle => 'Save filters';
+
+  @override
+  String get savedSearchesSaveTitle => 'Save search';
+
+  @override
+  String get savedFiltersNameLabel => 'Name';
+
+  @override
+  String get savedFiltersNameHelp =>
+      'For example “Groceries this month”. Up to 80 characters.';
+
+  @override
+  String get savedFiltersNameRequired => 'Enter a name.';
+
+  @override
+  String get savedFiltersNameTooLong => 'Use 80 characters or fewer.';
+
+  @override
+  String get savedFiltersNameTaken =>
+      'You already saved one with this name. Choose another name.';
+
+  @override
+  String get savedFiltersFilterInvalid =>
+      'These filters can’t be saved. Change them and try again.';
+
+  @override
+  String get savedFiltersSaveAction => 'Save';
+
+  @override
+  String savedFiltersSaved(String name) {
+    return 'Saved “$name”.';
+  }
+
+  @override
+  String savedFiltersApplied(String name) {
+    return 'Showing “$name”.';
+  }
+
+  @override
+  String savedFiltersDeleteTooltip(String name) {
+    return 'Delete “$name”';
+  }
+
+  @override
+  String savedFiltersDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String get savedFiltersDeleteBody =>
+      'It’s removed from your account on every device. Your records don’t change.';
+
+  @override
+  String savedFiltersDeleted(String name) {
+    return 'Deleted “$name”.';
+  }
+
+  @override
+  String savedFiltersAlreadyGone(String name) {
+    return '“$name” was already deleted.';
+  }
+
+  @override
+  String get savedFiltersUnusable =>
+      'Can’t be used in this version of the app.';
+
+  @override
+  String savedFiltersSearchFor(String query) {
+    return 'Search: “$query”';
+  }
+
+  @override
+  String savedFiltersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count filters',
+      one: '1 filter',
+      zero: 'No filters',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get helpGuideTopicStart => 'Getting started';
+
+  @override
+  String get helpGuideTopicCalculations => 'How Montra calculates';
+
+  @override
+  String get helpGuideTopicStatements => 'Statements and reconciliation';
+
+  @override
+  String get helpGuideTopicAccount => 'Privacy, security and limits';
+
+  @override
+  String get helpGuideTopicTroubleshooting => 'Troubleshooting';
+
+  @override
+  String get helpGuidesTitle => 'Guides';
+
+  @override
+  String get helpGuidesDescription =>
+      'Step-by-step guides and how Montra works out your numbers.';
+
+  @override
+  String get helpGuidesSearch => 'Search the guides';
+
+  @override
+  String get helpGuidesSearchHelp =>
+      'Searches titles and text in the current language.';
+
+  @override
+  String helpGuidesNoResults(String query) {
+    return 'No guide matches “$query”. Try another word, or send us a request below.';
+  }
+
+  @override
+  String helpGuidesResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count guides found',
+      one: '1 guide found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get helpGuidesOpen => 'Read the guide';
+
+  @override
+  String get helpGuidesBack => 'All guides';
+
+  @override
+  String get helpGuidesOnThisPage => 'On this page';
+
+  @override
+  String get helpGuidesRelated => 'Where to do this';
+
+  @override
+  String get helpGuidesNotFound =>
+      'This guide doesn’t exist. It may have moved.';
+
+  @override
+  String get helpGuidesContact =>
+      'Didn’t find an answer? Send a support request.';
+
+  @override
+  String get helpGuidesStatus => 'Service status';
+
+  @override
+  String get helpGuidesStatusHelp =>
+      'Check whether Montra is having problems right now.';
+
+  @override
+  String get helpGuidesAffordance => 'How this works';
+
+  @override
+  String helpGuidesAffordanceFor(String guide) {
+    return 'How this works: $guide';
+  }
+
+  @override
+  String get helpGuideGettingStartedTitle =>
+      'Getting started without a bank link';
+
+  @override
+  String get helpGuideGettingStartedSummary =>
+      'Set up accounts, record or import what happens, and plan ahead. Montra never needs your bank login.';
+
+  @override
+  String get helpGuideGettingStartedLink => 'Add an account';
+
+  @override
+  String get helpGuideGettingStartedHowTitle => 'How Montra works';
+
+  @override
+  String get helpGuideGettingStartedHowB1 =>
+      'Montra doesn’t connect to your bank. You tell it what happens: you add your accounts, then record transactions as they happen or import a statement your bank gives you. Your numbers are “tracked”, not verified by a bank.';
+
+  @override
+  String get helpGuideGettingStartedHowB2 =>
+      'The first-time setup is optional and you can skip any step after the welcome. Nothing in it asks for bank details.';
+
+  @override
+  String get helpGuideGettingStartedStepsTitle => 'First steps';
+
+  @override
+  String get helpGuideGettingStartedStepsB1 =>
+      'Add your accounts: cash, bank, savings, card, wallet, UPI, loan and more. Enter today’s balance as the opening balance (for a card or loan, what you owe).';
+
+  @override
+  String get helpGuideGettingStartedStepsB2 =>
+      'Record expenses and income as they happen, and use a transfer when money moves between your own accounts.';
+
+  @override
+  String get helpGuideGettingStartedStepsB3 =>
+      'To bring in many transactions at once, import a statement file (CSV, XLSX, OFX or QFX). To keep a bill, add a photo of the receipt.';
+
+  @override
+  String get helpGuideGettingStartedStepsB4 =>
+      'Add salary, rent and other repeating money as recurring transactions or bills, so they show on the calendar before they’re due.';
+
+  @override
+  String get helpGuideGettingStartedStepsB5 =>
+      'Then set a budget or a savings goal when you’re ready.';
+
+  @override
+  String get helpGuideGettingStartedAccurateTitle => 'Keeping it accurate';
+
+  @override
+  String get helpGuideGettingStartedAccurateB1 =>
+      'Now and then, compare a balance with your bank app or statement. If it’s different, reconcile the account or record a balance adjustment with a reason; the adjustment keeps a history and never counts as income or spending.';
+
+  @override
+  String get helpGuideNoBankTitle => 'Why don’t I see my bank?';
+
+  @override
+  String get helpGuideNoBankSummary =>
+      'Montra can’t connect to any bank yet. Here’s why, and what to use instead.';
+
+  @override
+  String get helpGuideNoBankLink => 'See connected services';
+
+  @override
+  String get helpGuideNoBankTodayTitle => 'No bank linking yet';
+
+  @override
+  String get helpGuideNoBankTodayB1 =>
+      'Montra doesn’t link to any bank today, so no bank appears in the list. The connected services page shows the one option being considered, Account Aggregator (India), as unavailable: it needs an approved partner, registration and a legal review first.';
+
+  @override
+  String get helpGuideNoBankTodayB2 =>
+      'It isn’t a setting you’ve missed, and it isn’t a paid feature. When a connection becomes available, it will appear on that page.';
+
+  @override
+  String get helpGuideNoBankNeverTitle => 'What Montra will never do';
+
+  @override
+  String get helpGuideNoBankNeverB1 =>
+      'Ask for your bank password, PIN, card number or OTP.';
+
+  @override
+  String get helpGuideNoBankNeverB2 =>
+      'Read your SMS or notifications, or scrape your bank’s website.';
+
+  @override
+  String get helpGuideNoBankNeverB3 => 'Move money or make payments for you.';
+
+  @override
+  String get helpGuideNoBankInsteadTitle => 'What to use instead';
+
+  @override
+  String get helpGuideNoBankInsteadB1 =>
+      'Import the statement file your bank lets you download.';
+
+  @override
+  String get helpGuideNoBankInsteadB2 =>
+      'Add receipts from photos, and turn them into transactions.';
+
+  @override
+  String get helpGuideNoBankInsteadB3 =>
+      'Set up recurring transactions so regular income and bills record themselves.';
+
+  @override
+  String get helpGuideBalancesTitle => 'How balances are calculated';
+
+  @override
+  String get helpGuideBalancesSummary =>
+      'Opening balance plus every counted transaction, with transfers and adjustments kept apart from spending.';
+
+  @override
+  String get helpGuideBalancesLink => 'Go to accounts';
+
+  @override
+  String get helpGuideBalancesFormulaTitle => 'The balance';
+
+  @override
+  String get helpGuideBalancesFormulaB1 =>
+      'An account’s balance is its opening balance plus every posted and pending transaction in it. Drafts and deleted (voided) transactions don’t change it. Restoring a deleted transaction counts it again.';
+
+  @override
+  String get helpGuideBalancesFormulaB2 =>
+      'Credit cards and loans are money you owe, so spending on them increases what you owe.';
+
+  @override
+  String get helpGuideBalancesNotSpendingTitle =>
+      'What isn’t income or spending';
+
+  @override
+  String get helpGuideBalancesNotSpendingB1 =>
+      'Transfers between your own accounts change both balances but are never income or spending. A transfer fee is recorded as its own expense.';
+
+  @override
+  String get helpGuideBalancesNotSpendingB2 =>
+      'Balance adjustments correct a balance to match reality. They keep a history with your reason and never count as income or spending.';
+
+  @override
+  String get helpGuideBalancesNotSpendingB3 =>
+      'Refunds reduce spending instead of counting as income.';
+
+  @override
+  String get helpGuideBalancesCurrenciesTitle => 'Several currencies';
+
+  @override
+  String get helpGuideBalancesCurrenciesB1 =>
+      'Amounts in different currencies are never simply added together. Totals are shown per currency, unless you choose a display currency; then Montra converts them and tells you which rate it used.';
+
+  @override
+  String get helpGuideBalancesCurrenciesB2 =>
+      'An account shared with you by your household is read-only for you, and its balance is the owner’s record.';
+
+  @override
+  String get helpGuideBudgetsTitle => 'How budgets are calculated';
+
+  @override
+  String get helpGuideBudgetsSummary =>
+      'What counts as spent, how pace and projections work, and how refunds and rollover change a budget.';
+
+  @override
+  String get helpGuideBudgetsLink => 'Go to budgets';
+
+  @override
+  String get helpGuideBudgetsSpentTitle => 'What counts as spent';
+
+  @override
+  String get helpGuideBudgetsSpentB1 =>
+      'A budget adds up the expenses in its period that match it: its accounts, categories and merchants, and only in the budget’s currency. Transactions in other currencies aren’t counted; the budget tells you how many were left out.';
+
+  @override
+  String get helpGuideBudgetsSpentB2 =>
+      'Transfers and balance adjustments never count.';
+
+  @override
+  String get helpGuideBudgetsSpentB3 =>
+      'Pending transactions count only if the budget includes pending.';
+
+  @override
+  String get helpGuideBudgetsSpentB4 =>
+      'Your share of group expenses counts when the budget includes group shares (the default).';
+
+  @override
+  String get helpGuideBudgetsRefundsTitle => 'Refunds';
+
+  @override
+  String get helpGuideBudgetsRefundsB1 =>
+      'When “refunds restore the budget” is on (the default), refunds and reimbursements are subtracted from what you spent. Spent never goes below zero. When it’s off, refunds don’t change the budget.';
+
+  @override
+  String get helpGuideBudgetsPaceTitle => 'Pace and projection';
+
+  @override
+  String get helpGuideBudgetsPaceB1 =>
+      'Pace compares what you’ve spent with an even pace through the period: the limit × days passed ÷ days in the period.';
+
+  @override
+  String get helpGuideBudgetsPaceB2 => 'On track: within 10% of the even pace.';
+
+  @override
+  String get helpGuideBudgetsPaceB3 =>
+      'Spending faster than expected: more than 10% above it.';
+
+  @override
+  String get helpGuideBudgetsPaceB4 =>
+      'Spending slower than expected: more than 10% below it.';
+
+  @override
+  String get helpGuideBudgetsPaceB5 =>
+      'Over the limit: you’ve spent more than the limit.';
+
+  @override
+  String get helpGuideBudgetsPaceB6 =>
+      'The projection is what you’d spend by the end of the period at your current pace. It’s an estimate, not a promise. The daily amount left is what remains ÷ days left.';
+
+  @override
+  String get helpGuideBudgetsRolloverTitle => 'Rollover';
+
+  @override
+  String get helpGuideBudgetsRolloverB1 =>
+      'Rollover carries money from one period into the next. The carried amount is added to (or taken from) the next period’s limit.';
+
+  @override
+  String get helpGuideBudgetsRolloverB2 =>
+      'Carry unused: what you didn’t spend is added.';
+
+  @override
+  String get helpGuideBudgetsRolloverB3 =>
+      'Carry overspend: what you overspent is taken off.';
+
+  @override
+  String get helpGuideBudgetsRolloverB4 =>
+      'Both: either one, whichever happened.';
+
+  @override
+  String get helpGuideBudgetsRolloverB5 =>
+      'An optional cap limits how much is carried either way. Budgets with a custom period don’t roll over. Editing a budget applies from the current period onward.';
+
+  @override
+  String get helpGuideBudgetsAlertsTitle => 'Alerts';
+
+  @override
+  String get helpGuideBudgetsAlertsB1 =>
+      'Each threshold you choose (for example 50%, 80% and 100%) alerts you once per period. A forecast alert warns when your pace would take you over the limit. You can dismiss or snooze alerts, and an empty threshold list turns threshold alerts off.';
+
+  @override
+  String get helpGuideRecurringTitle => 'Recurring, bills and subscriptions';
+
+  @override
+  String get helpGuideRecurringSummary =>
+      'How repeating transactions are scheduled and posted, how bill status works, and how subscription totals and detection are worked out.';
+
+  @override
+  String get helpGuideRecurringLink => 'Go to bills and recurring';
+
+  @override
+  String get helpGuideRecurringScheduleTitle => 'Schedules';
+
+  @override
+  String get helpGuideRecurringScheduleB1 =>
+      'Every date is worked out from the start date, so a rule on the 31st lands on 31 January, 28 or 29 February and 31 March. Montra checks schedules about every 15 minutes and catches up after any downtime.';
+
+  @override
+  String get helpGuideRecurringScheduleB2 =>
+      'Automatic posting needs a fixed amount and an account, and records exactly one transaction per occurrence. Otherwise you confirm each occurrence, or skip, postpone, change its amount or link a transaction you already recorded.';
+
+  @override
+  String get helpGuideRecurringBillsTitle => 'Bills';
+
+  @override
+  String get helpGuideRecurringBillsB1 =>
+      'A bill’s status comes from its due date and payments: overdue, due today, due soon, upcoming or paid. Mark it paid by linking the real payment (Montra suggests matching transactions) or by recording a new one. Reminders arrive the number of days before that you chose.';
+
+  @override
+  String get helpGuideRecurringSubscriptionsTitle => 'Subscriptions';
+
+  @override
+  String get helpGuideRecurringSubscriptionsB1 =>
+      'Monthly and yearly totals convert each price to a common cycle: a yearly plan counts as one twelfth of its price per month, and a weekly one as 52 payments a year. Totals are kept separate per currency.';
+
+  @override
+  String get helpGuideRecurringSubscriptionsB2 =>
+      'Once a day, Montra looks for charges at the same merchant at a regular interval (weekly to yearly) with similar amounts, and shows them for review. You confirm or dismiss each one. Montra never cancels anything for you; it gives you a checklist and records the cancellation once the provider confirms it.';
+
+  @override
+  String get helpGuideGoalsTitle => 'How goals are calculated';
+
+  @override
+  String get helpGuideGoalsSummary =>
+      'What counts as saved, how milestones are reached and what the forecast assumes.';
+
+  @override
+  String get helpGuideGoalsLink => 'Go to goals';
+
+  @override
+  String get helpGuideGoalsSavedTitle => 'Saved so far';
+
+  @override
+  String get helpGuideGoalsSavedB1 =>
+      'Saved is the starting amount plus recorded contributions minus recorded withdrawals. Planned contributions don’t count until you record them. A withdrawal can’t be more than what’s saved.';
+
+  @override
+  String get helpGuideGoalsSavedB2 =>
+      'Linking a contribution to a real transaction marks it verified; one transaction can back only one contribution. In a shared goal, contributions a member hides still count towards progress.';
+
+  @override
+  String get helpGuideGoalsMilestonesTitle => 'Milestones';
+
+  @override
+  String get helpGuideGoalsMilestonesB1 =>
+      'Milestones are reached at 25%, 50%, 75% and 100% of the target unless you set your own. Each one notifies the goal’s members once. Reaching the target marks the goal achieved.';
+
+  @override
+  String get helpGuideGoalsForecastTitle => 'Forecast';
+
+  @override
+  String get helpGuideGoalsForecastB1 =>
+      'The forecast shows how much you’d need to add each month (or week) to reach the target by its date, and when you’d reach it at your recent pace: what you saved in the last 90 days. If you planned contributions, it also shows when that plan would finish. It uses exact amounts with no interest or growth.';
+
+  @override
+  String get helpGuideGroupBalancesTitle => 'How group balances are calculated';
+
+  @override
+  String get helpGuideGroupBalancesSummary =>
+      'Who owes whom: what each person paid, their share, and settlements that were confirmed.';
+
+  @override
+  String get helpGuideGroupBalancesLink => 'Go to groups';
+
+  @override
+  String get helpGuideGroupBalancesNetTitle => 'Your net balance';
+
+  @override
+  String get helpGuideGroupBalancesNetB1 =>
+      'For each person: what they paid, minus their share of the expenses, plus settlements they paid, minus settlements they received. A positive number means others owe them; a negative number means they owe.';
+
+  @override
+  String get helpGuideGroupBalancesNetB2 =>
+      'Splits (equal, exact amounts, percentages, shares or items) are worked out exactly in the smallest unit of the currency, and any leftover paisa or cent goes to members in a fixed order, so totals always add up.';
+
+  @override
+  String get helpGuideGroupBalancesSettlementsTitle => 'Settlements';
+
+  @override
+  String get helpGuideGroupBalancesSettlementsB1 =>
+      'Montra never moves money. When you record that you paid someone, it counts in balances only after they confirm it; until then it shows as pending. Settlement suggestions propose fewer payments that clear the same debts, but they don’t change any record.';
+
+  @override
+  String get helpGuideGroupBalancesPersonalTitle => 'Your own spending';
+
+  @override
+  String get helpGuideGroupBalancesPersonalB1 =>
+      'When you record a group payment in your own account, only your share counts as your spending. Expenses in another currency are converted with the rate typed in or Montra’s rate for the expense date.';
+
+  @override
+  String get helpGuideGroupBalancesPersonalB2 =>
+      'The home screen shows only your own net balance in each group. Group members never see your personal accounts or transactions.';
+
+  @override
+  String get helpGuideImportsTitle =>
+      'Importing statements and fixing a failed import';
+
+  @override
+  String get helpGuideImportsSummary =>
+      'Upload a statement file, check the columns, review rows and duplicates, and recover when something goes wrong.';
+
+  @override
+  String get helpGuideImportsLink => 'Go to imports';
+
+  @override
+  String get helpGuideImportsStepsTitle => 'How an import works';
+
+  @override
+  String get helpGuideImportsStepsB1 =>
+      'Download a statement from your bank as CSV, XLSX, OFX or QFX, and choose the account it belongs to. The statement must be in the account’s currency.';
+
+  @override
+  String get helpGuideImportsStepsB2 =>
+      'Check the column mapping: which column is the date, amount or description, the date format and whether spending is shown as negative.';
+
+  @override
+  String get helpGuideImportsStepsB3 =>
+      'Review the rows. Rows already imported, and possible duplicates of transactions you entered, are flagged. Correct a value or skip a row.';
+
+  @override
+  String get helpGuideImportsStepsB4 =>
+      'Confirm. Montra creates the transactions in the background and notifies you when it’s done.';
+
+  @override
+  String get helpGuideImportsFailedTitle => 'If the file can’t be read';
+
+  @override
+  String get helpGuideImportsFailedB1 =>
+      'The import page says why. Common reasons and fixes:';
+
+  @override
+  String get helpGuideImportsFailedB2 =>
+      'Unsupported or damaged file: download the statement again as CSV or XLSX and upload that.';
+
+  @override
+  String get helpGuideImportsFailedB3 =>
+      'Empty, too many rows or too many columns: split the period into smaller statements. One file can have up to 20,000 rows and 64 columns.';
+
+  @override
+  String get helpGuideImportsFailedB4 =>
+      'Currency doesn’t match: choose the account in the statement’s currency, or create one.';
+
+  @override
+  String get helpGuideImportsFailedB5 =>
+      'PDF statements: PDFs can’t be read today. Download CSV, XLSX, OFX or QFX instead.';
+
+  @override
+  String get helpGuideImportsRowsTitle => 'If some rows fail';
+
+  @override
+  String get helpGuideImportsRowsB1 =>
+      'Each refused row names the value to fix, such as a date or amount that can’t be read. Correct it in the row and confirm again. If the import finished with errors, retry the failed rows once you’ve fixed them.';
+
+  @override
+  String get helpGuideImportsRowsB2 =>
+      'Imported the wrong file or into the wrong account? Undo the import: it deletes the transactions it created, except ones you edited since.';
+
+  @override
+  String get helpGuideReconciliationTitle => 'Reconciling an account';
+
+  @override
+  String get helpGuideReconciliationSummary =>
+      'Match statement lines with your transactions and check a balance against your statement.';
+
+  @override
+  String get helpGuideReconciliationLink => 'Go to accounts';
+
+  @override
+  String get helpGuideReconciliationMatchesTitle => 'Matching';
+
+  @override
+  String get helpGuideReconciliationMatchesB1 =>
+      'After an import, Montra suggests matches: a statement line and the transaction you already entered for it, a pending transaction and its posted version, or a manual entry and an imported one. Each suggestion shows how sure it is and why.';
+
+  @override
+  String get helpGuideReconciliationMatchesB2 =>
+      'Confirming a match keeps one record, so nothing is counted twice. You can also match a line by hand with one or more transactions whose amounts add up, and undo a match later.';
+
+  @override
+  String get helpGuideReconciliationMatchesB3 =>
+      'Both sides must be money in or both money out, and the amounts must add up exactly.';
+
+  @override
+  String get helpGuideReconciliationMatchesB4 =>
+      'A transaction can be in only one match.';
+
+  @override
+  String get helpGuideReconciliationMatchesB5 =>
+      'A pair more than a week apart is shown without confidence: check it yourself.';
+
+  @override
+  String get helpGuideReconciliationBalanceTitle => 'Balance check';
+
+  @override
+  String get helpGuideReconciliationBalanceB1 =>
+      'Enter the balance on your statement (for a card, the amount owed) and its date. Montra compares it with the account on that date and records whether it balanced. A balanced check is remembered as the last reconciled date.';
+
+  @override
+  String get helpGuideReconciliationBalanceB2 =>
+      'If it doesn’t balance, look for missing or duplicate transactions around that date, unconfirmed matches and pending items. If the difference is real, record a balance adjustment with a reason.';
+
+  @override
+  String get helpGuidePrivacyTitle => 'Privacy, export and deletion';
+
+  @override
+  String get helpGuidePrivacySummary =>
+      'Choose optional consents, download a copy of your data, pause your account or delete it.';
+
+  @override
+  String get helpGuidePrivacyLink => 'Go to privacy and data';
+
+  @override
+  String get helpGuidePrivacyConsentsTitle => 'Consents';
+
+  @override
+  String get helpGuidePrivacyConsentsB1 =>
+      'The terms and privacy policy are accepted at sign-up. Everything else (location, notifications, and others) is optional, and you can turn it off at any time. Some choices are only recorded today because the feature they’d enable doesn’t exist yet.';
+
+  @override
+  String get helpGuidePrivacyConsentsB2 =>
+      'Montra’s staff have no default access to your financial data, and logs never contain your amounts, merchants or descriptions.';
+
+  @override
+  String get helpGuidePrivacyExportTitle => 'Download your data';
+
+  @override
+  String get helpGuidePrivacyExportB1 =>
+      'Ask for an export and confirm it’s you. Montra prepares a ZIP file with your data in the background and notifies you when it’s ready. The download link stays valid for 7 days.';
+
+  @override
+  String get helpGuidePrivacyDeactivateTitle => 'Deactivate';
+
+  @override
+  String get helpGuidePrivacyDeactivateB1 =>
+      'Deactivating signs you out everywhere and keeps your data. Signing in again reactivates the account.';
+
+  @override
+  String get helpGuidePrivacyDeleteTitle => 'Delete your account';
+
+  @override
+  String get helpGuidePrivacyDeleteB1 =>
+      'Deletion starts after a 7-day grace period, and you can cancel it until then. Montra shows what will happen to each group first. When it runs, your personal records and files are deleted, groups you own are handed over or archived, and what you shared in groups and communities stays as “Deleted member”. A confirmation is emailed to you.';
+
+  @override
+  String get helpGuidePrivacyDeleteB2 =>
+      'Download an export first if you want to keep a copy.';
+
+  @override
+  String get helpGuideTwoStepTitle => 'Two-step verification and recovery';
+
+  @override
+  String get helpGuideTwoStepSummary =>
+      'Protect sign-in with an authenticator app, and keep recovery codes for when your phone isn’t available.';
+
+  @override
+  String get helpGuideTwoStepLink => 'Go to security settings';
+
+  @override
+  String get helpGuideTwoStepSetupTitle => 'Turning it on';
+
+  @override
+  String get helpGuideTwoStepSetupB1 =>
+      'In security settings, choose to turn on two-step verification and confirm your password.';
+
+  @override
+  String get helpGuideTwoStepSetupB2 =>
+      'Scan the QR code (or type the key) into an authenticator app, then enter the 6-digit code it shows.';
+
+  @override
+  String get helpGuideTwoStepSetupB3 =>
+      'Save the 10 recovery codes somewhere safe and offline. Each code works once.';
+
+  @override
+  String get helpGuideTwoStepSignInTitle => 'Signing in';
+
+  @override
+  String get helpGuideTwoStepSignInB1 =>
+      'After your password, enter the current code from the app, or one of your recovery codes. Codes change every 30 seconds and each code can be used only once, so if one is refused, wait for the next.';
+
+  @override
+  String get helpGuideTwoStepSignInB2 =>
+      'Sensitive actions (changing two-step verification, new recovery codes, exporting data, deactivating or deleting the account) ask you to confirm it’s you again if you haven’t in the last few minutes.';
+
+  @override
+  String get helpGuideTwoStepRecoveryTitle => 'Lost your phone?';
+
+  @override
+  String get helpGuideTwoStepRecoveryB1 =>
+      'Sign in with a recovery code. Then, in security settings, turn two-step verification off and on again to set up your new phone, or create new recovery codes. New codes replace all the old ones.';
+
+  @override
+  String get helpGuideTwoStepRecoveryB2 =>
+      'Montra staff can’t see your codes or skip the second step for you, so without your app or a recovery code you can’t sign in. Keep the recovery codes safe.';
+
+  @override
+  String get helpGuideTwoStepRecoveryB3 =>
+      'Montra emails you whenever two-step verification is turned on or off.';
+
+  @override
+  String get helpGuideFairUseTitle => 'Fair-use limits';
+
+  @override
+  String get helpGuideFairUseSummary =>
+      'The same limits apply to everyone. They keep Montra fast; they are never paid tiers.';
+
+  @override
+  String get helpGuideFairUseLink => 'See the limits and your usage';
+
+  @override
+  String get helpGuideFairUseWhatTitle => 'What’s limited';
+
+  @override
+  String get helpGuideFairUseWhatB1 =>
+      'Every feature is free, and the limits are the same for every person. The limits page shows the exact values and how much storage you use. The usual defaults are:';
+
+  @override
+  String get helpGuideFairUseWhatB2 =>
+      'Storage: 2 GB of files in total, and up to 20 MB per file (some kinds of file have a lower limit).';
+
+  @override
+  String get helpGuideFairUseWhatB3 =>
+      'Imports: up to 20,000 rows per statement.';
+
+  @override
+  String get helpGuideFairUseWhatB4 =>
+      'Open records: 500 recurring rules, 200 bills, 500 subscriptions and 200 goals.';
+
+  @override
+  String get helpGuideFairUseWhatB5 =>
+      'Support: 10 new requests and 10 messages a day.';
+
+  @override
+  String get helpGuideFairUseReachedTitle => 'When you reach a limit';
+
+  @override
+  String get helpGuideFairUseReachedB1 =>
+      'Montra tells you which limit you reached. For open records, archive, end or delete ones you no longer need. For storage, delete files you don’t need. If you’re asked to wait, Montra shows how long; daily caps reset the next day.';
+
+  @override
+  String get helpGuideFairUseReachedB2 =>
+      'Before uploading, Montra makes large photos smaller, so receipts and pictures use less of your storage. PDFs are uploaded as they are.';
+
+  @override
+  String get helpGuideTroubleshootingTitle =>
+      'Troubleshooting sign-in, sync and notifications';
+
+  @override
+  String get helpGuideTroubleshootingSummary =>
+      'What to check when you can’t sign in, your data looks out of date, or notifications don’t arrive.';
+
+  @override
+  String get helpGuideTroubleshootingLink => 'Go to notification settings';
+
+  @override
+  String get helpGuideTroubleshootingSignInTitle => 'Can’t sign in';
+
+  @override
+  String get helpGuideTroubleshootingSignInB1 =>
+      'New account? Open the link in the verification email first. You can ask for a new link; links expire after 24 hours.';
+
+  @override
+  String get helpGuideTroubleshootingSignInB2 =>
+      'The error doesn’t say whether the email or the password is wrong, to protect accounts. If you’re unsure, reset your password; the reset link works for 1 hour, and only the newest one counts.';
+
+  @override
+  String get helpGuideTroubleshootingSignInB3 =>
+      'After several failed attempts you’ll be asked to wait; the screen shows how long. Resetting your password also works.';
+
+  @override
+  String get helpGuideTroubleshootingSignInB4 =>
+      'Two-step code refused? Make sure your phone sets its time automatically, and wait for a new code. Or use a recovery code.';
+
+  @override
+  String get helpGuideTroubleshootingSignInB5 =>
+      'On the web, Montra needs cookies for this site. Changing or resetting your password signs you out on your other devices.';
+
+  @override
+  String get helpGuideTroubleshootingSyncTitle => 'Data looks out of date';
+
+  @override
+  String get helpGuideTroubleshootingSyncB1 =>
+      'There is no bank sync: Montra shows what you’ve recorded or imported. The web and the app read the same account, so a change on one appears on the other when the screen refreshes. Reload the page, or pull down to refresh in the app.';
+
+  @override
+  String get helpGuideTroubleshootingSyncB2 =>
+      'Some figures update in the background a moment after a change: budget progress, imports, recurring occurrences (about every 15 minutes) and subscription suggestions (daily).';
+
+  @override
+  String get helpGuideTroubleshootingSyncB3 =>
+      'When your phone is offline, the app shows a banner and changes can’t be saved. Try again when you’re back online: the same save is never recorded twice.';
+
+  @override
+  String get helpGuideTroubleshootingNotificationsTitle =>
+      'Notifications don’t arrive';
+
+  @override
+  String get helpGuideTroubleshootingNotificationsB1 =>
+      'Check notification settings: each kind of notification can be on or off for in-app, email and browser notifications. Security and account messages are always on.';
+
+  @override
+  String get helpGuideTroubleshootingNotificationsB2 =>
+      'Quiet hours delay email and push until they end, and a daily or weekly digest collects non-urgent email (sent at 08:00 your time; weekly on Mondays).';
+
+  @override
+  String get helpGuideTroubleshootingNotificationsB3 =>
+      'Browser notifications need your browser’s permission, and the server must support them; if the option isn’t offered, they aren’t available yet. The phone app doesn’t receive push notifications yet: open the notification centre instead.';
+
+  @override
+  String get helpGuideTroubleshootingNotificationsB4 =>
+      'No email? Check your spam folder. Using an unsubscribe link turns off only that kind of email.';
+
+  @override
+  String get helpGuideTroubleshootingStillStuckTitle => 'Still stuck?';
+
+  @override
+  String get helpGuideTroubleshootingStillStuckB1 =>
+      'Send a support request and include the reference shown with the error, if there was one. Never include card numbers, PINs, OTPs or passwords.';
+
+  @override
+  String get analyticsPaymentMethodsTitle => 'Payment methods';
+
+  @override
+  String get analyticsPaymentMethodsSubtitle =>
+      'How you paid for your spending';
+
+  @override
+  String get analyticsPaymentMethodUnspecified => 'No payment method';
+
+  @override
+  String analyticsPaymentMethodArchived(String name) {
+    return '$name (archived)';
+  }
+
+  @override
+  String analyticsNoPaymentMethodSpending(String period) {
+    return 'No spending for $period.';
+  }
+
+  @override
+  String analyticsPaymentMethodsSummary(String name, String amount, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count payment methods shown.',
+      one: '1 payment method shown.',
+    );
+    return '$name had the most spending: $amount. $_temp0';
+  }
+
+  @override
+  String analyticsPaymentMethodRow(String amount, int count, String share) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions',
+      one: '1 transaction',
+    );
+    return '$amount · $share · $_temp0';
+  }
 }

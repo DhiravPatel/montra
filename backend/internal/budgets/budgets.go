@@ -185,9 +185,10 @@ func scanBudget(r pgx.Row) (*budgetRow, error) {
 	return &b, nil
 }
 
-// periodFor returns the budget period containing date d.
+// periodFor returns the budget period containing d: an instant (now) is
+// first converted to the budget's time zone; dates already in it are kept.
 func (b *budgetRow) periodFor(d time.Time) period.Range {
-	d = period.Date(d.Year(), d.Month(), d.Day(), b.loc)
+	d = period.Today(d, b.loc)
 	switch b.Period {
 	case "weekly":
 		st := period.WeekStart(d, b.weekSt)
@@ -541,7 +542,19 @@ func (s *Service) List(ctx context.Context, includeArchived bool) ([]BudgetDTO, 
 	}
 	out := []BudgetDTO{}
 	err = s.DB.WithUserTx(ctx, uid, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx, `select id from budgets where ($1 or status <> 'archived') order by status, created_at`, includeArchived)
+		// Candidates come from the three ways a budget can reach the caller (owner,
+		// budget member, member of the budget's group), each served by an index.
+		// RLS still decides visibility row by row; the union is a superset of what
+		// it admits. Filtering on RLS alone scanned every budget in the system and
+		// called budget_access() per row (docs/QUERY_PLAN_REVIEW.md, R-B).
+		rows, err := tx.Query(ctx, `select c.id from (
+			  select b.id, b.status, b.created_at from budgets b where b.owner_user_id = $2
+			  union
+			  select b.id, b.status, b.created_at from budget_members m join budgets b on b.id = m.budget_id where m.user_id = $2
+			  union
+			  select b.id, b.status, b.created_at from group_members gm join budgets b on b.group_id = gm.group_id
+			  where gm.user_id = $2 and gm.status = 'active'
+			) c where ($1 or c.status <> 'archived') order by c.status, c.created_at`, includeArchived, uid)
 		if err != nil {
 			return err
 		}

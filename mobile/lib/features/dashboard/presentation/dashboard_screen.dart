@@ -8,6 +8,7 @@ import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/auth/auth_controller.dart';
 import 'package:montra_mobile/core/auth/auth_state.dart';
 import 'package:montra_mobile/core/formatting/relative_time.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
 import 'package:montra_mobile/core/widgets/banners.dart';
 import 'package:montra_mobile/core/widgets/range_picker.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
@@ -396,6 +397,11 @@ class _GetStarted extends StatelessWidget {
                       context.push(AppRoutes.newTransactionOf('expense')),
                   icon: const Icon(Icons.remove_circle_outline),
                   label: Text(l10n.transactionAddExpense),
+                ),
+                TextButton.icon(
+                  onPressed: () => context.push(HelpGuide.gettingStarted.path),
+                  icon: const Icon(Icons.help_outline),
+                  label: Text(HelpGuide.gettingStarted.title(l10n)),
                 ),
               ],
             ),

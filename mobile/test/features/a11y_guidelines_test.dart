@@ -137,6 +137,8 @@ void main() {
     '/profile/edit',
     '/profile/preferences',
     '/receipts/new',
+    '/help/guides',
+    '/help/guides/budgets',
   ];
 
   for (final String location in screens) {

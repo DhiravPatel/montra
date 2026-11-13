@@ -80,14 +80,24 @@ func (s *Service) List(ctx context.Context, unreadOnly, archived bool, category,
 	}
 	var out []NotificationDTO
 	err = s.DB.WithUserReadTx(ctx, uid, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx, `select id, category, event_type, title, body, deep_link, entity_type, entity_id, group_id, priority,
+		// The first page and later pages use separate SQL texts, so a cached
+		// generic plan can still bound the index scan by the cursor
+		// (docs/QUERY_PLAN_REVIEW.md, R-F).
+		q := `select id, category, event_type, title, body, deep_link, entity_type, entity_id, group_id, priority,
 			read_at, archived_at, created_at from notifications
 			where user_id = $1 and ($2::boolean = false or read_at is null)
 			  and (case when $3::boolean then archived_at is not null else archived_at is null end)
 			  and ($4 = '' or category = $4)
-			  and (expires_at is null or expires_at > now())
-			  and ($5::timestamptz is null or (created_at, id) < ($5, $6))
-			order by created_at desc, id desc limit $7`, uid, unreadOnly, archived, category, nullTime(cur.T), cur.ID, limit+1)
+			  and (expires_at is null or expires_at > now())`
+		args := []any{uid, unreadOnly, archived, category}
+		if t := nullTime(cur.T); t != nil {
+			q += ` and (created_at, id) < ($5::timestamptz, $6::uuid) order by created_at desc, id desc limit $7`
+			args = append(args, *t, cur.ID, limit+1)
+		} else {
+			q += ` order by created_at desc, id desc limit $5`
+			args = append(args, limit+1)
+		}
+		rows, err := tx.Query(ctx, q, args...)
 		if err != nil {
 			return err
 		}

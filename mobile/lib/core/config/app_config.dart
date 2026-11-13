@@ -16,6 +16,7 @@ class AppConfig {
     this.deviceName,
     this.termsUrl,
     this.privacyUrl,
+    this.statusPageUrl,
   });
 
   /// Resolves configuration from raw `--dart-define` values.
@@ -30,6 +31,7 @@ class AppConfig {
     String? deviceName,
     String termsUrl = '',
     String privacyUrl = '',
+    String statusPageUrl = '',
   }) {
     final String raw = apiBaseUrl.trim().isNotEmpty
         ? apiBaseUrl.trim()
@@ -64,6 +66,7 @@ class AppConfig {
       deviceName: deviceName,
       termsUrl: _optionalHttpsUrl(termsUrl, releaseMode),
       privacyUrl: _optionalHttpsUrl(privacyUrl, releaseMode),
+      statusPageUrl: _statusUrl(statusPageUrl),
     );
   }
 
@@ -75,6 +78,12 @@ class AppConfig {
 
   /// Raw `--dart-define=PRIVACY_URL=...` value (empty when not provided).
   static const String privacyUrlDefine = String.fromEnvironment('PRIVACY_URL');
+
+  /// Raw `--dart-define=STATUS_PAGE_URL=...` value (empty when not
+  /// provided).
+  static const String statusPageUrlDefine = String.fromEnvironment(
+    'STATUS_PAGE_URL',
+  );
 
   /// Terms of service version the sign-up form asks the user to accept.
   /// Must match the backend's `auth.TermsVersion`.
@@ -103,6 +112,10 @@ class AppConfig {
   /// Hosted privacy policy, when configured.
   final Uri? privacyUrl;
 
+  /// The public service-status page, when configured. Help shows a status
+  /// link only when this is set; there is never a placeholder.
+  final Uri? statusPageUrl;
+
   /// Base URL for API requests: `<apiBaseUrl>/api/v1`.
   String get apiRoot {
     final String base = apiBaseUrl.toString();
@@ -128,6 +141,18 @@ class AppConfig {
       // The Android emulator reaches the host machine through 10.0.2.2.
       ? 'http://10.0.2.2:8080'
       : 'http://localhost:8080';
+
+  /// An absolute `https://` URL, or null (unset or unusable values hide
+  /// the status link instead of stopping the app).
+  static Uri? _statusUrl(String raw) {
+    final Uri? uri = Uri.tryParse(raw.trim());
+    return uri != null &&
+            uri.scheme == 'https' &&
+            uri.host.isNotEmpty &&
+            uri.userInfo.isEmpty
+        ? uri
+        : null;
+  }
 
   static Uri? _optionalHttpsUrl(String raw, bool releaseMode) {
     final String value = raw.trim();

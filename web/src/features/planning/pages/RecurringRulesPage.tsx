@@ -19,6 +19,7 @@ import { PlanningSubNav } from '../components/PlanningSubNav';
 import { RuleStatusBadge } from '../components/StatusBadges';
 import { isEditableKind, recurringKindIcon, recurringKindLabel } from '../labels';
 import { describeSchedule } from '../schedule';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 const KINDS = ['', 'expense', 'income', 'transfer'] as const satisfies readonly RuleKindFilter[];
 const STATUSES = ['', 'active', 'paused', 'ended'] as const satisfies readonly RuleStatusFilter[];
@@ -118,6 +119,7 @@ export function RecurringRulesPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="recurring" section="schedule" />}
         title={t('recurring.title')}
         description={t('recurring.description')}
         actions={

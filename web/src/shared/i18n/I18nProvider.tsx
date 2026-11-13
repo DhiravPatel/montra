@@ -1,21 +1,27 @@
-import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { readPreference, writePreference } from '@/shared/utils/preferences';
-import { I18nContext, type I18nContextValue, type RichTags } from './I18nContext';
 import {
-  browserLocales,
-  detectLanguage,
-  isSupportedLanguage,
-  type Language,
-  resolveFormatLocale,
-  textDirection,
-} from './languages';
+  Fragment,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
+import { writePreference } from '@/shared/utils/preferences';
+import {
+  catalogVersion,
+  getCurrentLanguage,
+  hasNamespaces,
+  loadedNamespaces,
+  loadNamespaces,
+  setCurrentLanguage,
+  subscribeCatalogs,
+} from './catalogs';
+import { I18nContext, type I18nContextValue, type RichTags } from './I18nContext';
+import { browserLocales, type Language, resolveFormatLocale, textDirection } from './languages';
 import { createTranslator, splitRichText } from './translate';
 import type { MessageKey, TranslateParams } from './types';
-
-function initialLanguage(): Language {
-  const saved = readPreference('lang');
-  return isSupportedLanguage(saved) ? saved : detectLanguage(browserLocales());
-}
 
 interface I18nProviderProps {
   children: ReactNode;
@@ -24,10 +30,15 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children, language }: I18nProviderProps) {
-  const [lang, setLang] = useState<Language>(() => language ?? initialLanguage());
+  const [lang, setLang] = useState<Language>(() => language ?? getCurrentLanguage());
+  // A namespace arriving re-creates `t`, so text waiting for it re-renders.
+  const version = useSyncExternalStore(subscribeCatalogs, catalogVersion, catalogVersion);
   const formatLocale = useMemo(() => resolveFormatLocale(lang, browserLocales()), [lang]);
   const dir = textDirection(lang);
-  const t = useMemo(() => createTranslator(lang, formatLocale), [lang, formatLocale]);
+  // A new catalog version must give a new translator, so text that was waiting re-renders.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `version` is that deliberate extra dependency
+  const t = useMemo(() => createTranslator(lang, formatLocale), [lang, formatLocale, version]);
+  const requested = useRef<Language>(lang);
 
   const rich = useCallback(
     (key: MessageKey, tags: RichTags, params?: TranslateParams): ReactNode[] =>
@@ -38,12 +49,31 @@ export function I18nProvider({ children, language }: I18nProviderProps) {
     [t],
   );
 
+  /**
+   * Switches once the new language's catalogs for everything loaded so far
+   * have arrived, so the page never shows a half-translated mix. A failed
+   * download keeps the current language.
+   */
   const setLanguage = useCallback((next: Language) => {
-    setLang(next);
+    requested.current = next;
     writePreference('lang', next);
+    const apply = () => {
+      if (requested.current !== next) return;
+      setCurrentLanguage(next);
+      setLang(next);
+    };
+    const needed = loadedNamespaces();
+    if (hasNamespaces(next, needed)) {
+      apply();
+      return;
+    }
+    loadNamespaces(next, needed).then(apply, () => {
+      if (requested.current === next) requested.current = getCurrentLanguage();
+    });
   }, []);
 
   useEffect(() => {
+    setCurrentLanguage(lang);
     document.documentElement.lang = lang;
     document.documentElement.dir = dir;
   }, [lang, dir]);

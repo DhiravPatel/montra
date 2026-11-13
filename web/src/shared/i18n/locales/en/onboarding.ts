@@ -1,0 +1,105 @@
+import type { Message } from '../../types';
+
+/** English `onboarding` messages (source of truth for their keys). */
+const messages = {
+  // Onboarding
+  'onboarding.title': 'Set up Montra',
+  'onboarding.description':
+    'A few optional steps. You can skip any of them and change everything later.',
+  'onboarding.loading': 'Loading your preferences…',
+  'onboarding.loadFailed': 'We couldn’t load your preferences',
+  'onboarding.progressLabel': 'Setup progress',
+  'onboarding.stepOf': 'Step {current} of {total}',
+  'onboarding.stepDone': 'done',
+  'onboarding.skipStep': 'Skip this step',
+  'onboarding.skipAll': 'Skip setup',
+  'onboarding.skipped': 'Setup skipped. You can change your preferences at any time.',
+  'onboarding.finish': 'Finish',
+  'onboarding.progressNotSaved': 'We couldn’t save your progress, but your choices were kept.',
+  'onboarding.welcome.title': 'Welcome to Montra',
+  'onboarding.welcome.body':
+    'Montra helps you see where your money goes. Let’s set a few basics so the numbers make sense for you.',
+  'onboarding.welcome.free': 'Free for everyone',
+  'onboarding.welcome.freeBody': 'Every feature is free. No paid tiers.',
+  'onboarding.welcome.private': 'Private by default',
+  'onboarding.welcome.privateBody': 'Your data is yours. We don’t sell it.',
+  'onboarding.welcome.manual': 'You stay in control',
+  'onboarding.welcome.manualBody': 'Record things yourself. No bank linking needed.',
+  'onboarding.welcome.optional': 'Every step is optional and takes about a minute.',
+  'onboarding.welcome.start': 'Get started',
+  'onboarding.privacy.title': 'Your privacy',
+  'onboarding.privacy.factPrivate': 'Your finances are private and never shown publicly.',
+  'onboarding.privacy.factNoSelling': 'We don’t sell your data or use it for advertising.',
+  'onboarding.privacy.factNoBank':
+    'You never need to link a bank, and Montra never asks for bank passwords.',
+  'onboarding.privacy.factAi': 'AI features stay off unless you turn them on and agree to them.',
+  'onboarding.privacy.factControl': 'You can export or delete your data at any time.',
+  'onboarding.privacy.analytics': 'Share anonymous usage statistics',
+  'onboarding.privacy.analyticsHelp':
+    'Optional. Records your choice: Montra collects no usage statistics today. If it ever does, they will never include amounts, merchants or other financial details.',
+  'onboarding.region.title': 'Where you are',
+  'onboarding.region.country': 'Country',
+  'onboarding.region.countryPlaceholder': 'Choose your country',
+  'onboarding.region.countryHelp': 'Used to suggest a currency and local formats.',
+  'onboarding.region.currencyHelp':
+    'Totals are shown in this currency. Changing it doesn’t convert amounts you’ve already recorded.',
+  'onboarding.region.timezone': 'Time zone',
+  'onboarding.region.timezoneHelp': 'Decides which day a transaction belongs to.',
+  'onboarding.region.timezoneRequired': 'Choose a time zone.',
+  'onboarding.region.locale': 'Formats',
+  'onboarding.region.localeHelp': 'Used for emails and exports.',
+  'onboarding.region.localeRequired': 'Choose a format.',
+  'onboarding.region.weekStart': 'Week starts on',
+  'onboarding.region.monthStart': 'Month starts on day',
+  'onboarding.region.monthStartHelp': 'For example, the day your salary arrives.',
+  'onboarding.income.title': 'Your income (optional)',
+  'onboarding.income.why':
+    'A rough monthly range helps Montra phrase suggestions sensibly. It’s never shared or shown to anyone, and “Prefer not to say” is fine.',
+  'onboarding.income.legend': 'Approximate monthly income (in Indian rupees)',
+  'onboarding.income.prefer_not_to_say': 'Prefer not to say',
+  'onboarding.income.under_25k': 'Under ₹25,000',
+  'onboarding.income.25k_50k': '₹25,000 to ₹50,000',
+  'onboarding.income.50k_1l': '₹50,000 to ₹1 lakh',
+  'onboarding.income.1l_2l': '₹1 lakh to ₹2 lakh',
+  'onboarding.income.2l_5l': '₹2 lakh to ₹5 lakh',
+  'onboarding.income.above_5l': 'Above ₹5 lakh',
+  'onboarding.goals.title': 'A first goal (optional)',
+  'onboarding.goals.body':
+    'Saving for something? Add it here and watch your progress on Home. You can add a saving plan, milestones and contributions later.',
+  'onboarding.goals.currencyHelp': 'In {currency}, your main currency.',
+  'onboarding.goals.datePast': 'Choose today or a later date.',
+  'onboarding.goals.submit': 'Add goal and continue',
+  'onboarding.goals.created': 'Goal “{name}” added',
+  'onboarding.accounts.title': 'Your first account',
+  'onboarding.accounts.body':
+    'Add where your money is, like a cash wallet, bank account or card. You can add more later.',
+  'onboarding.accounts.noBank':
+    'Montra never connects to your bank. Balances come from what you enter.',
+  'onboarding.accounts.added': 'Added so far',
+  'onboarding.accounts.addFirst': 'Add an account',
+  'onboarding.accounts.addAnother': 'Add another account',
+  'onboarding.accounts.created': 'Added {name}',
+  'onboarding.categories.title': 'Categories',
+  'onboarding.categories.body':
+    'Montra has created these categories for you. Untick any you won’t use; you can add your own later.',
+  'onboarding.categories.loading': 'Loading categories…',
+  'onboarding.categories.error': 'We couldn’t load your categories',
+  'onboarding.categories.none': 'There are no starter categories to review.',
+  'onboarding.categories.later':
+    'Unticked categories are archived, not deleted, so you can bring them back.',
+  'onboarding.notifications.title': 'Email summaries',
+  'onboarding.notifications.legend': 'Send me a summary of my money',
+  'onboarding.notifications.off': 'No summaries',
+  'onboarding.notifications.offHelp': 'You can still check Montra whenever you like.',
+  'onboarding.notifications.daily': 'Daily',
+  'onboarding.notifications.dailyHelp': 'One email each morning.',
+  'onboarding.notifications.weekly': 'Weekly',
+  'onboarding.notifications.weeklyHelp': 'One email each week.',
+  'onboarding.notifications.security':
+    'Security and account emails, such as sign-in alerts, are always sent.',
+  'onboarding.done.title': 'You’re all set',
+  'onboarding.done.body': 'Start by recording a transaction. Your dashboard fills in as you go.',
+  'onboarding.done.dashboard': 'Go to Home',
+} as const satisfies Record<string, Message>;
+
+export default messages;

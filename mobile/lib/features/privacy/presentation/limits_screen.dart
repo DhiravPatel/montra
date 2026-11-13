@@ -5,6 +5,8 @@ import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/formatting/file_size.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/layout.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
@@ -23,7 +25,10 @@ class LimitsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.limitsTitle)),
+      appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.fairUse)],
+        title: Text(l10n.limitsTitle),
+      ),
       body: AsyncValueView<Limits>(
         value: ref.watch(limitsProvider),
         onRetry: () => ref.invalidate(limitsProvider),

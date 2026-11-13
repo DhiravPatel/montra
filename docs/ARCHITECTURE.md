@@ -67,17 +67,16 @@ backend/            Go module `montra/backend`
                     occurrences, bills, calendar), subscriptions, goals,
                     imports, receipts, reconciliation
 supabase/
-  migrations/       YYYYMMDDHHMMSS_*.sql (PostgreSQL 15+ compatible)
-  seeds/            deterministic synthetic dev/test seed data
-  tests/            SQL-level RLS checks (run by Go integration tests)
-storage/appwrite/   bucket definitions + permission conventions
+  migrations/       YYYYMMDDHHMMSS_*.sql (PostgreSQL 15+ compatible); RLS
+                    checks live in backend/tests/rls; demo data comes from
+                    backend/cmd/seed (`make seed`), not SQL seed files
 contracts/openapi/  montra.v1.json (generated, committed, drift-checked)
 web/                React + TypeScript portal (Vite); `pnpm gen:api` types
 mobile/             Flutter application; `tool/gen_api.dart` models
-infra/              Dockerfile, deployment templates (no secrets)
-scripts/            bootstrap-db, dev, test helpers
+backend/Dockerfile  API/worker image (no secrets); deployment in docs/DEPLOYMENT.md
+scripts/            db (bootstrap), ci (e2e stack), docs (generators)
 docs/               all project documentation
-.github/workflows/  CI (validate only, never deploy)
+.github/workflows/  ci.yml and e2e.yml (validate only, never deploy)
 ```
 
 ## 3. Backend layering
@@ -98,6 +97,27 @@ docs/               all project documentation
 8. **Durable jobs** — PostgreSQL queue (ADR-008).
 9. **Observability** — slog JSON logs with request/job IDs and redaction,
    Prometheus metrics (no tracing is implemented; the access log carries request IDs and error codes).
+
+### Enforced dependency boundaries (ARCH-004)
+
+The layering is checked by the linters. Each check passes on the current
+code because today's deliberate cross-module imports are allowlisted, and
+each fails on a new edge. Adding to an allowlist is a design decision made
+in review.
+
+| Codebase | Rule | Enforced by |
+|---|---|---|
+| Backend | `internal/domain/*` imports only other domain packages: no platform, store, feature or app packages, and no `net/http`, pgx or Huma | depguard `domain-is-pure` in `backend/.golangci.yml` |
+| Backend | `internal/platform/*` imports only platform; `apitypes` only domain; `store/*` nothing internal | depguard `platform-is-infrastructure`, `apitypes-shared`, `store-is-generated` |
+| Backend | A feature package imports platform, domain, apitypes, store, its own subpackages and only its listed feature edges. The shared services most features use are `finance` (ledger) and `notifications`. `analytics`, `reports` and `ai` read across features. | depguard `feature-<name>` rules (one per feature, edges listed in the file) |
+| Backend | `internal/app` (composition root) is imported only by `cmd/*`, `internal/testutil` and `internal/seed`; nothing imports `cmd/*`; `package main` exists only under `cmd/` | depguard `wiring-in-cmd`; grep step in `make lint` and CI |
+| Web | `src/shared` imports neither `src/features` nor `src/app`. A feature imports `src/app` only from tests, and another feature only through the modules listed in `allowedFeatureImports`. Alias (`@/…`) and relative specifiers are both resolved. | `montra/module-boundaries` rule in `web/eslint.config.js` (`pnpm lint`) |
+| Mobile | `lib/core` imports from `lib/app` only the shared modules (l10n, theme, route names) and from `lib/features` only `coreFeatureImports`. A feature imports the same shared app modules and only the other-feature files listed in `featureImports`. | `mobile/tool/check_imports.dart` (`make mobile-imports`, `make check`, CI) |
+
+depguard compares an import with the nearest entry of each sorted list, so
+the backend rules keep every deny list free of overlapping prefixes. Each
+rule denies the single prefix `montra/backend/internal/` in lax mode and
+allows the longer prefixes the layer may use.
 
 ## 4. Data flow: committed write → side effects
 

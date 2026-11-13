@@ -183,6 +183,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Background jobs, newest first (admin; no payloads)
+         * @description Filters: status, type, from/to (UTC creation dates, inclusive). Pages with cursor and limit (at most 200; meta.next_cursor). Each job carries its attempts count and last_error_code, never its payload, result, error message or the person it acts for.
+         */
+        get: operations["admin-jobs-list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One background job with its attempts (admin; no payloads) */
+        get: operations["admin-jobs-get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/jobs/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-queue a failed or dead job (admin; audited)
+         * @description Queues the job to run now with at least one more attempt. Requires Idempotency-Key: a retry with the same key returns the original result. A job that is not failed or dead answers 422 DOMAIN_RULE_VIOLATION with details[0].code job_not_retryable (params status, from, to); an unknown job answers 404.
+         */
+        post: operations["admin-jobs-retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/usage": {
         parameters: {
             query?: never;
@@ -527,6 +584,26 @@ export interface paths {
          * @description Merchants are ranked by net spending separately in each currency and limit applies per currency, so a currency with large nominal amounts never crowds out another. The list is grouped by currency (alphabetical), largest first.
          */
         get: operations["analytics-merchants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analytics/payment-methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Net spending by payment method, per currency
+         * @description Net spending (the /analytics/expenses types: expenses and your group expense shares, reduced by refunds and reimbursements) per payment method, with the same range, from/to and filters as /analytics/categories. Spending recorded without a payment method is the bucket with key and kind unspecified; a refund without its own payment method counts against the payment method of the purchase it refunds. Each currency is ranked separately (up to 100 per currency); amounts in different currencies are never added together. Archived payment methods keep their past spending.
+         */
+        get: operations["analytics-payment-methods"];
         put?: never;
         post?: never;
         delete?: never;
@@ -8126,6 +8203,14 @@ export interface components {
             data: components["schemas"]["InsightDTO"];
             meta: components["schemas"]["Meta"];
         };
+        EnvelopeJobDTO: {
+            data: components["schemas"]["JobDTO"];
+            meta: components["schemas"]["Meta"];
+        };
+        EnvelopeJobDetail: {
+            data: components["schemas"]["JobDetail"];
+            meta: components["schemas"]["Meta"];
+        };
         EnvelopeLegalDTO: {
             data: components["schemas"]["LegalDTO"];
             meta: components["schemas"]["Meta"];
@@ -8260,6 +8345,10 @@ export interface components {
         };
         EnvelopeListInsightMuteDTO: {
             data: components["schemas"]["InsightMuteDTO"][];
+            meta: components["schemas"]["Meta"];
+        };
+        EnvelopeListJobDTO: {
+            data: components["schemas"]["JobDTO"][];
             meta: components["schemas"]["Meta"];
         };
         EnvelopeListMerchantDTO: {
@@ -8476,6 +8565,10 @@ export interface components {
         };
         EnvelopePaymentMethodDeleteResult: {
             data: components["schemas"]["PaymentMethodDeleteResult"];
+            meta: components["schemas"]["Meta"];
+        };
+        EnvelopePaymentMethodReport: {
+            data: components["schemas"]["PaymentMethodReport"];
             meta: components["schemas"]["Meta"];
         };
         EnvelopePreferencesDTO: {
@@ -9950,6 +10043,65 @@ export interface components {
             settings?: unknown;
             visible: boolean;
         };
+        JobAttemptDTO: {
+            /** Format: int64 */
+            attempt: number;
+            /** Format: int64 */
+            duration_ms?: number;
+            /** @description Safe failure code; never the message */
+            error_code?: string;
+            /** Format: date-time */
+            finished_at?: string;
+            /**
+             * @description Absent while the attempt runs
+             * @enum {string}
+             */
+            outcome?: "succeeded" | "retry" | "failed" | "dead" | "cancelled" | "lease_expired";
+            /** Format: date-time */
+            started_at: string;
+            /** @description Worker process that ran the attempt */
+            worker_id: string;
+        };
+        JobDTO: {
+            /**
+             * Format: int64
+             * @description Attempts started so far
+             */
+            attempts: number;
+            cancel_requested: boolean;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            finished_at?: string;
+            id: string;
+            /** @description Safe code of the last failure (for example email_send_failed, provider_circuit_open, timeout); never the message */
+            last_error_code?: string;
+            /** Format: int64 */
+            max_attempts: number;
+            /**
+             * Format: int64
+             * @description Lower runs first
+             */
+            priority: number;
+            queue: string;
+            /** @description Failed or dead: POST /admin/jobs/{id}/retry re-queues it */
+            retryable: boolean;
+            /** Format: date-time */
+            run_after: string;
+            /** Format: date-time */
+            started_at?: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "succeeded" | "failed" | "dead" | "cancelled";
+            type: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** @description The job acts for one person (who is not disclosed) */
+            user_scoped: boolean;
+        };
+        JobDetail: {
+            attempts: components["schemas"]["JobAttemptDTO"][];
+            job: components["schemas"]["JobDTO"];
+        };
         JoinRequestInput: {
             message?: string;
         };
@@ -10623,6 +10775,41 @@ export interface components {
              * @description Current version; when sent, a concurrent change answers 409 VERSION_CONFLICT
              */
             version?: number;
+        };
+        PaymentMethodReport: {
+            /** @description Grouped by currency (alphabetical), largest net spending first; each currency is ranked separately */
+            payment_methods: components["schemas"]["PaymentMethodSlice"][];
+            window: components["schemas"]["Window"];
+        };
+        PaymentMethodSlice: {
+            /** @description The payment method is archived (its past spending still counts) */
+            archived: boolean;
+            /**
+             * Format: int64
+             * @description Transactions counted
+             */
+            count: number;
+            currency: string;
+            /** @description App path to the underlying transactions */
+            drill_down_path: string;
+            /** @description The payment method ID, or unspecified for spending recorded without one */
+            key: string;
+            /** @enum {string} */
+            kind: "cash" | "upi" | "debit_card" | "credit_card" | "bank_transfer" | "wallet" | "cheque" | "other" | "unspecified";
+            /** @description Your label for the payment method; Unspecified for the bucket (localize by key) */
+            label: string;
+            /** @description Last digits only, as stored on the payment method */
+            masked_hint?: string;
+            /** @description Spending net of refunds and reimbursements (the /analytics/expenses types), exact minor units */
+            net_expense: components["schemas"]["Money"];
+            network?: string;
+            /** @description Absent for the unspecified bucket */
+            payment_method_id?: string;
+            /**
+             * Format: int64
+             * @description Share of this currency's total net spending, in basis points; 0 when that total is not positive
+             */
+            share_bp: number;
         };
         PostHit: {
             community_id: string;
@@ -14258,6 +14445,7 @@ export interface operations {
                 /** @description Comma-separated; includes subcategories */
                 category_id?: string[];
                 merchant_id?: string;
+                /** @description A payment method ID, or none for transactions without a payment method */
                 payment_method_id?: string;
                 /** @description Comma-separated (any) */
                 tag_id?: string[];
@@ -14337,6 +14525,360 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    "admin-jobs-list": {
+        parameters: {
+            query?: {
+                /** @description Only jobs with this status */
+                status?: "queued" | "running" | "succeeded" | "failed" | "dead" | "cancelled" | "";
+                /** @description Only jobs of this type, for example notifications.deliver */
+                type?: string;
+                /** @description Created on or after this UTC date (YYYY-MM-DD) */
+                from?: string;
+                /** @description Created on or before this UTC date (YYYY-MM-DD) */
+                to?: string;
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description Client kind. web uses HttpOnly cookies; android/ios receive tokens in the response body. */
+                "X-Montra-Client"?: components["parameters"]["MontraClient"];
+                /** @description Client application version (diagnostics and compatibility). */
+                "X-Client-Version"?: components["parameters"]["ClientVersion"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopeListJobDTO"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    "admin-jobs-get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client kind. web uses HttpOnly cookies; android/ios receive tokens in the response body. */
+                "X-Montra-Client"?: components["parameters"]["MontraClient"];
+                /** @description Client application version (diagnostics and compatibility). */
+                "X-Client-Version"?: components["parameters"]["ClientVersion"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopeJobDetail"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    "admin-jobs-retry": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client-generated unique key; retries return the original result */
+                "Idempotency-Key": string;
+                /** @description Client kind. web uses HttpOnly cookies; android/ios receive tokens in the response body. */
+                "X-Montra-Client"?: components["parameters"]["MontraClient"];
+                /** @description Client application version (diagnostics and compatibility). */
+                "X-Client-Version"?: components["parameters"]["ClientVersion"];
+                /** @description Required for cookie-authenticated (web) unsafe requests: `csrf_token` from the auth response or the `montra_csrf` cookie. */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Idempotent-Replayed"?: string;
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopeJobDTO"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     "X-Request-ID": components["headers"]["RequestID"];
                     [name: string]: unknown;
@@ -17077,6 +17619,135 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnvelopeMerchantReport"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    "analytics-payment-methods": {
+        parameters: {
+            query?: {
+                range?: "today" | "yesterday" | "this_week" | "last_week" | "this_month" | "last_month" | "this_year" | "last_year" | "last_7_days" | "last_30_days" | "last_90_days" | "";
+                /** @description YYYY-MM-DD (custom range; overrides range) */
+                from?: string;
+                to?: string;
+                /** @description Comma-separated */
+                account_id?: string[];
+                /** @description Comma-separated */
+                category_id?: string[];
+                currency?: string;
+                /** @description Comma-separated */
+                type?: string[];
+                /** @description Include pending transactions (posted only by default) */
+                include_pending?: boolean;
+                /** @description Only accounts marked include_in_overview */
+                overview_only?: boolean;
+                /** @description Comma-separated */
+                merchant_id?: string[];
+                /** @description Comma-separated tag names (any) */
+                tag?: string[];
+                display_currency?: string;
+            };
+            header?: {
+                /** @description Client kind. web uses HttpOnly cookies; android/ios receive tokens in the response body. */
+                "X-Montra-Client"?: components["parameters"]["MontraClient"];
+                /** @description Client application version (diagnostics and compatibility). */
+                "X-Client-Version"?: components["parameters"]["ClientVersion"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["RequestID"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvelopePaymentMethodReport"];
                 };
             };
             /** @description Bad Request */
@@ -60053,6 +60724,7 @@ export interface operations {
                 /** @description Comma-separated; includes subcategories */
                 category_id?: string[];
                 merchant_id?: string;
+                /** @description A payment method ID, or none for transactions without a payment method */
                 payment_method_id?: string;
                 /** @description Comma-separated (any) */
                 tag_id?: string[];
@@ -60573,6 +61245,7 @@ export interface operations {
                 /** @description Comma-separated; includes subcategories */
                 category_id?: string[];
                 merchant_id?: string;
+                /** @description A payment method ID, or none for transactions without a payment method */
                 payment_method_id?: string;
                 /** @description Comma-separated (any) */
                 tag_id?: string[];

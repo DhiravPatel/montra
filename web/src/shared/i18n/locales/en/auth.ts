@@ -1,0 +1,125 @@
+import type { Message } from '../../types';
+
+/** English `auth` messages (source of truth for their keys). */
+const messages = {
+  // Auth: shared
+  'auth.fields.email': 'Email',
+  'auth.fields.password': 'Password',
+  'auth.fields.newPassword': 'New password',
+  'auth.fields.confirmPassword': 'Confirm new password',
+  'auth.fields.displayName': 'Display name',
+  'auth.fields.displayNameHelp': 'How Montra will address you.',
+  'auth.fields.currency': 'Main currency',
+  'auth.fields.currencyHelp': 'Montra uses this as your account’s main currency.',
+  'auth.fields.currencyPlaceholder': 'Choose a currency',
+  'auth.password.requirements': 'Your password needs to:',
+  'auth.password.rule.length': 'Have at least 10 characters',
+  'auth.password.rule.notCommon': 'Not be a commonly used password',
+  'auth.password.rule.notEmail': 'Not contain your email address',
+  'auth.password.rule.variety': 'Use at least 4 different characters',
+  'auth.password.ruleMet': '(done)',
+  'auth.password.ruleNotMet': '(not yet)',
+  'auth.retryIn': 'You can try again in {wait}.',
+  // Auth: sign in
+  'auth.signIn.title': 'Sign in',
+  'auth.signIn.description': 'Welcome back. Sign in to your Montra account.',
+  'auth.signIn.submit': 'Sign in',
+  'auth.signIn.forgot': 'Forgot your password?',
+  'auth.signIn.invalid': 'The email or password is incorrect.',
+  'auth.signIn.noAccount': 'New to Montra?',
+  'auth.signIn.createAccount': 'Create a free account',
+  'auth.signIn.unverified.title': 'Verify your email to sign in',
+  'auth.signIn.unverified.body':
+    'We’ve sent a new verification link to {email}. Open it, then sign in.',
+  'auth.signIn.locked.title': 'This account is locked',
+  'auth.signIn.locked.body': 'To restore access, reset your password or contact support at',
+  'auth.signIn.throttled.title': 'Too many failed attempts',
+  'auth.signIn.throttled.body': 'Try again in {wait}, or reset your password.',
+  'auth.signIn.throttled.bodyLater': 'Try again later, or reset your password.',
+  'auth.notice.signedOut': 'You’ve signed out.',
+  'auth.notice.signedOutEverywhere': 'You’ve been signed out on all devices.',
+  'auth.notice.expired': 'Your session ended. Sign in again to continue.',
+  'auth.signOut.action': 'Sign out',
+  'auth.signOut.pending': 'Signing out…',
+  'auth.signOut.failed': 'We couldn’t sign you out',
+  // Auth: two-step sign-in
+  'auth.mfa.title': 'Two-step verification',
+  'auth.mfa.description': 'Enter the code shown in your authenticator app.',
+  'auth.mfa.codeLabel': 'Verification code',
+  'auth.mfa.codeHelp': 'The 6-digit code from your authenticator app.',
+  'auth.mfa.recoveryLabel': 'Recovery code',
+  'auth.mfa.recoveryHelp': 'One of the recovery codes you saved. Each code works once.',
+  'auth.mfa.submit': 'Verify',
+  'auth.mfa.useRecovery': 'Use a recovery code instead',
+  'auth.mfa.useCode': 'Use your authenticator app instead',
+  'auth.mfa.restart': 'Start over',
+  'auth.mfa.codeInvalid':
+    'That code didn’t work. Check your authenticator app and enter the current code.',
+  'auth.mfa.recoveryInvalid': 'That recovery code didn’t work or was already used.',
+  'auth.mfa.expired.title': 'This sign-in attempt has expired',
+  'auth.mfa.expired.body':
+    'For your security, a sign-in attempt ends after a few minutes or too many wrong codes. Sign in again to get a new one.',
+  'auth.mfa.expired.action': 'Sign in again',
+  // Auth: sign up
+  'auth.signUp.title': 'Create your account',
+  'auth.signUp.description': 'Montra is free for everyone. No bank linking required.',
+  'auth.signUp.submit': 'Create account',
+  'auth.signUp.haveAccount': 'Already have an account?',
+  'auth.signUp.agreements': 'Agreements',
+  'auth.signUp.acceptTerms':
+    'I agree to the <terms>Terms of use</terms> and the <privacy>Privacy notice</privacy>.',
+  'auth.signUp.confirmAdult': 'I confirm that I am 18 years of age or older.',
+  'auth.signUp.detected': 'From your browser: {detected}.',
+  'auth.signUp.termsUpdated':
+    'Our terms have been updated. Reload the page to review them, then try again.',
+  'auth.signUp.closed': 'New accounts can’t be created right now. Please try again later.',
+  'auth.checkEmail.title': 'Check your email',
+  'auth.checkEmail.body':
+    'We’ve sent an email to {email}. Open the link in it to verify your address, then sign in. If you already have an account with this email, the message explains how to sign in instead.',
+  'auth.checkEmail.expiry': 'The link expires in 24 hours.',
+  'auth.checkEmail.noEmail': 'No email? Check your spam folder, or ask for a new link.',
+  'auth.checkEmail.signIn': 'Go to sign in',
+  'auth.checkEmail.differentEmail': 'Use a different email',
+  'auth.resend.action': 'Resend verification email',
+  'auth.resend.wait': 'You can resend in {wait}',
+  'auth.resend.sent': 'If your account still needs verifying, a new link is on its way.',
+  // Auth: email verification
+  'auth.verify.title': 'Verify your email',
+  'auth.verify.pending': 'Verifying your email…',
+  'auth.verify.success.title': 'Your email is verified',
+  'auth.verify.success.body': 'Thanks for confirming your address. You can now sign in.',
+  'auth.verify.expired.title': 'This link has expired or was already used',
+  'auth.verify.expired.body':
+    'If you’ve already verified your email, just sign in. Otherwise, ask for a new link.',
+  'auth.verify.missing.title': 'This link is incomplete',
+  'auth.verify.missing.body': 'Open the link from your email again, or ask for a new one.',
+  'auth.verify.failed': 'We couldn’t verify your email',
+  'auth.verify.requestNew': 'Enter your email and we’ll send a new verification link.',
+  'auth.verify.sendNew': 'Send a new link',
+  'auth.verify.newLinkSent': 'If {email} needs verifying, a new link is on its way.',
+  'auth.verify.signIn': 'Sign in',
+  // Auth: password recovery
+  'auth.forgot.title': 'Reset your password',
+  'auth.forgot.description':
+    'Enter the email for your account and we’ll send you a link to choose a new password.',
+  'auth.forgot.submit': 'Send reset link',
+  'auth.forgot.sent.title': 'Check your email',
+  'auth.forgot.sent.body':
+    'If there’s an account for {email}, we’ve sent a link to reset its password.',
+  'auth.forgot.sent.expiry': 'The link expires in 1 hour.',
+  'auth.forgot.backToSignIn': 'Back to sign in',
+  'auth.reset.title': 'Choose a new password',
+  'auth.reset.description':
+    'After you save it, you’ll be signed out on every device for your security.',
+  'auth.reset.submit': 'Save new password',
+  'auth.reset.success.title': 'Your password has been reset',
+  'auth.reset.success.body':
+    'For your security, you’ve been signed out everywhere. Sign in with your new password.',
+  'auth.reset.expired.title': 'This reset link has expired or was already used',
+  'auth.reset.expired.body': 'Reset links work once and expire after 1 hour. Ask for a new one.',
+  'auth.reset.missing.title': 'This link is incomplete',
+  'auth.reset.missing.body': 'Open the link from your email again, or ask for a new one.',
+  'auth.reset.requestNew': 'Get a new reset link',
+} as const satisfies Record<string, Message>;
+
+export default messages;

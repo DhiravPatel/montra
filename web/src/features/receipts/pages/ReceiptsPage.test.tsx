@@ -424,7 +424,9 @@ describe('ReceiptsPage', () => {
     await findPageHeading('Receipts');
     const dialog = await openAddDialog(user);
     await user.upload(within(dialog).getByLabelText('Choose files'), [
-      new File([new Uint8Array(15 * 1024 * 1024 + 1)], 'huge.png', { type: 'image/png' }),
+      // PDFs are sent as they are, so the 15 MB limit applies before uploading. (Photos
+      // are scaled down first; their limit is checked on the prepared file.)
+      new File([new Uint8Array(15 * 1024 * 1024 + 1)], 'huge.pdf', { type: 'application/pdf' }),
       new File(['a,b'], 'notes.txt', { type: 'text/plain' }),
       new File([], 'empty.png', { type: 'image/png' }),
     ]);
@@ -432,7 +434,7 @@ describe('ReceiptsPage', () => {
     const alert = within(dialog).getByRole('alert');
     expect(within(alert).getByText('Some files weren’t added')).toBeInTheDocument();
     expect(
-      within(alert).getByText('huge.png: This file is larger than 15 MB.'),
+      within(alert).getByText('huge.pdf: This file is larger than 15 MB.'),
     ).toBeInTheDocument();
     expect(
       within(alert).getByText(

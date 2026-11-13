@@ -20,6 +20,7 @@ import { SubscriptionStatusBadge } from '../components/SubscriptionStatusBadge';
 import { SubscriptionsSubNav } from '../components/SubscriptionsSubNav';
 import { SummaryCard } from '../components/SummaryCard';
 import { LIST_FILTERS, cycleLabel, isListFilter, listFilterLabel, pricePerCycle } from '../labels';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 /** GET /subscriptions answers at most this many (ordered by next renewal, then name). */
 const LIST_LIMIT = 500;
@@ -118,6 +119,7 @@ export function SubscriptionsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="recurring" section="subscriptions" />}
         title={t('subscriptions.title')}
         description={t('subscriptions.description')}
         actions={

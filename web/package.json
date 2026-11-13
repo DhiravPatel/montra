@@ -20,7 +20,9 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "gen:api": "openapi-typescript ../contracts/openapi/montra.v1.json --output src/shared/api/schema.d.ts",
-    "check:api": "node scripts/check-api-drift.mjs"
+    "check:api": "node scripts/check-api-drift.mjs",
+    "i18n:gen": "node scripts/i18n-messages.mjs",
+    "check:i18n": "node scripts/i18n-messages.mjs --check"
   },
   "dependencies": {
     "@hookform/resolvers": "6.0.0",

@@ -9,6 +9,7 @@ import type {
   GoalReport,
   GoalSummaryItem,
   MerchantReport,
+  PaymentMethodReport,
   RecurringReport,
   SeriesPoint,
   SubscriptionSummary,
@@ -268,6 +269,58 @@ export function makeMerchantReport(overrides: Partial<MerchantReport> = {}): Mer
         currency: 'USD',
         net_expense: money('42.10', 'USD'),
         count: 1,
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export const PAYMENT_CARD = 'eeeeeeee-1111-4111-8111-000000000001';
+
+/** GET /analytics/payment-methods as the live API answers (INR card and the unspecified bucket, USD wallet). */
+export function makePaymentMethodReport(
+  overrides: Partial<PaymentMethodReport> = {},
+): PaymentMethodReport {
+  return {
+    window: NOVEMBER,
+    payment_methods: [
+      {
+        payment_method_id: PAYMENT_CARD,
+        key: PAYMENT_CARD,
+        label: 'HDFC Card',
+        kind: 'credit_card',
+        network: 'visa',
+        masked_hint: '4321',
+        archived: false,
+        currency: 'INR',
+        net_expense: money('300.00'),
+        count: 1,
+        share_bp: 5994,
+        drill_down_path: `/transactions?from=2026-11-01&to=2026-11-30&currency=INR&payment_method_id=${PAYMENT_CARD}`,
+      },
+      {
+        key: 'unspecified',
+        label: 'Unspecified',
+        kind: 'unspecified',
+        archived: false,
+        currency: 'INR',
+        net_expense: money('200.50'),
+        count: 2,
+        share_bp: 4006,
+        drill_down_path:
+          '/transactions?from=2026-11-01&to=2026-11-30&currency=INR&payment_method_id=none',
+      },
+      {
+        payment_method_id: 'eeeeeeee-1111-4111-8111-000000000002',
+        key: 'eeeeeeee-1111-4111-8111-000000000002',
+        label: 'Travel wallet',
+        kind: 'wallet',
+        archived: true,
+        currency: 'USD',
+        net_expense: money('42.10', 'USD'),
+        count: 3,
+        share_bp: 10000,
+        drill_down_path: 'https://evil.example/steal',
       },
     ],
     ...overrides,

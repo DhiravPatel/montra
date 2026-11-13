@@ -18,6 +18,7 @@ import { DisconnectDialog } from '../components/DisconnectDialog';
 import { ProviderItem } from '../components/ProviderItem';
 import { integrationErrorMessage } from '../errors';
 import type { Connection, Provider } from '../types';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 interface Disconnecting {
   connection: Connection;
@@ -128,7 +129,11 @@ export function IntegrationsPage() {
 
   return (
     <>
-      <PageHeader title={t('integrations.title')} description={t('integrations.description')} />
+      <PageHeader
+        help={<HelpGuideLink guide="noBank" />}
+        title={t('integrations.title')}
+        description={t('integrations.description')}
+      />
       <Alert tone="info" title={t('integrations.manualFirst.title')} className="mb-6">
         <p>{t('integrations.manualFirst.body')}</p>
         <p>{t('integrations.manualFirst.never')}</p>

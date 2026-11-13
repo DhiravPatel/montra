@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/banners.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
@@ -215,7 +217,10 @@ class _NotificationSettingsScreenState
       notificationPreferencesProvider,
     );
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.notifSettingsTitle)),
+      appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.troubleshooting)],
+        title: Text(l10n.notifSettingsTitle),
+      ),
       body: AsyncValueView<List<PreferenceDto>>(
         value: prefs,
         onRetry: () => ref.invalidate(notificationPreferencesProvider),

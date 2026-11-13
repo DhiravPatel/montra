@@ -11,7 +11,9 @@ import 'package:montra_mobile/core/widgets/layout.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
 import 'package:montra_mobile/core/widgets/status_label.dart';
 import 'package:montra_mobile/features/support/application/support_providers.dart';
+import 'package:montra_mobile/features/support/domain/help_guide_content.dart';
 import 'package:montra_mobile/features/support/domain/support_display.dart';
+import 'package:montra_mobile/features/support/presentation/help_guides_screen.dart';
 
 /// Help & support: short answers to common questions (each opening the
 /// screen it is about), the user's requests and a way to ask for help.
@@ -44,6 +46,7 @@ class HelpScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
+            const ContentFrame(child: _Guides()),
             const ContentFrame(child: _Topics()),
             ContentFrame(
               child: SectionCard(
@@ -216,6 +219,45 @@ class _Topics extends StatelessWidget {
               ),
             ],
           ),
+      ],
+    );
+  }
+}
+
+/// The in-app guides, by topic (HELP-001).
+class _Guides extends StatelessWidget {
+  const _Guides();
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = context.l10n;
+    return SectionCard(
+      title: l10n.helpGuidesTitle,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Insets.md),
+          child: Text(l10n.helpGuidesDescription),
+        ),
+        ListTile(
+          leading: const Icon(Icons.search),
+          title: Text(l10n.helpGuidesSearch),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.helpGuides),
+        ),
+        for (final HelpGuideTopic topic in HelpGuideTopic.values)
+          ListTile(
+            leading: const Icon(Icons.menu_book_outlined),
+            title: Text(topic.title(l10n)),
+            subtitle: Text(
+              helpGuides
+                  .where((HelpGuideContent c) => c.topic == topic)
+                  .map((HelpGuideContent c) => c.guide.title(l10n))
+                  .join(' · '),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.helpGuidesTopic(topic.name)),
+          ),
+        const ServiceStatusLink(),
       ],
     );
   }

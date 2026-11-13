@@ -50,7 +50,7 @@ beforeAll(async () => {
 });
 
 describe('HelpPage', () => {
-  it('shows help topics with links and the user’s requests', async () => {
+  it('lists the guides by topic and shows the user’s requests', async () => {
     serveRequests([
       [
         makeSupportRequest(),
@@ -64,26 +64,24 @@ describe('HelpPage', () => {
     ]);
     await openHelp();
 
-    const topics = screen.getByRole('region', { name: 'Common questions' });
+    const guides = screen.getByRole('region', { name: 'Guides' });
+    const calculations = within(guides).getByRole('region', { name: 'How Montra calculates' });
     expect(
-      within(topics).getByRole('heading', { name: 'How Montra counts your money' }),
-    ).toBeInTheDocument();
-    expect(within(topics).getByRole('link', { name: 'Privacy & data settings' })).toHaveAttribute(
+      within(calculations).getByRole('link', { name: 'How budgets are calculated' }),
+    ).toHaveAttribute('href', '/help/guides/budgets');
+    expect(within(guides).getByRole('link', { name: 'Why don’t I see my bank?' })).toHaveAttribute(
       'href',
-      '/settings/privacy',
+      '/help/guides/no-bank',
     );
-    expect(within(topics).getByRole('link', { name: 'Go to imports' })).toHaveAttribute(
+    expect(
+      within(guides).getByRole('link', { name: 'Two-step verification and recovery' }),
+    ).toHaveAttribute('href', '/help/guides/two-step');
+    expect(within(guides).getByRole('link', { name: 'Search all guides' })).toHaveAttribute(
       'href',
-      '/imports',
+      '/help/guides',
     );
-    expect(within(topics).getByRole('link', { name: 'Go to groups' })).toHaveAttribute(
-      'href',
-      '/groups',
-    );
-    expect(within(topics).getByRole('link', { name: 'See the limits' })).toHaveAttribute(
-      'href',
-      '/settings/limits',
-    );
+    // No status page is configured in tests, so there is no status link at all.
+    expect(within(guides).queryByRole('link', { name: /Service status/ })).not.toBeInTheDocument();
 
     const mine = screen.getByRole('region', { name: 'Your requests' });
     const items = await within(mine).findAllByRole('listitem');

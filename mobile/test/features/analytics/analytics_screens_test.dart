@@ -276,6 +276,54 @@ void main() {
       );
     });
 
+    testWidgets('payment methods: one currency, the bucket without a method '
+        'localized, shares, and a drill-down to transactions without one', (
+      WidgetTester tester,
+    ) async {
+      when(() => api.paymentMethods(any(), currency: any(named: 'currency')))
+          .thenAnswer((_) async => paymentMethodReport());
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      final GoRouter router = await pump(
+        tester,
+        '/analytics/payment-methods?currency=INR',
+      );
+      expect(find.text('Payment methods'), findsWidgets);
+      expect(
+        find.text(
+          'HDFC Card had the most spending: ₹300.00. '
+          '3 payment methods shown.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('No payment method'), findsWidgets);
+      expect(find.text('Unspecified'), findsNothing);
+      expect(find.text('Old wallet (archived)'), findsWidgets);
+      expect(find.textContaining('Travel card'), findsNothing);
+      expect(find.textContaining(r'$'), findsNothing);
+      expect(find.text('59.9% · 1 transaction'), findsOneWidget);
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+      semantics.dispose();
+
+      await tester.tap(find.text('No payment method').first);
+      await tester.pumpAndSettle();
+      final Uri location = Uri.parse(locationOf(router));
+      expect(location.path, '/transactions');
+      expect(location.queryParameters['payment_method_id'], 'none');
+      expect(location.queryParameters['from'], '2026-11-01');
+      expect(find.text('No payment method'), findsWidgets);
+    });
+
+    testWidgets('payment methods without spending say so', (
+      WidgetTester tester,
+    ) async {
+      when(() => api.paymentMethods(any(), currency: any(named: 'currency')))
+          .thenAnswer((_) async => paymentMethodReport(empty: true));
+      await pump(tester, '/analytics/payment-methods?currency=INR');
+      expect(find.textContaining('No spending for'), findsOneWidget);
+    });
+
     testWidgets('a report that fails to load offers a retry', (
       WidgetTester tester,
     ) async {

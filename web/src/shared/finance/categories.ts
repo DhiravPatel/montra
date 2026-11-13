@@ -1,4 +1,4 @@
-import { en } from '@/shared/i18n/locales/en';
+import { lookupMessage } from '@/shared/i18n/catalogs';
 import type { MessageKey, Translate } from '@/shared/i18n/types';
 import type { Category, TransactionType } from './types';
 
@@ -48,7 +48,7 @@ export function categoryName(
   if (key && isStarterKey(key)) {
     const messageKey = starterKeys[key];
     // The API seeds the English name; anything else is the user's own name.
-    if (category.name === en[messageKey]) return t(messageKey);
+    if (category.name === lookupMessage('en', messageKey)) return t(messageKey);
   }
   return category.name;
 }

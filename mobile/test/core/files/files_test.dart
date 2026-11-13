@@ -9,6 +9,9 @@ import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/files/file_policy.dart';
 import 'package:montra_mobile/core/files/file_source.dart';
 import 'package:montra_mobile/core/files/file_uploader.dart';
+import 'package:montra_mobile/core/files/image_metadata.dart';
+import 'package:montra_mobile/core/files/image_preparer.dart';
+import 'package:montra_mobile/core/files/jpeg_encoder.dart';
 import 'package:montra_mobile/core/files/sha256.dart';
 
 import '../../helpers/fakes.dart';
@@ -222,6 +225,35 @@ void main() {
       );
     });
 
+    test('sends the prepared photo: checksum, size and name match the '
+        'bytes actually uploaded', () async {
+      final Uint8List original = Uint8List.fromList(<int>[
+        0, 0, 0, 24, ...'ftypheic'.codeUnits, 0, 0, 0, 0, //
+      ]);
+      await FileUploader(
+        client,
+        checksum: (Uint8List b) async => sha256Hex(b),
+        preparer: ImagePreparer(
+          decoder: _BigPhotoDecoder(),
+          encoder: (RgbaImage image, int quality) async =>
+              encodeJpeg(image.pixels, image.width, image.height),
+        ),
+      ).upload(
+        PickedFile(name: 'IMG_1.heic', bytes: original),
+        UploadPurpose.receipt,
+      );
+      final RequestOptions intent = adapter.requests[0];
+      final Uint8List sent = adapter.requests[1].data as Uint8List;
+      expect(sent, isNot(original));
+      expect(ImageFormat.sniff(sent), ImageFormat.jpeg);
+      final Map<String, Object?> body = intent.data as Map<String, Object?>;
+      expect(body['size_bytes'], sent.length);
+      expect(body['checksum_sha256'], sha256Hex(sent));
+      expect(body['filename'], 'IMG_1.jpg');
+      expect(body['content_type'], 'image/jpeg');
+      expect(adapter.requests[1].headers['X-Upload-Checksum'], sha256Hex(sent));
+    });
+
     test('refuses files the purpose does not accept before sending '
         'anything', () async {
       final FileUploader uploader = FileUploader(
@@ -356,4 +388,22 @@ void main() {
       );
     });
   });
+}
+
+/// Reports a 4000x3000 photo and decodes it as a grey image.
+class _BigPhotoDecoder extends ImageDecoder {
+  @override
+  Future<({int width, int height})?> size(Uint8List bytes) async =>
+      (width: 4000, height: 3000);
+
+  @override
+  Future<RgbaImage?> decode(
+    Uint8List bytes, {
+    required int width,
+    required int height,
+  }) async => RgbaImage(
+    Uint8List(width * height * 4)..fillRange(0, width * height * 4, 128),
+    width,
+    height,
+  );
 }

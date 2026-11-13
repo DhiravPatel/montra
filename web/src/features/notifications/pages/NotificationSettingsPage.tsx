@@ -13,6 +13,7 @@ import { EmailDigestForm } from '../components/EmailDigestForm';
 import { PreferencesForm } from '../components/PreferencesForm';
 import { QuietHoursForm } from '../components/QuietHoursForm';
 import { WebPushCard } from '../components/WebPushCard';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 function QueryProblem({
   error,
@@ -78,6 +79,7 @@ export function NotificationSettingsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="troubleshooting" section="notifications" />}
         title={t('notifications.settings.title')}
         description={t('notifications.settings.description')}
         actions={

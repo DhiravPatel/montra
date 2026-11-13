@@ -33,6 +33,11 @@ const (
 	sqlCounted = `t.type not in ('transfer','adjustment','opening_balance','settlement')`
 )
 
+// spendingTypes are the transaction types spending figures are made of, so
+// a drill-down lists exactly what was counted (never opening balances,
+// transfers or adjustments).
+const spendingTypes = "expense,group_expense,refund,reimbursement"
+
 // SQLExpressions exposes the classification SQL for verification tests.
 func SQLExpressions() (income, expense, refund string) { return sqlIncome, sqlExpense, sqlRefund }
 
@@ -411,6 +416,8 @@ func (s *Service) categories(ctx context.Context, tx pgx.Tx, sc *scope, rollup b
 		}
 		if kind == KindIncome {
 			path += "&type=income"
+		} else {
+			path += "&type=" + spendingTypes
 		}
 		c.DrillDownURL = path
 		out = append(out, c)

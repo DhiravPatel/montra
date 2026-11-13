@@ -8,7 +8,7 @@ import { useToast } from '@/shared/components/toast/ToastContext';
 import { supportRequestPath } from '@/shared/config/paths';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { useT } from '@/shared/i18n/I18nContext';
-import { HelpTopics } from '../components/HelpTopics';
+import { HelpGuidesCard } from '../components/HelpGuidesCard';
 import { MyRequestsList } from '../components/MyRequestsList';
 import { NewRequestForm } from '../components/NewRequestForm';
 import type { SupportRequest } from '../types';
@@ -48,7 +48,7 @@ export function HelpPage() {
     <>
       <PageHeader title={t('support.title')} description={t('support.description')} />
       <div className="space-y-6">
-        <HelpTopics />
+        <HelpGuidesCard />
         <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
           <Card title={t('support.form.title')} description={t('support.form.description')}>
             {sent ? (

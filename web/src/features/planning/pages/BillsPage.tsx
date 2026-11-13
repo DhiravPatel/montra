@@ -19,6 +19,7 @@ import { PlanningSubNav } from '../components/PlanningSubNav';
 import { BillStateBadge } from '../components/StatusBadges';
 import { billNeedsAttention } from '../labels';
 import { describeSchedule } from '../schedule';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 const FILTERS = [
   '',
@@ -106,6 +107,7 @@ export function BillsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="recurring" section="bills" />}
         title={t('bills.title')}
         description={t('bills.description')}
         actions={

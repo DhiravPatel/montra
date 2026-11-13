@@ -25,6 +25,7 @@ import (
 	"montra/backend/internal/finance"
 	"montra/backend/internal/platform/apperr"
 	"montra/backend/internal/platform/audit"
+	"montra/backend/internal/platform/breaker"
 	"montra/backend/internal/platform/config"
 	"montra/backend/internal/platform/database"
 	"montra/backend/internal/platform/identity"
@@ -46,6 +47,19 @@ type Service struct {
 	Cfg  config.FXConfig
 	HTTP *http.Client
 	Now  func() time.Time
+	// Breaker guards the provider fetch (NewBreaker); nil uses the
+	// process-wide "fx.ecb" breaker.
+	Breaker *breaker.Breaker
+}
+
+// NewBreaker returns the breaker for the rate provider fetch.
+func NewBreaker() *breaker.Breaker { return breaker.New("fx.ecb", breaker.Options{}) }
+
+func (s *Service) breaker() *breaker.Breaker {
+	if s.Breaker != nil {
+		return s.Breaker
+	}
+	return breaker.Named("fx.ecb", breaker.Options{})
 }
 
 func (s *Service) now() time.Time {
@@ -381,16 +395,25 @@ func (s *Service) RefreshECB(ctx context.Context) (int, error) {
 		return 0, err
 	}
 	req.Header.Set("User-Agent", "Montra-FX/1.0")
-	resp, err := client.Do(req)
+	// The fetch runs through the provider's circuit breaker: while ECB keeps
+	// failing, refreshes fail fast with a retryable error (the job backs off
+	// at least until the cool-down ends) instead of waiting on timeouts.
+	body, err := breaker.Call(ctx, s.breaker(), func(context.Context) ([]byte, error) {
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = resp.Body.Close() }()
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("ecb status %d", resp.StatusCode)
+		}
+		return io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	})
 	if err != nil {
 		return 0, jobs.WithCode("provider_unavailable", err)
 	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return 0, jobs.WithCode("provider_unavailable", fmt.Errorf("ecb status %d", resp.StatusCode))
-	}
 	var env ecbEnvelope
-	if err := xml.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&env); err != nil {
+	if err := xml.Unmarshal(body, &env); err != nil {
 		return 0, jobs.Permanent(fmt.Errorf("ecb payload: %w", err))
 	}
 	n := 0

@@ -1,9 +1,6 @@
-import { en } from './locales/en';
-import { hi } from './locales/hi';
+import { lookupMessage, requestMissing } from './catalogs';
 import type { Language } from './languages';
-import type { Message, MessageKey, PartialCatalog, Translate, TranslateParams } from './types';
-
-const catalogs: Readonly<Record<Language, PartialCatalog>> = { en, hi };
+import type { Message, MessageKey, Translate, TranslateParams } from './types';
 
 const PLACEHOLDER = /\{(\w+)\}/g;
 
@@ -14,17 +11,21 @@ function selectForm(message: Message, count: number | undefined, rules: Intl.Plu
 }
 
 /**
- * Creates a translator for one language. Missing keys fall back to English;
+ * Creates a translator for one language. Missing keys fall back to English
+ * (a key whose namespace hasn't loaded yet renders empty and loads it);
  * `{name}` placeholders are replaced from params (numbers are formatted for
  * the locale) and `count` selects plural forms via Intl.PluralRules.
  */
 export function createTranslator(lang: Language, formatLocale: string): Translate {
   const rules = new Intl.PluralRules(formatLocale);
   const numbers = new Intl.NumberFormat(formatLocale);
-  const catalog = catalogs[lang];
 
   return (key: MessageKey, params?: TranslateParams): string => {
-    const message = catalog[key] ?? en[key];
+    const message = lookupMessage(lang, key);
+    if (message === undefined) {
+      requestMissing(lang, key);
+      return '';
+    }
     const count = typeof params?.count === 'number' ? params.count : undefined;
     const template = selectForm(message, count, rules);
     if (!params) return template;

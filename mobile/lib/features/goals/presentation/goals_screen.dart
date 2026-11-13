@@ -5,6 +5,8 @@ import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/router/app_routes.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
 import 'package:montra_mobile/features/goals/application/goals_providers.dart';
 import 'package:montra_mobile/features/goals/domain/goal_display.dart';
@@ -38,6 +40,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     final AsyncValue<List<GoalDto>> goals = ref.watch(goalsProvider(_status));
     return Scaffold(
       appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.goals)],
         title: Text(l10n.goalsTitle),
         bottom: goals.isLoading && goals.hasValue
             ? const PreferredSize(

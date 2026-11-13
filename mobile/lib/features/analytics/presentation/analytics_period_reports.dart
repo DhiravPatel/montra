@@ -41,6 +41,7 @@ class PeriodReportBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => switch (report) {
     AnalyticsReport.categories => _CategoriesReport(query: query),
     AnalyticsReport.merchants => _MerchantsReport(query: query),
+    AnalyticsReport.paymentMethods => _PaymentMethodsReport(query: query),
     _ => _SeriesReport(report: report, query: query, onQuery: onQuery),
   };
 }
@@ -627,6 +628,123 @@ class _MerchantsReport extends ConsumerWidget {
                           m.count,
                         ),
                         onTap: m.merchantId == null ? null : () => open(m),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// The name of a payment-method bucket: the bucket for spending without a
+/// payment method is localized by its key, never by the server's label.
+String paymentMethodSliceName(AppLocalizations l10n, PaymentMethodSlice s) {
+  if (s.key == 'unspecified' || s.paymentMethodId == null) {
+    return l10n.analyticsPaymentMethodUnspecified;
+  }
+  return s.archived ? l10n.analyticsPaymentMethodArchived(s.label) : s.label;
+}
+
+/// What kind of payment method a bucket is, with the card's last digits.
+String? paymentMethodSliceDetail(AppLocalizations l10n, PaymentMethodSlice s) {
+  final String? kind = switch (s.kind) {
+    PaymentMethodSliceKind.cash => l10n.paymentKindCash,
+    PaymentMethodSliceKind.upi => l10n.paymentKindUpi,
+    PaymentMethodSliceKind.debitCard => l10n.paymentKindDebitCard,
+    PaymentMethodSliceKind.creditCard => l10n.paymentKindCreditCard,
+    PaymentMethodSliceKind.bankTransfer => l10n.paymentKindBankTransfer,
+    PaymentMethodSliceKind.wallet => l10n.paymentKindWallet,
+    PaymentMethodSliceKind.cheque => l10n.paymentKindCheque,
+    PaymentMethodSliceKind.other => l10n.paymentKindOther,
+    PaymentMethodSliceKind.unspecified ||
+    PaymentMethodSliceKind.unrecognized => null,
+  };
+  final String? hint = s.maskedHint;
+  if (kind == null) {
+    return null;
+  }
+  return hint == null || hint.isEmpty ? kind : '$kind ·· $hint';
+}
+
+/// Net spending by payment method in one currency (never summed across
+/// currencies); each row opens the matching transactions.
+class _PaymentMethodsReport extends ConsumerWidget {
+  const _PaymentMethodsReport({required this.query});
+
+  final AnalyticsQuery query;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = context.l10n;
+    final String locale = Localizations.localeOf(context).toString();
+    final String numberLocale = numberLocaleOf(context, ref);
+    final MerchantArgs args = (range: query.range, currency: query.currency!);
+    return _Loaded<PaymentMethodReport>(
+      value: ref.watch(analyticsPaymentMethodsProvider(args)),
+      onRetry: () => ref.invalidate(analyticsPaymentMethodsProvider(args)),
+      builder: (PaymentMethodReport data) {
+        final List<PaymentMethodSlice> slices = <PaymentMethodSlice>[
+          for (final PaymentMethodSlice s in data.paymentMethods)
+            if (s.currency == args.currency) s,
+        ];
+        if (slices.isEmpty) {
+          return SectionCard(
+            title: l10n.currencyHeading(args.currency),
+            children: <Widget>[
+              AnalyticsEmpty(
+                l10n.analyticsNoPaymentMethodSpending(
+                  windowText(data.window, locale),
+                ),
+              ),
+            ],
+          );
+        }
+        final int max = slices.first.netExpense.amountMinor;
+        final PaymentMethodSlice top = slices.first;
+        return SectionCard(
+          title: l10n.currencyHeading(args.currency),
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(bottom: Insets.sm),
+              child: AccessibleChart(
+                summary: l10n.analyticsPaymentMethodsSummary(
+                  paymentMethodSliceName(l10n, top),
+                  formatMoney(context, ref, top.netExpense),
+                  slices.length,
+                ),
+                chart: HorizontalBars(
+                  entries: <BarEntry>[
+                    for (final PaymentMethodSlice s in slices)
+                      BarEntry(
+                        label: paymentMethodSliceName(l10n, s),
+                        valueText: formatMoney(context, ref, s.netExpense),
+                        detail: <String>[
+                          formatBasisPoints(s.shareBp, numberLocale),
+                          l10n.merchantTransactionCount(s.count),
+                        ].join(' · '),
+                        fraction: barFraction(s.netExpense.amountMinor, max),
+                        onTap: () => openDrillDown(context, s.drillDownPath),
+                      ),
+                  ],
+                ),
+                table: Column(
+                  children: <Widget>[
+                    for (final PaymentMethodSlice s in slices)
+                      DetailRow(
+                        label: <String>[
+                          paymentMethodSliceName(l10n, s),
+                          ?paymentMethodSliceDetail(l10n, s),
+                        ].join(' — '),
+                        value: l10n.analyticsPaymentMethodRow(
+                          formatMoney(context, ref, s.netExpense),
+                          s.count,
+                          formatBasisPoints(s.shareBp, numberLocale),
+                        ),
+                        onTap: () => openDrillDown(context, s.drillDownPath),
                       ),
                   ],
                 ),

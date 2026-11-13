@@ -119,8 +119,13 @@ func (f *FCM) accessToken(ctx context.Context) (string, error) {
 	return f.token, nil
 }
 
-// Send delivers one message to a registration token.
+// Send delivers one message to a registration token through the FCM
+// circuit breaker.
 func (f *FCM) Send(ctx context.Context, token, title, body string, data map[string]string, high bool) error {
+	return guardPush(ctx, "fcm", func(ctx context.Context) error { return f.send(ctx, token, title, body, data, high) })
+}
+
+func (f *FCM) send(ctx context.Context, token, title, body string, data map[string]string, high bool) error {
 	at, err := f.accessToken(ctx)
 	if err != nil {
 		return err

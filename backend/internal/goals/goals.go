@@ -498,8 +498,12 @@ func (s *Service) SetStatus(ctx context.Context, id uuid.UUID, action string, ve
 				return err
 			}
 		}
+		// Marking a goal achieved by hand is the person's decision: it stays
+		// achieved even if a withdrawal later takes saved below target.
 		if _, err := tx.Exec(ctx, `update goals set status = $2, achieved_at = case when $2 = 'achieved' then coalesce(achieved_at, now())
-			when $2 = 'active' then null else achieved_at end, version = version + 1 where id = $1`, id, t.to); err != nil {
+			when $2 = 'active' then null else achieved_at end,
+			achieved_by = case when $2 = 'achieved' then 'manual' when $2 = 'active' then null else achieved_by end,
+			version = version + 1 where id = $1`, id, t.to); err != nil {
 			return err
 		}
 		if t.to == "active" {
@@ -555,9 +559,11 @@ func (s *Service) applyState(ctx context.Context, tx pgx.Tx, id uuid.UUID) (*goa
 	}
 	switch {
 	case g.Status == "active" && g.savedMinor >= g.target:
-		_, err = tx.Exec(ctx, `update goals set status = 'achieved', achieved_at = now() where id = $1`, id)
+		_, err = tx.Exec(ctx, `update goals set status = 'achieved', achieved_at = now(), achieved_by = 'progress' where id = $1`, id)
 	case g.Status == "achieved" && g.savedMinor < g.target:
-		_, err = tx.Exec(ctx, `update goals set status = 'active', achieved_at = null where id = $1`, id)
+		// Only goals that reached their target reopen automatically.
+		_, err = tx.Exec(ctx, `update goals set status = 'active', achieved_at = null, achieved_by = null
+			where id = $1 and achieved_by is distinct from 'manual'`, id)
 	}
 	return g, err
 }

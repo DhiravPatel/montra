@@ -10,6 +10,8 @@ import 'package:montra_mobile/core/files/file_export.dart';
 import 'package:montra_mobile/core/files/file_widgets.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
 import 'package:montra_mobile/core/formatting/relative_time.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/banners.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
@@ -39,7 +41,10 @@ class PrivacyScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.privacyTitle)),
+      appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.privacy)],
+        title: Text(l10n.privacyTitle),
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref

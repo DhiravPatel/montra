@@ -107,6 +107,12 @@ export const handlers = [
   }),
 
   // People and groups to share with (reads only).
+  http.get(`${API}/saved-filters`, ({ request }) => {
+    const scope = new URL(request.url).searchParams.get('scope');
+    return HttpResponse.json(
+      envelope(testBackend.savedFilters.filter((item) => !scope || item.scope === scope)),
+    );
+  }),
   http.get(`${API}/connections`, () => {
     if (!testBackend.user) return unauthenticated();
     return HttpResponse.json(envelope(testBackend.people));

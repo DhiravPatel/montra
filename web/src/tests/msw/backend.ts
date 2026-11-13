@@ -1,4 +1,5 @@
 import type { Session, User } from '@/shared/api/types';
+import type { SavedFilter } from '@/shared/savedFilters/api';
 import type {
   Account,
   AccountsReport,
@@ -40,6 +41,8 @@ interface TestBackend {
   groups: Group[];
   /** GET /groups/{id}, by group ID. */
   groupDetails: Record<string, GroupDetail>;
+  /** GET /saved-filters (all scopes; the handler filters by `scope`). */
+  savedFilters: SavedFilter[];
 }
 
 function initialState(): TestBackend {
@@ -59,6 +62,7 @@ function initialState(): TestBackend {
     people: [],
     groups: [],
     groupDetails: {},
+    savedFilters: [],
   };
 }
 

@@ -16,6 +16,7 @@ import type { MessageKey } from '@/shared/i18n/types';
 import { formatBytes, storageShareBp } from '../format';
 import { useLimits } from '../hooks';
 import type { Limits, RatePolicy } from '../types';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 const policyLabel: Readonly<Record<RatePolicy, MessageKey>> = {
   default: 'privacySettings.limits.policy.default',
@@ -268,6 +269,7 @@ export function LimitsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="fairUse" />}
         title={t('privacySettings.limits.title')}
         description={t('privacySettings.limits.description')}
       />

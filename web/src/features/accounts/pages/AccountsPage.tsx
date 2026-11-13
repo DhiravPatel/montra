@@ -23,6 +23,7 @@ import { useAccountTotals } from '../api';
 import { AccountBalance } from '../components/AccountBalance';
 import { AccountsSubNav } from '../components/AccountsSubNav';
 import { AccountStatusBadges } from '../components/AccountStatusBadges';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 function groupAccounts(accounts: readonly Account[]): { type: AccountType; accounts: Account[] }[] {
   const sorted = [...accounts].sort(
@@ -191,6 +192,7 @@ export function AccountsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="balances" />}
         title={t('accounts.title')}
         description={t('accounts.description')}
         actions={

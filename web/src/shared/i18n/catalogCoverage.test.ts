@@ -5,6 +5,7 @@ import { hi } from './locales/hi';
 /** Feature areas whose strings must be translated (not just fall back to English). */
 const TRANSLATED_PREFIXES = [
   'common.',
+  'errors.',
   'validation.amount',
   'charts.',
   'finance.',
@@ -45,9 +46,13 @@ const TRANSLATED_PREFIXES = [
   'challenges.',
   'moderation.',
   'support.',
+  'helpGuides.',
+  'helpContent.',
   'privacySettings.',
   'adminUsage.',
+  'adminJobs.',
   'search.',
+  'savedFilters.',
   'insights.',
   'notifications.',
   'integrations.',

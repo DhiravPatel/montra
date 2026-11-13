@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"montra/backend/internal/platform/breaker"
 )
 
 // Push delivery outcomes.
@@ -30,6 +32,24 @@ var (
 	ErrPushRejected = errors.New("push service rejected the message")
 	ErrPushRetry    = errors.New("push service temporarily unavailable")
 )
+
+// pushFailure counts only "temporarily unavailable" outcomes against a push
+// service's circuit breaker; gone endpoints and rejected messages are about
+// one subscription, not the service.
+func pushFailure(err error) bool {
+	return breaker.DefaultIsFailure(err) && errors.Is(err, ErrPushRetry)
+}
+
+// guardPush runs one push service call through the service's breaker. An
+// open breaker answers ErrPushRetry at once, so the delivery job is retried
+// with backoff instead of waiting on a failing service.
+func guardPush(ctx context.Context, name string, fn func(context.Context) error) error {
+	err := breaker.Named(name, breaker.Options{IsFailure: pushFailure}).Do(ctx, fn)
+	if breaker.IsOpen(err) {
+		return fmt.Errorf("%w: %w", ErrPushRetry, err)
+	}
+	return err
+}
 
 // pushHosts are the browser push services Montra will send to. Anything
 // else is refused at registration and before sending (no request to an
@@ -211,7 +231,15 @@ func (w *WebPush) Send(ctx context.Context, sub WebPushSubscription, payload []b
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, sub.Endpoint, bytes.NewReader(body))
+	// One breaker per push service host (the host is allow-listed, so the
+	// metric label set is small and carries no user data).
+	return guardPush(ctx, "webpush:"+strings.ToLower(u.Hostname()), func(ctx context.Context) error {
+		return w.post(ctx, sub.Endpoint, body, jwt, ttl, urgency)
+	})
+}
+
+func (w *WebPush) post(ctx context.Context, endpoint string, body []byte, jwt string, ttl int, urgency string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}

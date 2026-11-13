@@ -15104,6 +15104,28 @@ EnvelopeInsightDto decodeEnvelopeInsightDto(Map<String, Object?> json) =>
           InsightDto.fromJson(_cast<Map<String, Object?>>(data, path)),
     );
 
+/// Schema `EnvelopeJobDTO`: an [Envelope] whose `data` is `JobDto`.
+typedef EnvelopeJobDto = Envelope<JobDto>;
+
+/// Decodes a `EnvelopeJobDTO` response body.
+EnvelopeJobDto decodeEnvelopeJobDto(Map<String, Object?> json) =>
+    Envelope<JobDto>.fromJson(
+      json,
+      (Object? data, String path) =>
+          JobDto.fromJson(_cast<Map<String, Object?>>(data, path)),
+    );
+
+/// Schema `EnvelopeJobDetail`: an [Envelope] whose `data` is `JobDetail`.
+typedef EnvelopeJobDetail = Envelope<JobDetail>;
+
+/// Decodes a `EnvelopeJobDetail` response body.
+EnvelopeJobDetail decodeEnvelopeJobDetail(Map<String, Object?> json) =>
+    Envelope<JobDetail>.fromJson(
+      json,
+      (Object? data, String path) =>
+          JobDetail.fromJson(_cast<Map<String, Object?>>(data, path)),
+    );
+
 /// Schema `EnvelopeLegalDTO`: an [Envelope] whose `data` is `LegalDto`.
 typedef EnvelopeLegalDto = Envelope<LegalDto>;
 
@@ -15634,6 +15656,21 @@ EnvelopeListInsightMuteDto decodeEnvelopeListInsightMuteDto(
         InsightMuteDto.fromJson(_cast<Map<String, Object?>>(e1, p1)),
   ),
 );
+
+/// Schema `EnvelopeListJobDTO`: an [Envelope] whose `data` is `List<JobDto>`.
+typedef EnvelopeListJobDto = Envelope<List<JobDto>>;
+
+/// Decodes a `EnvelopeListJobDTO` response body.
+EnvelopeListJobDto decodeEnvelopeListJobDto(Map<String, Object?> json) =>
+    Envelope<List<JobDto>>.fromJson(
+      json,
+      (Object? data, String path) => _castList(
+        data,
+        path,
+        (Object? e1, String p1) =>
+            JobDto.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+      ),
+    );
 
 /// Schema `EnvelopeListMerchantDTO`: an [Envelope] whose `data` is `List<MerchantDto>`.
 typedef EnvelopeListMerchantDto = Envelope<List<MerchantDto>>;
@@ -16396,6 +16433,18 @@ EnvelopePaymentMethodDeleteResult decodeEnvelopePaymentMethodDeleteResult(
   (Object? data, String path) => PaymentMethodDeleteResult.fromJson(
     _cast<Map<String, Object?>>(data, path),
   ),
+);
+
+/// Schema `EnvelopePaymentMethodReport`: an [Envelope] whose `data` is `PaymentMethodReport`.
+typedef EnvelopePaymentMethodReport = Envelope<PaymentMethodReport>;
+
+/// Decodes a `EnvelopePaymentMethodReport` response body.
+EnvelopePaymentMethodReport decodeEnvelopePaymentMethodReport(
+  Map<String, Object?> json,
+) => Envelope<PaymentMethodReport>.fromJson(
+  json,
+  (Object? data, String path) =>
+      PaymentMethodReport.fromJson(_cast<Map<String, Object?>>(data, path)),
 );
 
 /// Schema `EnvelopePreferencesDTO`: an [Envelope] whose `data` is `PreferencesDto`.
@@ -26725,6 +26774,359 @@ final class Item {
   String toString() => 'Item(...)';
 }
 
+/// Schema `JobAttemptDTO`.
+@immutable
+final class JobAttemptDto {
+  /// Creates a [JobAttemptDto].
+  const JobAttemptDto({
+    required this.attempt,
+    this.durationMs,
+    this.errorCode,
+    this.finishedAt,
+    this.outcome,
+    required this.startedAt,
+    required this.workerId,
+  });
+
+  /// Decodes a `JobAttemptDTO` JSON object.
+  factory JobAttemptDto.fromJson(Map<String, Object?> json) => JobAttemptDto(
+    attempt: _cast<int>(json['attempt'], 'JobAttemptDTO.attempt'),
+    durationMs: json['duration_ms'] == null
+        ? null
+        : _cast<int>(json['duration_ms'], 'JobAttemptDTO.duration_ms'),
+    errorCode: json['error_code'] == null
+        ? null
+        : _cast<String>(json['error_code'], 'JobAttemptDTO.error_code'),
+    finishedAt: json['finished_at'] == null
+        ? null
+        : _parseDateTime(
+            _cast<String>(json['finished_at'], 'JobAttemptDTO.finished_at'),
+            'JobAttemptDTO.finished_at',
+          ),
+    outcome: json['outcome'] == null
+        ? null
+        : JobAttemptDtoOutcome.fromJson(
+            _cast<String>(json['outcome'], 'JobAttemptDTO.outcome'),
+          ),
+    startedAt: _parseDateTime(
+      _cast<String>(json['started_at'], 'JobAttemptDTO.started_at'),
+      'JobAttemptDTO.started_at',
+    ),
+    workerId: _cast<String>(json['worker_id'], 'JobAttemptDTO.worker_id'),
+  );
+
+  /// JSON `attempt`.
+  ///
+  /// Format: `int64`.
+  final int attempt;
+
+  /// JSON `duration_ms` (optional).
+  ///
+  /// Format: `int64`.
+  final int? durationMs;
+
+  /// Safe failure code; never the message.
+  ///
+  /// JSON `error_code` (optional).
+  final String? errorCode;
+
+  /// JSON `finished_at` (optional).
+  final DateTime? finishedAt;
+
+  /// Absent while the attempt runs.
+  ///
+  /// JSON `outcome` (optional).
+  final JobAttemptDtoOutcome? outcome;
+
+  /// JSON `started_at`.
+  final DateTime startedAt;
+
+  /// Worker process that ran the attempt.
+  ///
+  /// JSON `worker_id`.
+  final String workerId;
+
+  /// Encodes this object as JSON. Absent optional fields are omitted.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'attempt': attempt,
+    'duration_ms': ?durationMs,
+    'error_code': ?errorCode,
+    'finished_at': ?finishedAt?.toUtc().toIso8601String(),
+    'outcome': ?outcome?.json,
+    'started_at': startedAt.toUtc().toIso8601String(),
+    'worker_id': workerId,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is JobAttemptDto &&
+          other.attempt == attempt &&
+          other.durationMs == durationMs &&
+          other.errorCode == errorCode &&
+          other.finishedAt == finishedAt &&
+          other.outcome == outcome &&
+          other.startedAt == startedAt &&
+          other.workerId == workerId;
+
+  @override
+  int get hashCode => Object.hashAll(<Object?>[
+    attempt,
+    durationMs,
+    errorCode,
+    finishedAt,
+    outcome,
+    startedAt,
+    workerId,
+  ]);
+
+  @override
+  String toString() => 'JobAttemptDto(...)';
+}
+
+/// Schema `JobDTO`.
+@immutable
+final class JobDto {
+  /// Creates a [JobDto].
+  const JobDto({
+    required this.attempts,
+    required this.cancelRequested,
+    required this.createdAt,
+    this.finishedAt,
+    required this.id,
+    this.lastErrorCode,
+    required this.maxAttempts,
+    required this.priority,
+    required this.queue,
+    required this.retryable,
+    required this.runAfter,
+    this.startedAt,
+    required this.status,
+    required this.typeValue,
+    required this.updatedAt,
+    required this.userScoped,
+  });
+
+  /// Decodes a `JobDTO` JSON object.
+  factory JobDto.fromJson(Map<String, Object?> json) => JobDto(
+    attempts: _cast<int>(json['attempts'], 'JobDTO.attempts'),
+    cancelRequested: _cast<bool>(
+      json['cancel_requested'],
+      'JobDTO.cancel_requested',
+    ),
+    createdAt: _parseDateTime(
+      _cast<String>(json['created_at'], 'JobDTO.created_at'),
+      'JobDTO.created_at',
+    ),
+    finishedAt: json['finished_at'] == null
+        ? null
+        : _parseDateTime(
+            _cast<String>(json['finished_at'], 'JobDTO.finished_at'),
+            'JobDTO.finished_at',
+          ),
+    id: _cast<String>(json['id'], 'JobDTO.id'),
+    lastErrorCode: json['last_error_code'] == null
+        ? null
+        : _cast<String>(json['last_error_code'], 'JobDTO.last_error_code'),
+    maxAttempts: _cast<int>(json['max_attempts'], 'JobDTO.max_attempts'),
+    priority: _cast<int>(json['priority'], 'JobDTO.priority'),
+    queue: _cast<String>(json['queue'], 'JobDTO.queue'),
+    retryable: _cast<bool>(json['retryable'], 'JobDTO.retryable'),
+    runAfter: _parseDateTime(
+      _cast<String>(json['run_after'], 'JobDTO.run_after'),
+      'JobDTO.run_after',
+    ),
+    startedAt: json['started_at'] == null
+        ? null
+        : _parseDateTime(
+            _cast<String>(json['started_at'], 'JobDTO.started_at'),
+            'JobDTO.started_at',
+          ),
+    status: JobDtoStatus.fromJson(
+      _cast<String>(json['status'], 'JobDTO.status'),
+    ),
+    typeValue: _cast<String>(json['type'], 'JobDTO.type'),
+    updatedAt: _parseDateTime(
+      _cast<String>(json['updated_at'], 'JobDTO.updated_at'),
+      'JobDTO.updated_at',
+    ),
+    userScoped: _cast<bool>(json['user_scoped'], 'JobDTO.user_scoped'),
+  );
+
+  /// Attempts started so far.
+  ///
+  /// JSON `attempts`.
+  ///
+  /// Format: `int64`.
+  final int attempts;
+
+  /// JSON `cancel_requested`.
+  final bool cancelRequested;
+
+  /// JSON `created_at`.
+  final DateTime createdAt;
+
+  /// JSON `finished_at` (optional).
+  final DateTime? finishedAt;
+
+  /// JSON `id`.
+  final String id;
+
+  /// Safe code of the last failure (for example email_send_failed, provider_circuit_open, timeout); never the message.
+  ///
+  /// JSON `last_error_code` (optional).
+  final String? lastErrorCode;
+
+  /// JSON `max_attempts`.
+  ///
+  /// Format: `int64`.
+  final int maxAttempts;
+
+  /// Lower runs first.
+  ///
+  /// JSON `priority`.
+  ///
+  /// Format: `int64`.
+  final int priority;
+
+  /// JSON `queue`.
+  final String queue;
+
+  /// Failed or dead: POST /admin/jobs/{id}/retry re-queues it.
+  ///
+  /// JSON `retryable`.
+  final bool retryable;
+
+  /// JSON `run_after`.
+  final DateTime runAfter;
+
+  /// JSON `started_at` (optional).
+  final DateTime? startedAt;
+
+  /// JSON `status`.
+  final JobDtoStatus status;
+
+  /// JSON `type`.
+  final String typeValue;
+
+  /// JSON `updated_at`.
+  final DateTime updatedAt;
+
+  /// The job acts for one person (who is not disclosed).
+  ///
+  /// JSON `user_scoped`.
+  final bool userScoped;
+
+  /// Encodes this object as JSON. Absent optional fields are omitted.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'attempts': attempts,
+    'cancel_requested': cancelRequested,
+    'created_at': createdAt.toUtc().toIso8601String(),
+    'finished_at': ?finishedAt?.toUtc().toIso8601String(),
+    'id': id,
+    'last_error_code': ?lastErrorCode,
+    'max_attempts': maxAttempts,
+    'priority': priority,
+    'queue': queue,
+    'retryable': retryable,
+    'run_after': runAfter.toUtc().toIso8601String(),
+    'started_at': ?startedAt?.toUtc().toIso8601String(),
+    'status': status.json,
+    'type': typeValue,
+    'updated_at': updatedAt.toUtc().toIso8601String(),
+    'user_scoped': userScoped,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is JobDto &&
+          other.attempts == attempts &&
+          other.cancelRequested == cancelRequested &&
+          other.createdAt == createdAt &&
+          other.finishedAt == finishedAt &&
+          other.id == id &&
+          other.lastErrorCode == lastErrorCode &&
+          other.maxAttempts == maxAttempts &&
+          other.priority == priority &&
+          other.queue == queue &&
+          other.retryable == retryable &&
+          other.runAfter == runAfter &&
+          other.startedAt == startedAt &&
+          other.status == status &&
+          other.typeValue == typeValue &&
+          other.updatedAt == updatedAt &&
+          other.userScoped == userScoped;
+
+  @override
+  int get hashCode => Object.hashAll(<Object?>[
+    attempts,
+    cancelRequested,
+    createdAt,
+    finishedAt,
+    id,
+    lastErrorCode,
+    maxAttempts,
+    priority,
+    queue,
+    retryable,
+    runAfter,
+    startedAt,
+    status,
+    typeValue,
+    updatedAt,
+    userScoped,
+  ]);
+
+  @override
+  String toString() => 'JobDto(...)';
+}
+
+/// Schema `JobDetail`.
+@immutable
+final class JobDetail {
+  /// Creates a [JobDetail].
+  const JobDetail({required this.attempts, required this.job});
+
+  /// Decodes a `JobDetail` JSON object.
+  factory JobDetail.fromJson(Map<String, Object?> json) => JobDetail(
+    attempts: _castList(
+      json['attempts'],
+      'JobDetail.attempts',
+      (Object? e1, String p1) =>
+          JobAttemptDto.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+    ),
+    job: JobDto.fromJson(
+      _cast<Map<String, Object?>>(json['job'], 'JobDetail.job'),
+    ),
+  );
+
+  /// JSON `attempts`.
+  final List<JobAttemptDto> attempts;
+
+  /// JSON `job`.
+  final JobDto job;
+
+  /// Encodes this object as JSON. Absent optional fields are omitted.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'attempts': attempts.map((JobAttemptDto item1) => item1.toJson()).toList(),
+    'job': job.toJson(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is JobDetail &&
+          _listEquals(other.attempts, attempts) &&
+          other.job == job;
+
+  @override
+  int get hashCode => Object.hashAll(<Object?>[_listHash(attempts), job]);
+
+  @override
+  String toString() => 'JobDetail(...)';
+}
+
 /// Schema `JoinRequestInput`.
 @immutable
 final class JoinRequestInput {
@@ -31695,6 +32097,230 @@ final class PaymentMethodPatch {
 
   @override
   String toString() => 'PaymentMethodPatch(...)';
+}
+
+/// Schema `PaymentMethodReport`.
+@immutable
+final class PaymentMethodReport {
+  /// Creates a [PaymentMethodReport].
+  const PaymentMethodReport({
+    required this.paymentMethods,
+    required this.window,
+  });
+
+  /// Decodes a `PaymentMethodReport` JSON object.
+  factory PaymentMethodReport.fromJson(Map<String, Object?> json) =>
+      PaymentMethodReport(
+        paymentMethods: _castList(
+          json['payment_methods'],
+          'PaymentMethodReport.payment_methods',
+          (Object? e1, String p1) =>
+              PaymentMethodSlice.fromJson(_cast<Map<String, Object?>>(e1, p1)),
+        ),
+        window: Window.fromJson(
+          _cast<Map<String, Object?>>(
+            json['window'],
+            'PaymentMethodReport.window',
+          ),
+        ),
+      );
+
+  /// Grouped by currency (alphabetical), largest net spending first; each currency is ranked separately.
+  ///
+  /// JSON `payment_methods`.
+  final List<PaymentMethodSlice> paymentMethods;
+
+  /// JSON `window`.
+  final Window window;
+
+  /// Encodes this object as JSON. Absent optional fields are omitted.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'payment_methods': paymentMethods
+        .map((PaymentMethodSlice item1) => item1.toJson())
+        .toList(),
+    'window': window.toJson(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PaymentMethodReport &&
+          _listEquals(other.paymentMethods, paymentMethods) &&
+          other.window == window;
+
+  @override
+  int get hashCode =>
+      Object.hashAll(<Object?>[_listHash(paymentMethods), window]);
+
+  @override
+  String toString() => 'PaymentMethodReport(...)';
+}
+
+/// Schema `PaymentMethodSlice`.
+@immutable
+final class PaymentMethodSlice {
+  /// Creates a [PaymentMethodSlice].
+  const PaymentMethodSlice({
+    required this.archived,
+    required this.count,
+    required this.currency,
+    required this.drillDownPath,
+    required this.key,
+    required this.kind,
+    required this.label,
+    this.maskedHint,
+    required this.netExpense,
+    this.network,
+    this.paymentMethodId,
+    required this.shareBp,
+  });
+
+  /// Decodes a `PaymentMethodSlice` JSON object.
+  factory PaymentMethodSlice.fromJson(
+    Map<String, Object?> json,
+  ) => PaymentMethodSlice(
+    archived: _cast<bool>(json['archived'], 'PaymentMethodSlice.archived'),
+    count: _cast<int>(json['count'], 'PaymentMethodSlice.count'),
+    currency: _cast<String>(json['currency'], 'PaymentMethodSlice.currency'),
+    drillDownPath: _cast<String>(
+      json['drill_down_path'],
+      'PaymentMethodSlice.drill_down_path',
+    ),
+    key: _cast<String>(json['key'], 'PaymentMethodSlice.key'),
+    kind: PaymentMethodSliceKind.fromJson(
+      _cast<String>(json['kind'], 'PaymentMethodSlice.kind'),
+    ),
+    label: _cast<String>(json['label'], 'PaymentMethodSlice.label'),
+    maskedHint: json['masked_hint'] == null
+        ? null
+        : _cast<String>(json['masked_hint'], 'PaymentMethodSlice.masked_hint'),
+    netExpense: Money.fromJson(
+      _cast<Map<String, Object?>>(
+        json['net_expense'],
+        'PaymentMethodSlice.net_expense',
+      ),
+    ),
+    network: json['network'] == null
+        ? null
+        : _cast<String>(json['network'], 'PaymentMethodSlice.network'),
+    paymentMethodId: json['payment_method_id'] == null
+        ? null
+        : _cast<String>(
+            json['payment_method_id'],
+            'PaymentMethodSlice.payment_method_id',
+          ),
+    shareBp: _cast<int>(json['share_bp'], 'PaymentMethodSlice.share_bp'),
+  );
+
+  /// The payment method is archived (its past spending still counts).
+  ///
+  /// JSON `archived`.
+  final bool archived;
+
+  /// Transactions counted.
+  ///
+  /// JSON `count`.
+  ///
+  /// Format: `int64`.
+  final int count;
+
+  /// JSON `currency`.
+  final String currency;
+
+  /// App path to the underlying transactions.
+  ///
+  /// JSON `drill_down_path`.
+  final String drillDownPath;
+
+  /// The payment method ID, or unspecified for spending recorded without one.
+  ///
+  /// JSON `key`.
+  final String key;
+
+  /// JSON `kind`.
+  final PaymentMethodSliceKind kind;
+
+  /// Your label for the payment method; Unspecified for the bucket (localize by key).
+  ///
+  /// JSON `label`.
+  final String label;
+
+  /// Last digits only, as stored on the payment method.
+  ///
+  /// JSON `masked_hint` (optional).
+  final String? maskedHint;
+
+  /// Spending net of refunds and reimbursements (the /analytics/expenses types), exact minor units.
+  ///
+  /// JSON `net_expense`.
+  final Money netExpense;
+
+  /// JSON `network` (optional).
+  final String? network;
+
+  /// Absent for the unspecified bucket.
+  ///
+  /// JSON `payment_method_id` (optional).
+  final String? paymentMethodId;
+
+  /// Share of this currency's total net spending, in basis points; 0 when that total is not positive.
+  ///
+  /// JSON `share_bp`.
+  ///
+  /// Format: `int64`.
+  final int shareBp;
+
+  /// Encodes this object as JSON. Absent optional fields are omitted.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'archived': archived,
+    'count': count,
+    'currency': currency,
+    'drill_down_path': drillDownPath,
+    'key': key,
+    'kind': kind.json,
+    'label': label,
+    'masked_hint': ?maskedHint,
+    'net_expense': netExpense.toJson(),
+    'network': ?network,
+    'payment_method_id': ?paymentMethodId,
+    'share_bp': shareBp,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PaymentMethodSlice &&
+          other.archived == archived &&
+          other.count == count &&
+          other.currency == currency &&
+          other.drillDownPath == drillDownPath &&
+          other.key == key &&
+          other.kind == kind &&
+          other.label == label &&
+          other.maskedHint == maskedHint &&
+          other.netExpense == netExpense &&
+          other.network == network &&
+          other.paymentMethodId == paymentMethodId &&
+          other.shareBp == shareBp;
+
+  @override
+  int get hashCode => Object.hashAll(<Object?>[
+    archived,
+    count,
+    currency,
+    drillDownPath,
+    key,
+    kind,
+    label,
+    maskedHint,
+    netExpense,
+    network,
+    paymentMethodId,
+    shareBp,
+  ]);
+
+  @override
+  String toString() => 'PaymentMethodSlice(...)';
 }
 
 /// Schema `PostHit`.
@@ -54754,6 +55380,88 @@ enum InsightDtoStatus {
   }
 }
 
+/// Allowed values of `JobAttemptDTO.outcome`: `succeeded`, `retry`, `failed`, `dead`, `cancelled`, `lease_expired`.
+///
+/// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
+enum JobAttemptDtoOutcome {
+  /// Wire value `succeeded`.
+  succeeded('succeeded'),
+
+  /// Wire value `retry`.
+  retry('retry'),
+
+  /// Wire value `failed`.
+  failed('failed'),
+
+  /// Wire value `dead`.
+  dead('dead'),
+
+  /// Wire value `cancelled`.
+  cancelled('cancelled'),
+
+  /// Wire value `lease_expired`.
+  leaseExpired('lease_expired'),
+
+  /// A value this client version does not know. Never sent to the server.
+  unrecognized('');
+
+  const JobAttemptDtoOutcome(this.json);
+
+  /// The wire value.
+  final String json;
+
+  /// Decodes a wire value, falling back to [unrecognized].
+  static JobAttemptDtoOutcome fromJson(String value) {
+    for (final JobAttemptDtoOutcome candidate in values) {
+      if (candidate != unrecognized && candidate.json == value) {
+        return candidate;
+      }
+    }
+    return unrecognized;
+  }
+}
+
+/// Allowed values of `JobDTO.status`: `queued`, `running`, `succeeded`, `failed`, `dead`, `cancelled`.
+///
+/// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
+enum JobDtoStatus {
+  /// Wire value `queued`.
+  queued('queued'),
+
+  /// Wire value `running`.
+  running('running'),
+
+  /// Wire value `succeeded`.
+  succeeded('succeeded'),
+
+  /// Wire value `failed`.
+  failed('failed'),
+
+  /// Wire value `dead`.
+  dead('dead'),
+
+  /// Wire value `cancelled`.
+  cancelled('cancelled'),
+
+  /// A value this client version does not know. Never sent to the server.
+  unrecognized('');
+
+  const JobDtoStatus(this.json);
+
+  /// The wire value.
+  final String json;
+
+  /// Decodes a wire value, falling back to [unrecognized].
+  static JobDtoStatus fromJson(String value) {
+    for (final JobDtoStatus candidate in values) {
+      if (candidate != unrecognized && candidate.json == value) {
+        return candidate;
+      }
+    }
+    return unrecognized;
+  }
+}
+
 /// Allowed values of `Limits.note_code`: `fair_use_same_for_everyone`.
 ///
 /// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
@@ -55832,6 +56540,56 @@ enum PaymentMethodPatchNetwork {
   /// Decodes a wire value, falling back to [unrecognized].
   static PaymentMethodPatchNetwork fromJson(String value) {
     for (final PaymentMethodPatchNetwork candidate in values) {
+      if (candidate != unrecognized && candidate.json == value) {
+        return candidate;
+      }
+    }
+    return unrecognized;
+  }
+}
+
+/// Allowed values of `PaymentMethodSlice.kind`: `cash`, `upi`, `debit_card`, `credit_card`, `bank_transfer`, `wallet`, `cheque`, `other`, `unspecified`.
+///
+/// Unknown values (for example from a newer server) decode to [unrecognized] instead of failing.
+enum PaymentMethodSliceKind {
+  /// Wire value `cash`.
+  cash('cash'),
+
+  /// Wire value `upi`.
+  upi('upi'),
+
+  /// Wire value `debit_card`.
+  debitCard('debit_card'),
+
+  /// Wire value `credit_card`.
+  creditCard('credit_card'),
+
+  /// Wire value `bank_transfer`.
+  bankTransfer('bank_transfer'),
+
+  /// Wire value `wallet`.
+  wallet('wallet'),
+
+  /// Wire value `cheque`.
+  cheque('cheque'),
+
+  /// Wire value `other`.
+  other('other'),
+
+  /// Wire value `unspecified`.
+  unspecified('unspecified'),
+
+  /// A value this client version does not know. Never sent to the server.
+  unrecognized('');
+
+  const PaymentMethodSliceKind(this.json);
+
+  /// The wire value.
+  final String json;
+
+  /// Decodes a wire value, falling back to [unrecognized].
+  static PaymentMethodSliceKind fromJson(String value) {
+    for (final PaymentMethodSliceKind candidate in values) {
       if (candidate != unrecognized && candidate.json == value) {
         return candidate;
       }

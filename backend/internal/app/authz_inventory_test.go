@@ -27,8 +27,25 @@ var publicOps = map[string]bool{
 	"support-contact":           true, // signed-out contact form: auth rate limit + captcha when configured
 }
 
+// staffOps are the only platform-staff operations, with the role each
+// requires ("admin" admits admins only; "support" admits support and
+// admins). Adding one must be a deliberate, reviewed change.
+var staffOps = map[string]string{
+	"admin-usage":                 "admin",
+	"admin-jobs-list":             "admin", // JOB-007: operational job facts, never payloads
+	"admin-jobs-get":              "admin",
+	"admin-jobs-retry":            "admin", // audited, idempotent
+	"support-queue":               "support",
+	"support-queue-update":        "support",
+	"moderation-platform-reports": "support",
+	"moderation-platform-act":     "support",
+	"moderation-platform-actions": "support",
+	"moderation-platform-appeals": "support",
+}
+
 // TestAuthorizationInventory fails when an operation is public without being
-// listed above or when a protected operation lacks security metadata, and
+// listed above, when a staff role differs from staffOps, or when a protected
+// operation lacks security metadata, and
 // prints docs/AUTHORIZATION_MATRIX.md's generated table when
 // MONTRA_PRINT_AUTHZ=1.
 func TestAuthorizationInventory(t *testing.T) {
@@ -49,7 +66,7 @@ func TestAuthorizationInventory(t *testing.T) {
 	_, api := NewRouter(d, svcs)
 	type row struct{ tag, method, path, id, auth, extra, rate string }
 	var rows []row
-	seenPublic := map[string]bool{}
+	seenPublic, seenStaff := map[string]bool{}, map[string]bool{}
 	for path, item := range api.OpenAPI().Paths {
 		for _, op := range []struct {
 			m   string
@@ -74,8 +91,13 @@ func TestAuthorizationInventory(t *testing.T) {
 				t.Errorf("%s %s (%s) was registered without httpx.Public/Protected", op.m, path, hop.OperationID)
 			}
 			var extra []string
-			if role, _ := hop.Metadata[httpx.MetaRole].(string); role != "" {
+			role, _ := hop.Metadata[httpx.MetaRole].(string)
+			if role != "" {
 				extra = append(extra, "staff: "+role)
+				seenStaff[hop.OperationID] = true
+			}
+			if want := staffOps[hop.OperationID]; want != role {
+				t.Errorf("%s %s (%s) requires staff role %q; staffOps lists %q", op.m, path, hop.OperationID, role, want)
 			}
 			if r, _ := hop.Metadata[httpx.MetaReauth].(bool); r {
 				extra = append(extra, "recent re-auth")
@@ -94,6 +116,11 @@ func TestAuthorizationInventory(t *testing.T) {
 	for id := range publicOps {
 		if !seenPublic[id] {
 			t.Errorf("publicOps lists %s, which is not a public operation", id)
+		}
+	}
+	for id := range staffOps {
+		if !seenStaff[id] {
+			t.Errorf("staffOps lists %s, which is not a staff operation", id)
 		}
 	}
 	if os.Getenv("MONTRA_PRINT_AUTHZ") != "1" {

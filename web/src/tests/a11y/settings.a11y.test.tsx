@@ -75,6 +75,7 @@ describe('axe: settings and help pages', () => {
     await expectNoAxeViolations();
   });
 
+  // Axe over the full profile page takes about 6 s alone and up to ~30 s under a loaded full run.
   it('profile and preferences, with the photo in the account menu', async () => {
     const user = makeUser({ onboarding_completed: true, avatar_file_id: UPLOAD_FILE });
     server.use(
@@ -98,7 +99,7 @@ describe('axe: settings and help pages', () => {
       expect(document.querySelector('header img, aside img, nav img')).not.toBeNull();
     });
     await expectNoAxeViolations();
-  });
+  }, 60_000); // a whole-page axe scan of the largest settings page; slow when the machine is busy
 
   it('onboarding goal step with field errors', async () => {
     testBackend.onboarding = {

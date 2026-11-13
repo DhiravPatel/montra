@@ -21,7 +21,7 @@ export function RequireAuth() {
         tabIndex={-1}
         className="flex min-h-dvh items-center justify-center outline-none"
       >
-        <LoadingState label={t('auth.checkingSession')} />
+        <LoadingState label={t('session.checking')} />
       </main>
     );
   }
@@ -36,7 +36,7 @@ export function RequireAuth() {
       >
         <ErrorState
           titleAs="h2"
-          title={t('auth.sessionCheckFailed')}
+          title={t('session.checkFailed')}
           error={auth.error}
           onRetry={auth.retry}
         />

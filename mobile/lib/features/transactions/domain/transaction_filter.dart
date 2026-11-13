@@ -106,6 +106,84 @@ class TransactionFilter {
     );
   }
 
+  /// Reads a saved filter (`POST /saved-filters` with scope
+  /// `transactions`): the `GET /transactions` query as a JSON object, with
+  /// lists for multi-value parameters and booleans for flags, as the web
+  /// saves it too. Unknown keys and invalid values are ignored; IDs must be
+  /// UUIDs. Returns null when nothing in [json] is understood (a non-empty
+  /// filter this app cannot apply).
+  static TransactionFilter? fromSavedJson(Map<String, Object?> json) {
+    final RegExp uuid = RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    );
+    const Set<String> idKeys = <String>{
+      'account_id',
+      'category_id',
+      'tag_id',
+      'merchant_id',
+      'payment_method_id',
+    };
+    final Map<String, String> query = <String, String>{};
+    for (final MapEntry<String, Object?> e in json.entries) {
+      final Object? v = e.value;
+      List<String> parts;
+      if (v is String) {
+        parts = v.split(',');
+      } else if (v is List) {
+        parts = <String>[
+          for (final Object? item in v)
+            if (item is String) item,
+        ];
+      } else if (v is bool) {
+        parts = <String>[if (v) 'true'];
+      } else if (v is num && e.key.endsWith('_amount')) {
+        parts = <String>[v.toString()];
+      } else {
+        continue;
+      }
+      parts = <String>[
+        for (final String p in parts)
+          if (p.trim().isNotEmpty &&
+              (!idKeys.contains(e.key) ||
+                  uuid.hasMatch(p.trim()) ||
+                  (e.key == 'payment_method_id' &&
+                      p.trim() == noPaymentMethod)))
+            p.trim(),
+      ];
+      if (parts.isNotEmpty) {
+        query[e.key] = parts.join(',');
+      }
+    }
+    final String? q = query['q'];
+    if (q != null && q.length > 100) {
+      query['q'] = q.substring(0, 100);
+    }
+    for (final String key in <String>['min_amount', 'max_amount']) {
+      final String? amount = query[key];
+      if (amount != null && !RegExp(r'^\d+(\.\d+)?$').hasMatch(amount)) {
+        query.remove(key);
+      }
+    }
+    final TransactionFilter filter = TransactionFilter.fromQuery(query);
+    final bool understood =
+        filter != const TransactionFilter() ||
+        json.isEmpty ||
+        (json.length == 1 && json['sort'] == 'date_desc');
+    return understood ? filter : null;
+  }
+
+  /// This filter as a saved filter: the `GET /transactions` query without
+  /// empty values (and without `cursor`/`limit`), lists as JSON arrays.
+  Map<String, Object?> toSavedJson() => <String, Object?>{
+    for (final MapEntry<String, Object?> e in toQuery().entries)
+      if (e.value is String && (e.value! as String).isNotEmpty)
+        e.key: e.value
+      else if (e.value is bool && (e.value! as bool))
+        e.key: true
+      else if (e.value is List && (e.value! as List<Object?>).isNotEmpty)
+        e.key: e.value,
+  };
+
   static const Set<String> _sources = <String>{
     'manual',
     'import',
@@ -160,8 +238,15 @@ class TransactionFilter {
   /// Merchant.
   final String? merchantId;
 
-  /// Payment method.
+  /// Payment method, or [noPaymentMethod] for transactions without one.
   final String? paymentMethodId;
+
+  /// `payment_method_id` value for "no payment method" (the analytics
+  /// drill-down for spending without one).
+  static const String noPaymentMethod = 'none';
+
+  /// Whether the filter asks for transactions without a payment method.
+  bool get withoutPaymentMethod => paymentMethodId == noPaymentMethod;
 
   /// Currency for the amount range (the server defaults to the base
   /// currency).

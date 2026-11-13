@@ -88,7 +88,10 @@ func TestClientContractFixes(t *testing.T) {
 			uncategorized = x.(map[string]any)
 		}
 	}
-	if uncategorized == nil || !strings.Contains(uncategorized["drill_down_path"].(string), "uncategorized=true") {
+	// The drill-down lists only counted spending (never opening balances,
+	// transfers or adjustments).
+	if uncategorized == nil || !strings.Contains(uncategorized["drill_down_path"].(string), "uncategorized=true") ||
+		!strings.Contains(uncategorized["drill_down_path"].(string), "type=expense,group_expense,refund,reimbursement") {
 		t.Fatalf("uncategorized slice: %v", dash["top_categories"])
 	}
 	for _, x := range c.Do(t, http.MethodGet, "/transactions?uncategorized=true&limit=100", nil).Expect(t, http.StatusOK).List() {

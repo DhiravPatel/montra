@@ -21,6 +21,7 @@ import { SettlementRow, TransferList } from '../components/Transfers';
 import { groupMoneyKeys, refreshAfterGroupWrite } from '../keys';
 import { type People, byCurrency, isReadOnlyGroup, usePeople } from '../people';
 import type { GroupBalances, GroupDetail, MemberBalance, Money } from '../types';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 type DebtView = 'simplified' | 'original';
 
@@ -29,7 +30,11 @@ export function GroupBalancesPage() {
   const { groupId = '' } = useParams();
   useDocumentTitle(t('groupMoney.balances.title'));
   return (
-    <GroupMoneyPage groupId={groupId} title={t('groupMoney.balances.title')}>
+    <GroupMoneyPage
+      groupId={groupId}
+      title={t('groupMoney.balances.title')}
+      actions={() => <HelpGuideLink guide="groupBalances" />}
+    >
       {(group) => <Balances group={group} />}
     </GroupMoneyPage>
   );

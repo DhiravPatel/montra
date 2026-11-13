@@ -19,6 +19,7 @@ import (
 	"montra/backend/internal/finance"
 	"montra/backend/internal/notifications"
 	"montra/backend/internal/platform/apperr"
+	"montra/backend/internal/platform/breaker"
 	"montra/backend/internal/platform/database"
 	"montra/backend/internal/platform/identity"
 	"montra/backend/internal/platform/jobs"
@@ -257,6 +258,11 @@ func (s *Service) sync(ctx context.Context, runID uuid.UUID) error {
 		b, err := a.Fetch(ctx, tok, cursor)
 		if errors.Is(err, ErrConsentExpired) {
 			return finish("failed", "consent_expired", counts, &cursor, "consent_expired")
+		}
+		if breaker.IsOpen(err) && counts[0] == 0 {
+			// The provider is known to be failing and nothing was fetched:
+			// leave the run running and let the job retry after a backoff.
+			return fmt.Errorf("fetch: %w", err)
 		}
 		if err != nil {
 			status := "failed"

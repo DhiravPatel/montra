@@ -8,6 +8,8 @@ import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
 import 'package:montra_mobile/core/formatting/amount_input.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/amount_field.dart';
 import 'package:montra_mobile/core/widgets/banners.dart';
 import 'package:montra_mobile/core/widgets/form_errors.dart';
@@ -47,7 +49,10 @@ class ReconcileBalanceScreen extends ConsumerWidget {
       accountDetailProvider(accountId),
     );
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.reconCheckBalance)),
+      appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.reconciliation)],
+        title: Text(l10n.reconCheckBalance),
+      ),
       body: AsyncValueView<AccountDto>(
         value: account,
         onRetry: () => ref.invalidate(accountDetailProvider(accountId)),

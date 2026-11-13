@@ -122,51 +122,51 @@ IDs are stable and namespaced: `<prefix><natural key>`.
 
 <!-- BEGIN GENERATED: knowledge graph counts (scripts/docs/gen_knowledge_graph.py) -->
 
-**3227 nodes, 15232 edges.**
+**3322 nodes, 16321 edges.**
 
 | Node type | Count | Edge type | Count |
 |---|---|---|---|
-| `app` | 7 | `alters` | 63 |
-| `ci_job` | 9 | `belongs_to` | 1055 |
-| `config` | 100 | `calls` | 1480 |
-| `decision` | 50 | `checks` | 42 |
-| `doc` | 25 | `configured_by` | 36 |
-| `error_code` | 207 | `configures` | 119 |
-| `event` | 27 | `covers` | 2837 |
+| `app` | 7 | `alters` | 67 |
+| `ci_job` | 9 | `belongs_to` | 1059 |
+| `config` | 100 | `calls` | 1497 |
+| `decision` | 50 | `checks` | 44 |
+| `doc` | 28 | `configured_by` | 36 |
+| `error_code` | 208 | `configures` | 126 |
+| `event` | 27 | `covers` | 3432 |
 | `feature` | 23 | `created_in` | 113 |
 | `flow` | 56 | `defined_in` | 130 |
-| `job` | 51 | `defines` | 391 |
-| `make_target` | 35 | `depends_on` | 564 |
-| `migration` | 28 | `documented_in` | 50 |
+| `job` | 51 | `defines` | 394 |
+| `make_target` | 36 | `depends_on` | 593 |
+| `migration` | 31 | `documented_in` | 50 |
 | `mobile_feature` | 35 | `emits` | 94 |
-| `mobile_route` | 152 | `enqueues` | 17 |
-| `notification_type` | 65 | `handled_by` | 254 |
-| `operation` | 420 | `handled_in` | 51 |
-| `package` | 70 | `has_step` | 239 |
-| `policy` | 331 | `implemented_in` | 420 |
-| `provider` | 10 | `includes` | 149 |
+| `mobile_route` | 153 | `enqueues` | 17 |
+| `notification_type` | 65 | `handled_by` | 259 |
+| `operation` | 424 | `handled_in` | 51 |
+| `package` | 73 | `has_step` | 239 |
+| `policy` | 331 | `implemented_in` | 424 |
+| `provider` | 10 | `includes` | 152 |
 | `requirement` | 415 | `integrates` | 12 |
-| `sql_function` | 60 | `involves` | 185 |
-| `step` | 239 | `links_to` | 100 |
+| `sql_function` | 63 | `involves` | 185 |
+| `step` | 239 | `links_to` | 134 |
 | `table` | 113 | `located_in` | 530 |
-| `test` | 550 | `mirrors` | 6 |
+| `test` | 622 | `mirrors` | 7 |
 | `web_feature` | 35 | `next` | 183 |
-| `web_route` | 112 | `opens` | 65 |
-| `workflow` | 2 | `part_of` | 1373 |
+| `web_route` | 116 | `opens` | 65 |
+| `workflow` | 2 | `part_of` | 1462 |
 |  |  | `protects` | 331 |
-|  |  | `raises` | 337 |
-|  |  | `reads` | 437 |
+|  |  | `raises` | 340 |
+|  |  | `reads` | 441 |
 |  |  | `redefines` | 6 |
 |  |  | `redirects_to` | 10 |
-|  |  | `references` | 130 |
-|  |  | `runs` | 1381 |
+|  |  | `references` | 142 |
+|  |  | `runs` | 1558 |
 |  |  | `sends` | 155 |
 |  |  | `shown_on` | 384 |
 |  |  | `triggers` | 27 |
 |  |  | `uses` | 437 |
-|  |  | `verified_by` | 640 |
+|  |  | `verified_by` | 735 |
 |  |  | `verifies` | 65 |
-|  |  | `writes` | 334 |
+|  |  | `writes` | 335 |
 
 <!-- END GENERATED: knowledge graph counts -->
 
@@ -177,7 +177,7 @@ IDs are stable and namespaced: `<prefix><natural key>`.
 ```mermaid
 flowchart LR
   subgraph area0["Account"]
-    admin["Admin & cost<br/>1 ops"]
+    admin["Admin & cost<br/>4 ops"]
     identity["Identity, auth & profile<br/>25 ops"]
     notifications["Notifications<br/>11 ops"]
     privacy["Privacy & fair use<br/>10 ops"]
@@ -189,7 +189,7 @@ flowchart LR
     receipts["Receipts & files<br/>18 ops"]
   end
   subgraph area2["Insight"]
-    analytics["Dashboard, analytics & reports<br/>25 ops"]
+    analytics["Dashboard, analytics & reports<br/>26 ops"]
     insights["Insights & AI<br/>19 ops"]
     search["Search<br/>3 ops"]
   end
@@ -263,25 +263,25 @@ Arrows: the source domain's Go packages import the target's packages (plain), wr
 
 | Domain | Backend packages | Ops | Tables | Jobs | Web features | Mobile features | Requirements (status counts) |
 |---|---|---|---|---|---|---|---|
-| **Admin & cost** (`admin`) | `admin` | 1 | 0 | 0 | admin | – | 7: T1 I2 P4 |
-| **Dashboard, analytics & reports** (`analytics`) | `analytics`, `reports`, `reports/render` | 25 | 3 | 2 | analytics, dashboard, reports | analytics, dashboard, reports | 25: V7 T17 P1 |
-| **Budgets** (`budgets`) | `budgets`, `domain/budgetcalc`, `domain/period` | 15 | 5 | 1 | budgets | budgets | 11: V2 T6 I2 P1 |
+| **Admin & cost** (`admin`) | `admin` | 4 | 0 | 0 | admin | – | 7: T3 I2 P2 |
+| **Dashboard, analytics & reports** (`analytics`) | `analytics`, `reports`, `reports/render` | 26 | 3 | 2 | analytics, dashboard, reports | analytics, dashboard, reports | 25: V8 T17 |
+| **Budgets** (`budgets`) | `budgets`, `domain/budgetcalc`, `domain/period` | 15 | 5 | 1 | budgets | budgets | 11: V2 T7 I2 |
 | **Challenges** (`challenges`) | `challenges` | 10 | 3 | 2 | challenges | challenges | 3: V1 T2 |
-| **Communities** (`communities`) | `communities` | 34 | 9 | 4 | communities | communities | 5: V2 T3 |
-| **Multi-currency** (`fx`) | `domain/currency`, `fx` | 4 | 1 | 1 | fx | fx | 7: V3 T4 |
+| **Communities** (`communities`) | `communities` | 34 | 9 | 4 | communities | communities | 5: V3 T2 |
+| **Multi-currency** (`fx`) | `domain/currency`, `fx` | 4 | 1 | 1 | fx | fx | 7: V4 T3 |
 | **Goals & savings** (`goals`) | `goals` | 18 | 4 | 3 | goals | goals | 9: V6 T2 P1 |
 | **Groups, splits & settlements** (`groups`) | `domain/settlement`, `domain/split`, `groups` | 56 | 14 | 5 | group-money, groups | group_money, groups | 22: V10 T11 I1 |
-| **Identity, auth & profile** (`identity`) | `auth`, `platform/identity`, `store/db`, `users` | 25 | 12 | 4 | account, auth, onboarding, settings | auth, onboarding, settings | 21: V3 T14 I3 N1 |
+| **Identity, auth & profile** (`identity`) | `auth`, `platform/identity`, `store/db`, `users` | 25 | 12 | 4 | account, auth, onboarding, settings | auth, onboarding, settings | 21: V5 T14 I1 N1 |
 | **Imports & reconciliation** (`imports`) | `domain/reconcile`, `domain/statement`, `imports`, `reconciliation` | 17 | 5 | 4 | imports, reconciliation | imports, reconciliation | 12: V4 T7 P1 |
 | **Insights & AI** (`insights`) | `ai`, `ai/llm`, `insights` | 19 | 6 | 2 | insights | insights | 22: V4 T13 I1 P4 |
 | **Integrations** (`integrations`) | `integrations` | 7 | 3 | 3 | integrations | integrations | 11: V3 T7 B1 |
-| **Accounts, transactions & categories** (`ledger`) | `categories`, `domain/ledger`, `finance` | 66 | 14 | 0 | accounts, categories, payment-methods, transactions | accounts, labels, payment_methods, transactions | 53: V14 T32 I7 |
+| **Accounts, transactions & categories** (`ledger`) | `categories`, `domain/ledger`, `finance` | 66 | 14 | 0 | accounts, categories, payment-methods, transactions | accounts, labels, payment_methods, transactions | 53: V18 T31 I4 |
 | **Moderation** (`moderation`) | `moderation` | 16 | 3 | 3 | moderation | moderation | 4: T3 B1 |
-| **Notifications** (`notifications`) | `notifications`, `platform/email` | 11 | 4 | 3 | notifications | notifications | 8: V1 T6 I1 |
+| **Notifications** (`notifications`) | `notifications`, `platform/email` | 11 | 4 | 3 | notifications | notifications | 8: V2 T6 |
 | **Recurring, bills & calendar** (`planning`) | `domain/recurrence`, `recurring` | 22 | 3 | 1 | planning | bills, calendar, recurring | 11: V6 T5 |
-| **Platform & cross-cutting** (`platform`) | 25 (cmd/*, platform/*, store, testutil, …) | 3 | 6 | 1 | _app, _shared, marketing | _app, _core | 145: V28 T69 I30 P16 N1 B1 |
+| **Platform & cross-cutting** (`platform`) | 28 (cmd/*, platform/*, store, testutil, …) | 3 | 6 | 1 | _app, _shared, marketing | _app, _core | 145: V30 T75 I34 P4 N1 B1 |
 | **Privacy & fair use** (`privacy`) | `fairuse`, `privacy` | 10 | 2 | 3 | privacy | privacy | 6: T2 I1 P1 B2 |
-| **Receipts & files** (`receipts`) | `files`, `platform/storage`, `receipts` | 18 | 5 | 3 | receipts | receipts | 16: V2 T11 I1 P2 |
+| **Receipts & files** (`receipts`) | `files`, `platform/storage`, `receipts` | 18 | 5 | 3 | receipts | receipts | 16: V3 T11 I1 P1 |
 | **Search** (`search`) | `search` | 3 | 1 | 0 | search | search | 3: T3 |
 | **Friends & social graph** (`social`) | `social` | 13 | 4 | 1 | social | people, social | 5: V1 T3 P1 |
 | **Subscriptions** (`subscriptions`) | `domain/subdetect`, `subscriptions` | 19 | 4 | 3 | subscriptions | subscriptions | 8: V6 T1 B1 |
@@ -608,9 +608,9 @@ Answers at generation time (the same questions, computed by the generator):
 
 - Tables `pkg:budgets` touches (13): `budget_alerts`, `budget_allocations`, `budget_members`, `budget_period_snapshots`, `budgets`, `categories`, `group_expense_shares`, `group_expenses`, `group_members`, `groups`, `profiles`, `transactions`, `user_preferences`
   - of which it writes (5): `budget_alerts`, `budget_allocations`, `budget_members`, `budget_period_snapshots`, `budgets`
-- Operations with no web or mobile caller: **19** of 420 (web calls 398, mobile calls 388, both 385). By tag: AI 12, Files 1, Insights 1, Integrations 1, Receipts 1, Transactions 3
+- Operations with no web or mobile caller: **16** of 424 (web calls 405, mobile calls 392, both 389). By tag: AI 12, Files 1, Insights 1, Integrations 1, Receipts 1
 - Requirements of `feature:groups` not VERIFIED (12): `req:BAL-002` TESTED, `req:GRP-001` TESTED, `req:GRP-002` TESTED, `req:GRP-004` TESTED, `req:GRP-006` TESTED, `req:HH-001` TESTED, `req:HH-002` TESTED, `req:SETL-003` IMPLEMENTED, `req:SPLT-001` TESTED, `req:SPLT-004` TESTED, `req:SPLT-005` TESTED, `req:TRIP-001` TESTED
-- Operations with no backend API test: **52** of 420 (368 covered by `backend/tests/api`): `accounts-balance`, `accounts-statement-lines`, `accounts-transactions`, `ai-conversations-delete`, `ai-conversations-list`, `ai-subscriptions-detect`, `analytics-expenses`, `auth-email-resend`, `categories-restore`, `category-rules-delete`, `comments-delete`, `comments-reactions-add`, `comments-reactions-remove`, `comments-update`, `communities-archive`, `communities-members-reject`, `communities-restore`, `communities-transfer-ownership`, `files-download`, `files-upload-content`, `friend-requests-decline`, `goals-achieve`, `goals-list`, `groups-join-requests-decline`, `groups-recurring-stop`, `groups-settlements-list`, `groups-settlements-unlink`, `me-consents-list`, `me-deactivate`, `me-mfa-recovery-codes`, `me-preferences-get`, `moderation-platform-appeals`, `notifications-read-all`, `notifications-update`, `payment-methods-list`, `push-endpoints-delete`, `reconciliation-matches`, `saved-filters-create`, `saved-filters-delete`, `saved-filters-list`, `subscriptions-cancellation-started`, `subscriptions-reactivate`, `subscriptions-verify`, `tags-delete`, `transactions-attachments-add`, `transactions-attachments-list`, `transactions-attachments-remove`, `transactions-bulk-delete`, `transactions-duplicate`, `transactions-search`, `transfers-get`, `webhooks-receive`
+- Operations with no backend API test: **0** of 424 (424 covered by `backend/tests/api`): 
 - `event:transaction.created` is emitted by `pkg:finance` and triggers `job:budgets.evaluate` (handled in `pkg:budgets`; sends `notif:budget/budget_*`)
 - Policies protecting `table:transactions`: `policy:transactions.app_owner_all`, `policy:transactions.app_transactions_group_read`, `policy:transactions.worker_all`; they use `fn:montra.current_user_id`, `fn:montra.is_group_member`
 - `provider:appwrite` (needs_owner_credentials) is configured by `APPWRITE_API_KEY`, `APPWRITE_BUCKET_EXPORTS`, `APPWRITE_BUCKET_GROUP`, `APPWRITE_BUCKET_PRIVATE`, `APPWRITE_BUCKET_PUBLIC_MEDIA`, `APPWRITE_BUCKET_TEMP`, `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `APPWRITE_TIMEOUT`, `STORAGE_PROVIDER`
@@ -770,8 +770,8 @@ first rows; the requirement and FEATURES.md rows reflect those documents.
 | FEATURES.md flow steps with no resolvable reference (prose only) | 14 | `feature-3.10/01`, `feature-3.11/03`, `feature-3.13/04`, `feature-3.18/02`, `feature-3.2/04`, `feature-3.24/01`, `feature-3.24/05`, `feature-3.25/02`, `feature-3.26/04`, `feature-3.3/05`, `feature-3.30/01`, `feature-3.30/03`, `feature-3.30/04`, `feature-3.7/06` |
 | Routes in FEATURES.md Web/Mobile sections that match no route | 0 | – |
 | `feature_area_domains` entries with no FEATURES.md section | 0 | – |
-| Backend test `c.Do` calls whose path could not be resolved | 25 | `TestCommunityInvitationNoticeAndInviterName: GET /users/{}`, `TestDashboardPlanningCardsAndWidgets: GET /users/{}`, `TestGroupConflictCodesLinksAndContract: GET /openapi.json`, `TestGroupExpensePagesFiltersAndForeignCurrency: GET /openapi.json`, `TestGroupRecurringOrdinaryMemberAddsOccurrence: GET /openapi.json`, `TestImportsReconciliationContractShapes: GET /openapi.json`, `TestReconciliationHistoryCountsAndAccountFields: GET /openapi.json`, `TestRound6ReadsLinksAndCodes: GET /users/{}`, `TestSubscriptionCodesCancellationDateAndChecklist: GET /openapi.json`, `TestSubscriptionsAndGoalsContractShapes: GET /openapi.json`, `backend/tests/api/communities_test.go:TestChallengesOptInProgressAndLeaderboard`, `backend/tests/api/communities_test.go:TestCommunitiesMembershipPostsPollsAndSafety`, `backend/tests/api/groups_fixes_test.go:TestGroupJoinApprovalPreviewAndInvitations`, `backend/tests/api/groups_fixes_test.go:TestGroupsMyNetAndPartialSettingsUpdate`, `backend/tests/api/groups_test.go:TestGroupMembershipInvitationsRolesAndIsolation`, `backend/tests/api/imports_recon_fixes_test.go:TestReconciliationHistoryCountsAndAccountFields`, `backend/tests/api/imports_recon_fixes_test.go:TestStatementLinesManualMatchAndExactUndo`, `backend/tests/api/imports_recon_fixes_test.go:pageOf`, `backend/tests/api/organize_test.go:orgNames`, `backend/tests/api/organize_test.go:orgPages`, `backend/tests/api/receipts_social_fixes_test.go:TestSocialExactSearchOptInListsAndCodes` |
-| Test names in requirement rows with no test function | 0 | – |
+| Backend test `c.Do` calls whose path could not be resolved | 32 | `TestCommunityInvitationNoticeAndInviterName: GET /users/{}`, `TestDashboardPlanningCardsAndWidgets: GET /users/{}`, `TestGroupConflictCodesLinksAndContract: GET /openapi.json`, `TestGroupExpensePagesFiltersAndForeignCurrency: GET /openapi.json`, `TestGroupRecurringOrdinaryMemberAddsOccurrence: GET /openapi.json`, `TestImportsReconciliationContractShapes: GET /openapi.json`, `TestReconciliationHistoryCountsAndAccountFields: GET /openapi.json`, `TestRound6ReadsLinksAndCodes: GET /users/{}`, `TestSubscriptionCodesCancellationDateAndChecklist: GET /openapi.json`, `TestSubscriptionsAndGoalsContractShapes: GET /openapi.json`, `backend/tests/api/budgets_test.go:TestBudgetAlertCursorPagingMatchesUnpagedList`, `backend/tests/api/budgets_test.go:TestBudgetForecastAlertFollowsTheClock`, `backend/tests/api/communities_test.go:TestChallengesOptInProgressAndLeaderboard`, `backend/tests/api/communities_test.go:TestCommunitiesMembershipPostsPollsAndSafety`, `backend/tests/api/coverage_notifications_test.go:TestNotificationCursorPagingMatchesUnpagedList`, `backend/tests/api/coverage_notifications_test.go:pageAll`, `backend/tests/api/coverage_planning_test.go:TestCoverageGoalsListAndAchieve`, `backend/tests/api/groups_fixes_test.go:TestGroupJoinApprovalPreviewAndInvitations`, `backend/tests/api/groups_fixes_test.go:TestGroupsMyNetAndPartialSettingsUpdate`, `backend/tests/api/groups_test.go:TestGroupMembershipInvitationsRolesAndIsolation`, `backend/tests/api/imports_recon_fixes_test.go:TestReconciliationHistoryCountsAndAccountFields`, `backend/tests/api/imports_recon_fixes_test.go:TestStatementLinesManualMatchAndExactUndo`, `backend/tests/api/imports_recon_fixes_test.go:pageOf`, `backend/tests/api/organize_test.go:orgNames`, `backend/tests/api/organize_test.go:orgPages`, `backend/tests/api/receipts_social_fixes_test.go:TestSocialExactSearchOptInListsAndCodes`, `backend/tests/api/round8_test.go:TestAnalyticsPaymentMethodDistribution`, `pmSlices: GET /analytics/payment-methods{}` |
+| Test names in requirement rows with no test function | 1 | `ARCH-010: TestSeedIsDeterministicAndIdempotent` |
 | Notification types whose category has no web page | 0 | – |
 
 <!-- END GENERATED: knowledge graph gaps -->

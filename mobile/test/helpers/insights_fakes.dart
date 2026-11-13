@@ -231,6 +231,77 @@ MerchantReport merchantReport({bool empty = false}) =>
       ],
     });
 
+/// A `PaymentMethodReport` in the live shape: a card, an archived wallet,
+/// the bucket without a payment method, and a USD card.
+PaymentMethodReport paymentMethodReport({bool empty = false}) =>
+    PaymentMethodReport.fromJson(<String, Object?>{
+      'window': windowJson(),
+      'payment_methods': <Object?>[
+        if (!empty) ...<Object?>[
+          <String, Object?>{
+            'payment_method_id': 'pm-hdfc',
+            'key': 'pm-hdfc',
+            'label': 'HDFC Card',
+            'kind': 'credit_card',
+            'network': 'visa',
+            'masked_hint': '4321',
+            'archived': false,
+            'currency': 'INR',
+            'net_expense': moneyJson('300.00'),
+            'count': 1,
+            'share_bp': 5994,
+            'drill_down_path':
+                '/transactions?from=2026-11-01&to=2026-11-30&currency=INR'
+                '&payment_method_id=pm-hdfc',
+          },
+          <String, Object?>{
+            'key': 'unspecified',
+            'label': 'Unspecified',
+            'kind': 'unspecified',
+            'archived': false,
+            'currency': 'INR',
+            'net_expense': moneyJson('200.50'),
+            'count': 2,
+            'share_bp': 4006,
+            'drill_down_path':
+                '/transactions?from=2026-11-01&to=2026-11-30&currency=INR'
+                '&payment_method_id=none',
+          },
+          <String, Object?>{
+            'payment_method_id': 'pm-old',
+            'key': 'pm-old',
+            'label': 'Old wallet',
+            'kind': 'wallet',
+            'archived': true,
+            'currency': 'INR',
+            'net_expense': moneyJson('0.50'),
+            'count': 1,
+            'share_bp': 0,
+            'drill_down_path':
+                '/transactions?from=2026-11-01&to=2026-11-30&currency=INR'
+                '&payment_method_id=pm-old',
+          },
+          <String, Object?>{
+            'payment_method_id': 'pm-amex',
+            'key': 'pm-amex',
+            'label': 'Travel card',
+            'kind': 'credit_card',
+            'archived': false,
+            'currency': 'USD',
+            'net_expense': <String, Object?>{
+              'amount_minor': 9900,
+              'amount': '99.00',
+              'currency': 'USD',
+            },
+            'count': 1,
+            'share_bp': 10000,
+            'drill_down_path':
+                '/transactions?currency=USD&payment_method_id=pm-amex',
+          },
+        ],
+      ],
+    });
+
 /// An `AccountsReport` with INR and USD totals.
 AccountsReport accountsReport({bool empty = false}) =>
     AccountsReport.fromJson(<String, Object?>{

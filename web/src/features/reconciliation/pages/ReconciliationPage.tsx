@@ -20,6 +20,7 @@ import { HistoryCard } from '../components/HistoryCard';
 import { MatchesCard } from '../components/MatchesCard';
 import { ReconcileForm } from '../components/ReconcileForm';
 import { StatementLinesCard } from '../components/StatementLinesCard';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 function PageSkeleton() {
   return (
@@ -131,6 +132,7 @@ export function ReconciliationPage() {
     <>
       {back}
       <PageHeader
+        help={<HelpGuideLink guide="reconciliation" />}
         title={t('reconciliation.title', { name: current.name })}
         description={
           <>

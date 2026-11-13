@@ -6,6 +6,8 @@ import 'package:montra_mobile/app/router/app_routes.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
 import 'package:montra_mobile/core/widgets/status_label.dart';
 import 'package:montra_mobile/features/accounts/application/accounts_providers.dart';
@@ -43,6 +45,7 @@ class ImportsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.imports)],
         title: Text(l10n.importsTitle),
         bottom: imports.isLoading && imports.hasValue
             ? const PreferredSize(

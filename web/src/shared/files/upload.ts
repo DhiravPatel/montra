@@ -1,6 +1,13 @@
 import { api } from '@/shared/api/client';
 import { apiData } from '@/shared/api/request';
 import type { components } from '@/shared/api/schema';
+import {
+  browserImageCodec,
+  type DecodedImage,
+  type ImageCodec,
+  imageKind,
+  prepareImage,
+} from './imageCompression';
 
 export type FileRecord = components['schemas']['FileDTO'];
 export type FilePurpose = components['schemas']['UploadIntentInput']['purpose'];
@@ -62,18 +69,46 @@ export interface UploadOptions {
   /** Required for group purposes (group_attachment, trip_document). */
   groupId?: string;
   signal?: AbortSignal;
+  /** Image decoder/encoder (tests); defaults to the browser's. */
+  codec?: ImageCodec | null;
+}
+
+/** Whether the purpose takes JPEG files (so a photo may be converted to JPEG). */
+function acceptsJpeg(purpose: FilePurpose): boolean {
+  return filePolicies[purpose].accept.split(',').includes('image/jpeg');
 }
 
 /**
- * Uploads a file through the API (spec §16): authorize an upload intent,
+ * The bytes that will actually be uploaded: photos for purposes that take
+ * images are scaled down and stripped of metadata (imageCompression.ts);
+ * everything else, PDFs included, is sent exactly as picked.
+ */
+export async function prepareForUpload<Image extends DecodedImage>(
+  file: File,
+  purpose: FilePurpose,
+  codec: ImageCodec<Image> | null,
+): Promise<File> {
+  if (!imageKind(file) || !filePolicies[purpose].accept.includes('image/')) return file;
+  const prepared = await prepareImage(file, codec, { allowJpegOutput: acceptsJpeg(purpose) });
+  return prepared.file;
+}
+
+/**
+ * Uploads a file through the API (spec §16): prepare it (photos are scaled
+ * down and lose their metadata, COST-001), authorize an upload intent,
  * send the bytes with the single-use upload token and checksum, then
  * finalize. Resolves with the ready file record; the caller then links it
  * (receipt, import, attachment). Errors are ApiErrors from the server (for
  * example storage_quota_exceeded or an unsupported type).
  */
-export async function uploadFile(file: File, options: UploadOptions): Promise<FileRecord> {
+export async function uploadFile(picked: File, options: UploadOptions): Promise<FileRecord> {
   const { purpose, groupId, signal } = options;
   const policy = filePolicies[purpose];
+  // Size, checksum, name and type all describe the prepared bytes: exactly what is sent.
+  const file =
+    options.codec === undefined
+      ? await prepareForUpload(picked, purpose, browserImageCodec())
+      : await prepareForUpload(picked, purpose, options.codec);
   if (file.size > policy.maxBytes) throw new FileTooLargeError(policy.maxBytes);
   const checksum = await sha256Hex(file);
   const intent = await apiData(

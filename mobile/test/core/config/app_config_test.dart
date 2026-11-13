@@ -84,6 +84,24 @@ void main() {
     );
   });
 
+  test('the status page link is shown only for an https URL', () {
+    AppConfig withStatus(String url) => AppConfig.resolve(
+      apiBaseUrl: '',
+      platform: TargetPlatform.android,
+      releaseMode: false,
+      clientVersion: '1.0.0+1',
+      statusPageUrl: url,
+    );
+    expect(
+      withStatus('https://status.example.com').statusPageUrl.toString(),
+      'https://status.example.com',
+    );
+    expect(withStatus('').statusPageUrl, isNull);
+    expect(withStatus('http://status.example.com').statusPageUrl, isNull);
+    expect(withStatus('status page').statusPageUrl, isNull);
+    expect(resolve().statusPageUrl, isNull);
+  });
+
   test('terms and privacy versions match the backend', () {
     expect(AppConfig.termsVersion, '2026-11-01');
     expect(AppConfig.privacyVersion, '2026-11-01');

@@ -77,11 +77,14 @@ class DeviceFileSource implements FileSource {
 
   final ImagePicker _images;
 
-  /// Camera photos are scaled down to this many pixels on the longest side
-  /// and re-encoded, which keeps receipts readable and uploads small.
-  static const double maxPhotoSide = 3000;
+  /// Camera and library photos are scaled down natively to this many
+  /// pixels on the longest side and re-encoded, which keeps receipts
+  /// readable and uploads small. The uploader's `ImagePreparer` applies the
+  /// same limit to every image (including files picked from storage) and
+  /// removes location metadata, which `image_picker` copies on Android.
+  static const double maxPhotoSide = 2048;
 
-  /// JPEG quality for camera photos.
+  /// JPEG quality for photos.
   static const int photoQuality = 85;
 
   @override

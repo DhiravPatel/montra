@@ -11,6 +11,7 @@ import { useT } from '@/shared/i18n/I18nContext';
 import { useBudgets } from '../api';
 import { BudgetAlertsCard } from '../components/BudgetAlertsCard';
 import { BudgetListItem } from '../components/BudgetListItem';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 /** Budgets with this period's progress, plus budget alerts (spec §4.6). */
 export function BudgetsPage() {
@@ -62,6 +63,7 @@ export function BudgetsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="budgets" />}
         title={t('budgets.title')}
         description={t('budgets.description')}
         actions={

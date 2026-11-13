@@ -351,6 +351,11 @@ func (w *Worker) finish(ctx context.Context, j Job, start time.Time, herr error)
 			if errors.As(herr, &ra) && ra.delay > 0 {
 				delay = ra.delay
 			}
+			// An open circuit breaker fails fast; retrying before its
+			// cool-down ends would only burn an attempt.
+			if d := minRetryDelay(herr); d > delay {
+				delay = d
+			}
 			runAfter = time.Now().Add(delay)
 		}
 	}

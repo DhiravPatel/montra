@@ -225,11 +225,21 @@ func (s *Service) ListAlerts(ctx context.Context, status string, budgetID *uuid.
 	out := []AlertDTO{}
 	next := ""
 	err = s.DB.WithUserReadTx(ctx, uid, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx, `select a.id, a.budget_id, b.name, a.period_start, a.kind, a.threshold, a.status, a.snoozed_until, a.triggered_at
+		// The first page and later pages use separate SQL texts, so a cached
+		// generic plan can still bound the index scan by the cursor
+		// (docs/QUERY_PLAN_REVIEW.md, R-F).
+		q := `select a.id, a.budget_id, b.name, a.period_start, a.kind, a.threshold, a.status, a.snoozed_until, a.triggered_at
 			from budget_alerts a join budgets b on b.id = a.budget_id where a.user_id = $1 and ($2 = '' or a.status = $2)
-			and ($6::uuid is null or a.budget_id = $6)
-			and ($3::timestamptz is null or (a.triggered_at, a.id) < ($3, $4)) order by a.triggered_at desc, a.id desc limit $5`,
-			uid, status, cur.At, cur.ID, limit+1, budgetID)
+			and ($3::uuid is null or a.budget_id = $3)`
+		args := []any{uid, status, budgetID}
+		if cur.At != nil {
+			q += ` and (a.triggered_at, a.id) < ($4::timestamptz, $5::uuid) order by a.triggered_at desc, a.id desc limit $6`
+			args = append(args, *cur.At, cur.ID, limit+1)
+		} else {
+			q += ` order by a.triggered_at desc, a.id desc limit $4`
+			args = append(args, limit+1)
+		}
+		rows, err := tx.Query(ctx, q, args...)
 		if err != nil {
 			return err
 		}

@@ -9,6 +9,8 @@ import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
+import 'package:montra_mobile/core/saved_filters/saved_filters.dart';
+import 'package:montra_mobile/core/saved_filters/saved_filters_sheet.dart';
 import 'package:montra_mobile/core/widgets/banners.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
@@ -158,6 +160,32 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     if (next != null && mounted) {
       _go(next);
     }
+  }
+
+  /// Saved filters: save this list's filters, or apply or delete one.
+  Future<void> _openSaved() async {
+    final AppLocalizations l10n = context.l10n;
+    final TransactionFilter filter = widget.filter;
+    final AppliedSavedFilter? chosen = await showSavedFiltersSheet(
+      context,
+      scope: SavedFilterScope.transactions,
+      current: filter.isEmpty && filter.sort == 'date_desc'
+          ? null
+          : filter.toSavedJson(),
+      describe: (Map<String, Object?> json) {
+        final TransactionFilter? saved = TransactionFilter.fromSavedJson(json);
+        return saved == null ? null : describeSavedFilter(l10n, saved);
+      },
+    );
+    if (chosen == null || !mounted) {
+      return;
+    }
+    final TransactionFilter next = TransactionFilter.fromSavedJson(
+      chosen.filter,
+    )!;
+    setState(() => _searching = next.hasQuery);
+    _go(next);
+    showSnack(context, l10n.savedFiltersApplied(chosen.name));
   }
 
   void _toggle(TransactionDto t) => setState(() {
@@ -320,6 +348,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             )
           : Text(l10n.navTransactions),
       actions: <Widget>[
+        IconButton(
+          tooltip: l10n.savedFiltersOpen,
+          icon: const Icon(Icons.bookmarks_outlined),
+          onPressed: _openSaved,
+        ),
         if (!_searching)
           IconButton(
             tooltip: l10n.recurringOpenTooltip,
@@ -568,7 +601,10 @@ class _ActiveFilters extends ConsumerWidget {
         ),
       if (filter.paymentMethodId != null)
         (
-          methods[filter.paymentMethodId]?.label ?? l10n.filterPaymentMethod,
+          filter.withoutPaymentMethod
+              ? l10n.paymentNone
+              : methods[filter.paymentMethodId]?.label ??
+                    l10n.filterPaymentMethod,
           filter.copyWith(clearPaymentMethod: true),
         ),
       if (filter.minAmount != null || filter.maxAmount != null)
@@ -646,3 +682,11 @@ class _ActiveFilters extends ConsumerWidget {
     );
   }
 }
+
+/// One line describing a saved transactions filter.
+String describeSavedFilter(AppLocalizations l10n, TransactionFilter filter) =>
+    <String>[
+      if (filter.hasQuery) l10n.savedFiltersSearchFor(filter.query!.trim()),
+      if (filter.activeCount > 0 || !filter.hasQuery)
+        l10n.savedFiltersCount(filter.activeCount),
+    ].join(' · ');

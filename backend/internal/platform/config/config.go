@@ -5,6 +5,7 @@
 package config
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -13,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // Environment names.
@@ -555,6 +558,46 @@ func (c *Config) validate(l *loader) {
 	if c.Database.MaxConns < 1 {
 		l.errs = append(l.errs, errors.New("DATABASE_MAX_CONNS must be at least 1"))
 	}
+	for _, db := range []struct{ key, url string }{{"DATABASE_URL", c.Database.URL}, {"DATABASE_MIGRATION_URL", c.Database.MigrationURL}} {
+		if db.url == "" {
+			continue
+		}
+		if err := CheckDatabaseTLS(c.Env, db.key, db.url); err != nil {
+			l.errs = append(l.errs, err)
+		}
+	}
+}
+
+// CheckDatabaseTLS refuses, in staging and production, a PostgreSQL
+// connection string (named by key in the error) that would not verify the
+// server certificate and host name, i.e. anything weaker than
+// sslmode=verify-full (DB-002, docs/DEPLOYMENT.md §1.1). It inspects the TLS
+// settings pgx itself derives from the string, so a missing sslmode (pgx
+// then uses PGSSLMODE, or prefer), the ssl=true alias (require) and every
+// host of a multi-host string are judged as they would connect. There is no
+// override. Development and test are not checked. The error never contains
+// the connection string.
+func CheckDatabaseTLS(env, key, dsn string) error {
+	if env != EnvStaging && env != EnvProduction {
+		return nil
+	}
+	cfg, err := pgconn.ParseConfig(dsn)
+	if err != nil {
+		return fmt.Errorf("%s could not be parsed to check its TLS settings (the value is not printed)", key)
+	}
+	verified := func(t *tls.Config) bool { return t != nil && !t.InsecureSkipVerify }
+	ok := verified(cfg.TLSConfig)
+	for _, fb := range cfg.Fallbacks {
+		ok = ok && verified(fb.TLSConfig)
+	}
+	if ok {
+		return nil
+	}
+	hint := ""
+	if !strings.Contains(dsn, "sslmode") {
+		hint = "; it sets no sslmode, so pgx would use PGSSLMODE or prefer"
+	}
+	return fmt.Errorf("%s must use sslmode=verify-full in %s (DB-002): it would not verify the server certificate and host name%s", key, env, hint)
 }
 
 func decodeKey(l *loader, key string, size int) []byte {

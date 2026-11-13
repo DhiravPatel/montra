@@ -15,19 +15,515 @@ linters:
     - sqlclosecheck
   settings:
     depguard:
+      # Dependency boundaries (ARCH-004, docs/ARCHITECTURE.md). depguard compares
+      # an import with the nearest entry of each sorted list only, so a deny list
+      # must not hold overlapping prefixes: every rule denies the one prefix
+      # montra/backend/internal/ and allows (lax mode: the longer match wins)
+      # what that layer may use.
+      #
+      #   domain/*    -> domain only (and no HTTP, database or transport libraries)
+      #   platform/*  -> platform only
+      #   apitypes    -> domain;  store/* -> nothing internal
+      #   features    -> platform, domain, apitypes, store, their own subpackages
+      #                  and the cross-feature edges listed per feature below
+      #   app (composition root) is imported only by cmd/*, internal/testutil
+      #   (test servers) and internal/seed (demo data through the real services,
+      #   run by cmd/seed); nothing under internal imports cmd/*. Features may
+      #   not import testutil or seed (the feature rules deny them).
+      #
+      # The feature edges are the ones that exist by design today (2026-11-13,
+      # `go list` and the depends_on edges in docs/knowledge-graph/graph.json):
+      # finance (ledger) and notifications are the shared services most features
+      # use; analytics, reports and ai read across features. A new edge is a
+      # design decision: add it to the feature's allow list in the same change.
       rules:
         domain-is-pure:
+          list-mode: lax
           files:
             - "**/internal/domain/**"
           deny:
-            - pkg: net/http
-              desc: domain packages must not depend on HTTP (spec §8)
-            - pkg: github.com/jackc/pgx/v5
-              desc: domain packages must not depend on the database
             - pkg: github.com/danielgtaylor/huma/v2
               desc: domain packages must not depend on the transport layer
-            - pkg: montra/backend/internal/platform
-              desc: domain packages must stay independent of infrastructure
+            - pkg: github.com/jackc/pgx/v5
+              desc: domain packages must not depend on the database
+            - pkg: montra/backend/internal/
+              desc: domain packages import only other domain packages (no platform, store or feature packages)
+            - pkg: net/http
+              desc: domain packages must not depend on HTTP (spec §8)
+          allow:
+            - montra/backend/internal/domain
+        platform-is-infrastructure:
+          list-mode: lax
+          files:
+            - "**/internal/platform/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: platform packages are infrastructure and must not import features, domain, store or app
+          allow:
+            - montra/backend/internal/platform
+        apitypes-shared:
+          list-mode: lax
+          files:
+            - "**/internal/apitypes/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: apitypes is shared by features and may import domain packages only
+          allow:
+            - montra/backend/internal/domain
+        store-is-generated:
+          list-mode: lax
+          files:
+            - "**/internal/store/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: sqlc-generated store code imports nothing internal
+        wiring-in-cmd:
+          list-mode: lax
+          files:
+            - "**/internal/**"
+            - "!**/internal/app/**"
+            - "!**/internal/testutil/**"
+            - "!**/internal/seed/**"
+          deny:
+            - pkg: montra/backend/cmd
+              desc: cmd/* holds the main packages; internal code never imports them
+            - pkg: montra/backend/internal/app$
+              desc: internal/app is the composition root, wired only from cmd/* (internal/testutil and internal/seed consume the services cmd builds)
+        feature-admin:
+          list-mode: lax
+          files:
+            - "**/internal/admin/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature admin may import only shared packages (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/admin
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-ai:
+          list-mode: lax
+          files:
+            - "**/internal/ai/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature ai may import only shared packages and analytics, finance, receipts, subscriptions (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/ai
+            - montra/backend/internal/analytics
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/platform
+            - montra/backend/internal/receipts
+            - montra/backend/internal/store
+            - montra/backend/internal/subscriptions
+        feature-analytics:
+          list-mode: lax
+          files:
+            - "**/internal/analytics/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature analytics may import only shared packages and budgets, finance, fx, goals, groups, recurring, subscriptions (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/analytics
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/budgets
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/fx
+            - montra/backend/internal/goals
+            - montra/backend/internal/groups
+            - montra/backend/internal/platform
+            - montra/backend/internal/recurring
+            - montra/backend/internal/store
+            - montra/backend/internal/subscriptions
+        feature-auth:
+          list-mode: lax
+          files:
+            - "**/internal/auth/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature auth may import only shared packages and notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/auth
+            - montra/backend/internal/domain
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-budgets:
+          list-mode: lax
+          files:
+            - "**/internal/budgets/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature budgets may import only shared packages and finance, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/budgets
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-categories:
+          list-mode: lax
+          files:
+            - "**/internal/categories/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature categories may import only shared packages (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/categories
+            - montra/backend/internal/domain
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-challenges:
+          list-mode: lax
+          files:
+            - "**/internal/challenges/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature challenges may import only shared packages and finance, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/challenges
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-communities:
+          list-mode: lax
+          files:
+            - "**/internal/communities/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature communities may import only shared packages and notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/communities
+            - montra/backend/internal/domain
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-fairuse:
+          list-mode: lax
+          files:
+            - "**/internal/fairuse/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature fairuse may import only shared packages and files, support (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/fairuse
+            - montra/backend/internal/files
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+            - montra/backend/internal/support
+        feature-files:
+          list-mode: lax
+          files:
+            - "**/internal/files/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature files may import only shared packages (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/files
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-finance:
+          list-mode: lax
+          files:
+            - "**/internal/finance/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature finance may import only shared packages (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-fx:
+          list-mode: lax
+          files:
+            - "**/internal/fx/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature fx may import only shared packages and finance (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/fx
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-goals:
+          list-mode: lax
+          files:
+            - "**/internal/goals/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature goals may import only shared packages and finance, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/goals
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-groups:
+          list-mode: lax
+          files:
+            - "**/internal/groups/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature groups may import only shared packages and finance, fx, notifications, recurring, reports/render (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/fx
+            - montra/backend/internal/groups
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/recurring
+            - montra/backend/internal/reports/render
+            - montra/backend/internal/store
+        feature-imports:
+          list-mode: lax
+          files:
+            - "**/internal/imports/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature imports may import only shared packages and files, finance, notifications, subscriptions (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/files
+            - montra/backend/internal/finance
+            - montra/backend/internal/imports
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+            - montra/backend/internal/subscriptions
+        feature-insights:
+          list-mode: lax
+          files:
+            - "**/internal/insights/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature insights may import only shared packages and budgets, finance, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/budgets
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/insights
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-integrations:
+          list-mode: lax
+          files:
+            - "**/internal/integrations/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature integrations may import only shared packages and finance, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/integrations
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-moderation:
+          list-mode: lax
+          files:
+            - "**/internal/moderation/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature moderation may import only shared packages and notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/moderation
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-notifications:
+          list-mode: lax
+          files:
+            - "**/internal/notifications/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature notifications may import only shared packages (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+        feature-privacy:
+          list-mode: lax
+          files:
+            - "**/internal/privacy/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature privacy may import only shared packages and files, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/files
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/privacy
+            - montra/backend/internal/store
+        feature-receipts:
+          list-mode: lax
+          files:
+            - "**/internal/receipts/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature receipts may import only shared packages and files, finance, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/files
+            - montra/backend/internal/finance
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/receipts
+            - montra/backend/internal/store
+        feature-reconciliation:
+          list-mode: lax
+          files:
+            - "**/internal/reconciliation/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature reconciliation may import only shared packages and finance (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/platform
+            - montra/backend/internal/reconciliation
+            - montra/backend/internal/store
+        feature-recurring:
+          list-mode: lax
+          files:
+            - "**/internal/recurring/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature recurring may import only shared packages and finance, notifications, subscriptions (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/recurring
+            - montra/backend/internal/store
+            - montra/backend/internal/subscriptions
+        feature-reports:
+          list-mode: lax
+          files:
+            - "**/internal/reports/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature reports may import only shared packages and analytics, budgets, files, finance, goals, notifications, subscriptions (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/analytics
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/budgets
+            - montra/backend/internal/domain
+            - montra/backend/internal/files
+            - montra/backend/internal/finance
+            - montra/backend/internal/goals
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/reports
+            - montra/backend/internal/store
+            - montra/backend/internal/subscriptions
+        feature-search:
+          list-mode: lax
+          files:
+            - "**/internal/search/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature search may import only shared packages (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/platform
+            - montra/backend/internal/search
+            - montra/backend/internal/store
+        feature-social:
+          list-mode: lax
+          files:
+            - "**/internal/social/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature social may import only shared packages and notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/social
+            - montra/backend/internal/store
+        feature-subscriptions:
+          list-mode: lax
+          files:
+            - "**/internal/subscriptions/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature subscriptions may import only shared packages and finance, notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/finance
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+            - montra/backend/internal/subscriptions
+        feature-support:
+          list-mode: lax
+          files:
+            - "**/internal/support/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature support may import only shared packages and notifications (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/domain
+            - montra/backend/internal/notifications
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+            - montra/backend/internal/support
+        feature-users:
+          list-mode: lax
+          files:
+            - "**/internal/users/**"
+          deny:
+            - pkg: montra/backend/internal/
+              desc: "feature users may import only shared packages and auth (ARCH-004; add new edges deliberately in backend/.golangci.yml)"
+          allow:
+            - montra/backend/internal/apitypes
+            - montra/backend/internal/auth
+            - montra/backend/internal/domain
+            - montra/backend/internal/platform
+            - montra/backend/internal/store
+            - montra/backend/internal/users
     gosec:
       excludes:
         - G115 # integer conversions are bounds-checked explicitly where they matter (money uses big.Int)

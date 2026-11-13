@@ -79,9 +79,12 @@ jobs:
       - name: vet
         working-directory: backend
         run: go vet ./...
-      - name: golangci-lint
+      - name: golangci-lint (incl. depguard dependency boundaries, ARCH-004)
         uses: golangci/golangci-lint-action@v6
         with: { working-directory: backend, version: v2.14.0 }
+      - name: main packages only under cmd/ (ARCH-004)
+        working-directory: backend
+        run: "! grep -rl --include='*.go' '^package main$' internal tests"
       - name: sqlc generated code is current
         working-directory: backend
         run: go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 diff
@@ -90,6 +93,10 @@ jobs:
         run: go run ./cmd/openapi -check -out ../contracts/openapi/montra.v1.json
       - name: Error-code tables in docs/API.md are current
         run: python3 scripts/docs/gen_error_codes.py --check
+      - name: Data dictionary parser tests
+        run: python3 -B -m unittest scripts/docs/test_gen_data_dictionary.py
+      - name: Data dictionary (docs/DATA_DICTIONARY.md) is current
+        run: python3 scripts/docs/gen_data_dictionary.py --check
       - name: Knowledge graph parser tests
         run: python3 -B -m unittest scripts/docs/test_gen_knowledge_graph.py
       - name: Knowledge graph (docs/knowledge-graph, docs/KNOWLEDGE_GRAPH.md) is current
@@ -150,4 +157,6 @@ jobs:
       - run: flutter pub get
       - run: dart run tool/gen_api.dart && git diff --exit-code lib/core/api/generated
       - run: flutter analyze
+      - name: Module boundaries (ARCH-004)
+        run: dart run tool/check_imports.dart
       - run: flutter test

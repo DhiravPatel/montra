@@ -1,5 +1,6 @@
-// Package admin is the operator cost and usage dashboard (spec §17): only
-// platform admins, aggregate counts only.
+// Package admin is the operator cost and usage dashboard (spec §17) and
+// background job visibility (JOB-007): only platform admins, aggregate
+// counts and operational job facts only.
 package admin
 
 import (
@@ -91,4 +92,5 @@ func (s *Service) Routes(api huma.API) {
 			}
 			return httpx.OK(ctx, *u), nil
 		})
+	s.jobRoutes(api)
 }

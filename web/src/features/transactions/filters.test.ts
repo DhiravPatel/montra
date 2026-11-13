@@ -3,8 +3,10 @@ import {
   countActiveFilters,
   emptyPrivateFilters,
   emptyUrlFilters,
+  fromSavedFilter,
   readUrlFilters,
   toListQuery,
+  toSavedFilter,
   writeUrlFilters,
 } from './filters';
 
@@ -67,5 +69,82 @@ describe('transaction filters', () => {
         { ...emptyPrivateFilters, maxAmount: '5.00' },
       ),
     ).toBe(3);
+  });
+});
+
+describe('saved filters', () => {
+  const TAG = '22222222-2222-4222-8222-222222222222';
+
+  it('saves exactly the GET /transactions query, search text and amounts included', () => {
+    const url = readUrlFilters(
+      new URLSearchParams(`range=this_month&type=expense,refund&account_id=${ACCOUNT}`),
+    );
+    expect(
+      toSavedFilter(url, { q: ' rent ', minAmount: '10.00', maxAmount: '', currency: 'INR' }),
+    ).toEqual({
+      sort: 'date_desc',
+      range: 'this_month',
+      type: ['expense', 'refund'],
+      account_id: [ACCOUNT],
+      q: 'rent',
+      currency: 'INR',
+      min_amount: '10.00',
+    });
+  });
+
+  it('has nothing to save for the unfiltered, default-sorted list', () => {
+    expect(toSavedFilter(emptyUrlFilters, emptyPrivateFilters)).toBeNull();
+    expect(toSavedFilter({ ...emptyUrlFilters, sort: 'amount_desc' }, emptyPrivateFilters)).toEqual(
+      {
+        sort: 'amount_desc',
+      },
+    );
+  });
+
+  it('round-trips a saved filter', () => {
+    const url = readUrlFilters(
+      new URLSearchParams(
+        `from=2026-11-01&to=2026-11-30&tag_id=${TAG}&payment_method_id=none&sort=amount_asc`,
+      ),
+    );
+    const priv = { q: 'tea', minAmount: '', maxAmount: '99.50', currency: 'USD' };
+    const saved = toSavedFilter(url, priv)!;
+    const parsed = fromSavedFilter(saved);
+    expect(parsed?.partial).toBe(false);
+    expect(parsed?.value.url).toEqual(url);
+    expect(parsed?.value.priv).toEqual(priv);
+  });
+
+  it('applies what it can from a filter another client saved and reports the rest', () => {
+    const parsed = fromSavedFilter({
+      type: ['expense'],
+      account_id: [ACCOUNT, 'not-an-id'],
+      reconciliation_state: 'unreconciled',
+      include_shared: true,
+      some_future_key: 1,
+      min_amount: '1e9',
+    });
+    expect(parsed?.partial).toBe(true);
+    expect(parsed?.value.url.types).toEqual(['expense']);
+    expect(parsed?.value.url.accountIds).toEqual([ACCOUNT]);
+    expect(parsed?.value.priv.minAmount).toBe('');
+  });
+
+  it('accepts booleans and comma-separated strings as the web URL writes them', () => {
+    const parsed = fromSavedFilter({ uncategorized: true, type: 'expense,income' });
+    expect(parsed?.partial).toBe(false);
+    expect(parsed?.value.url.uncategorized).toBe(true);
+    expect(parsed?.value.url.types).toEqual(['expense', 'income']);
+  });
+
+  it('refuses a filter with nothing usable', () => {
+    expect(fromSavedFilter({ reconciliation_state: 'matched', nonsense: [1, 2] })).toBeNull();
+  });
+
+  it('keeps the no-payment-method drill-down value', () => {
+    const url = readUrlFilters(new URLSearchParams('payment_method_id=none'));
+    expect(url.paymentMethodId).toBe('none');
+    expect(toListQuery(url, emptyPrivateFilters).payment_method_id).toBe('none');
+    expect(readUrlFilters(new URLSearchParams('payment_method_id=other')).paymentMethodId).toBe('');
   });
 });

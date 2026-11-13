@@ -138,9 +138,12 @@ type chargeRow struct {
 // DetectForUser scans the last 400 days of posted expenses and upserts
 // pending candidates. Dismissed and confirmed candidates are never
 // re-suggested (stable fingerprint per merchant, currency and cadence).
+// It runs scoped to the user, so it works for the worker (detection jobs)
+// and for the API role (POST /ai/subscriptions/detect), where a system-
+// scope transaction would see no rows under RLS.
 func (s *Service) DetectForUser(ctx context.Context, uid uuid.UUID) (int, error) {
 	found := 0
-	err := s.DB.WithSystemTx(ctx, func(tx pgx.Tx) error {
+	err := s.DB.WithUserTx(ctx, uid, func(tx pgx.Tx) error {
 		var tz string
 		if err := tx.QueryRow(ctx, `select p.timezone from users u join user_preferences p on p.user_id = u.id where u.id = $1 and u.status = 'active'`, uid).Scan(&tz); err != nil {
 			if database.IsNoRows(err) {
@@ -246,18 +249,25 @@ func (s *Service) DetectForUser(ctx context.Context, uid uuid.UUID) (int, error)
 			if r := []rune(label); len(r) > 200 {
 				label = string(r[:200])
 			}
-			if _, err := tx.Exec(ctx, `insert into subscription_detection_candidates (user_id, merchant_id, merchant_label, amount_minor, currency,
+			// Only candidates seen for the first time count as found: pending
+			// ones are refreshed, decided ones are left alone.
+			var inserted bool
+			err = tx.QueryRow(ctx, `insert into subscription_detection_candidates (user_id, merchant_id, merchant_label, amount_minor, currency,
 				amount_tolerance_minor, cadence, confidence, evidence_transaction_ids, evidence, next_expected_date, fingerprint)
 				values ($1,$2,$3,$4,$5,$6,$7,$8::numeric,$9,$10,$11,$12)
 				on conflict (user_id, fingerprint) do update set amount_minor = excluded.amount_minor, amount_tolerance_minor = excluded.amount_tolerance_minor,
 				  confidence = excluded.confidence, evidence_transaction_ids = excluded.evidence_transaction_ids, evidence = excluded.evidence,
 				  next_expected_date = excluded.next_expected_date, merchant_label = excluded.merchant_label
-				where subscription_detection_candidates.status = 'pending'`,
+				where subscription_detection_candidates.status = 'pending'
+				returning (xmax = 0)`,
 				uid, g.merchant, label, cand.Amount, g.cur, cand.Tolerance, cand.Cadence, fmt.Sprintf("%d.%03d", cand.ConfidenceMilli/1000, cand.ConfidenceMilli%1000),
-				ids, ev, cand.NextExpected, hex.EncodeToString(sum[:])); err != nil {
+				ids, ev, cand.NextExpected, hex.EncodeToString(sum[:])).Scan(&inserted)
+			if err != nil && !database.IsNoRows(err) {
 				return err
 			}
-			found++
+			if inserted {
+				found++
+			}
 		}
 		return nil
 	})

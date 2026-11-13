@@ -25,6 +25,7 @@ abstract final class Bootstrap {
       deviceName: deviceName,
       termsUrl: AppConfig.termsUrlDefine,
       privacyUrl: AppConfig.privacyUrlDefine,
+      statusPageUrl: AppConfig.statusPageUrlDefine,
     );
 
     final PreferencesStore preferences = SharedPreferencesStore();

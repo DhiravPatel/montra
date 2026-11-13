@@ -107,3 +107,46 @@ export function readSearchState(state: unknown): SearchLocationState {
   if (record.focus === true) result.focus = true;
   return result;
 }
+
+// --- Saved searches -----------------------------------------------------------
+
+/** A saved search: the GET /search query this page sends (without `limit` or `save`). */
+export interface SavedSearch {
+  q: string;
+  scope: SearchScope;
+  sort: SearchSort;
+}
+
+/** The search to save, or null until the text can be searched. */
+export function toSavedSearch(
+  text: string,
+  scope: SearchScope,
+  sort: SearchSort,
+): SavedSearch | null {
+  const q = normalizeQuery(text);
+  return isSearchable(q) ? { q, scope, sort } : null;
+}
+
+/**
+ * Reads a saved search defensively (any client may have saved it). The
+ * text is required; an unknown scope or sort falls back to the default and
+ * marks the result `partial`. Null when there is no searchable text.
+ */
+export function fromSavedSearch(
+  filter: Readonly<Record<string, unknown>>,
+): { value: SavedSearch; partial: boolean } | null {
+  const q = typeof filter.q === 'string' ? normalizeQuery(filter.q) : '';
+  if (!isSearchable(q)) return null;
+  let partial = Object.keys(filter).some((key) => !['q', 'scope', 'sort'].includes(key));
+  let scope: SearchScope = 'all';
+  if (filter.scope !== undefined && filter.scope !== '') {
+    if (isSearchScope(filter.scope)) scope = filter.scope;
+    else partial = true;
+  }
+  let sort: SearchSort = 'relevance';
+  if (filter.sort !== undefined && filter.sort !== '') {
+    if (isSearchSort(filter.sort)) sort = filter.sort;
+    else partial = true;
+  }
+  return { value: { q, scope, sort }, partial };
+}

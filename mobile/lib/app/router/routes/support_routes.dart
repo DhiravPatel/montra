@@ -5,7 +5,10 @@ import 'package:montra_mobile/app/router/route_page.dart';
 import 'package:montra_mobile/features/privacy/presentation/account_closure_screens.dart';
 import 'package:montra_mobile/features/privacy/presentation/limits_screen.dart';
 import 'package:montra_mobile/features/privacy/presentation/privacy_screen.dart';
+import 'package:montra_mobile/features/support/domain/help_guide_content.dart';
 import 'package:montra_mobile/features/support/presentation/contact_screen.dart';
+import 'package:montra_mobile/features/support/presentation/help_guide_screen.dart';
+import 'package:montra_mobile/features/support/presentation/help_guides_screen.dart';
 import 'package:montra_mobile/features/support/presentation/help_screen.dart';
 import 'package:montra_mobile/features/support/presentation/support_form_screen.dart';
 import 'package:montra_mobile/features/support/presentation/support_request_screen.dart';
@@ -27,6 +30,25 @@ List<RouteBase> supportRoutes() => <RouteBase>[
     path: AppRoutes.newSupportRequest,
     pageBuilder: (BuildContext context, GoRouterState state) =>
         routePage(state, const SupportFormScreen()),
+  ),
+  GoRoute(
+    path: AppRoutes.helpGuides,
+    pageBuilder: (BuildContext context, GoRouterState state) => routePage(
+      state,
+      HelpGuidesScreen(
+        topic: HelpGuideTopic.values
+            .where(
+              (HelpGuideTopic t) =>
+                  t.name == state.uri.queryParameters['topic'],
+            )
+            .firstOrNull,
+      ),
+    ),
+  ),
+  GoRoute(
+    path: '/help/guides/:slug',
+    pageBuilder: (BuildContext context, GoRouterState state) =>
+        routePage(state, HelpGuideScreen(slug: state.pathParameters['slug']!)),
   ),
   GoRoute(
     path: '/help/requests/:id',

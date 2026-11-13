@@ -5,6 +5,8 @@ import 'package:montra_mobile/app/l10n/l10n.dart';
 import 'package:montra_mobile/app/router/app_routes.dart';
 import 'package:montra_mobile/app/theme/app_theme.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/money_text.dart';
 import 'package:montra_mobile/core/widgets/state_views.dart';
@@ -44,6 +46,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     );
     return Scaffold(
       appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.balances)],
         title: Text(l10n.accountsTitle),
         bottom: accounts.isLoading && accounts.hasValue
             ? const PreferredSize(

@@ -4,8 +4,16 @@ PostgreSQL schema `montra`: 113 tables and `schema_migrations`, created by
 `supabase/migrations/*.sql` (the only source of DDL, applied by
 `cmd/migrate`). Row-level security covers every table
 (`docs/RLS_POLICY_MATRIX.md`). This document explains the entities and
-the invariants the code relies on. Column-level detail lives in the
-migrations, and typed queries live in `backend/internal/store`.
+the invariants the code relies on. Typed queries live in
+`backend/internal/store`.
+
+Column-level detail (types, nullability, defaults, primary and foreign keys,
+unique and check constraints, indexes, RLS helper and policies, runtime-role
+privileges and the owning domain of every table) is generated from the
+migrations into [DATA_DICTIONARY.md](DATA_DICTIONARY.md) by
+`scripts/docs/gen_data_dictionary.py` (`make docs`; `make docs-check` and CI
+fail when it is stale). The owning domain there comes from the Domains table
+below, so a new table belongs in that table too.
 
 ## Conventions
 
@@ -61,7 +69,7 @@ migrations, and typed queries live in `backend/internal/store`.
 | Social and groups | `groups`, `group_members`, `group_invitations`, `group_join_requests`, `group_expenses`, `group_expense_payers`, `group_expense_shares`, `group_expense_items`, `group_expense_item_shares`, `group_expense_comments`, `group_expense_revisions`, `settlements`, `group_disputes`, `group_activity_events`, `friend_requests`, `user_connections`, `user_blocks`, `user_mutes` | Balances are derived per read from expenses and confirmed settlements |
 | Communities | `communities`, `community_members`, `community_invitations`, `community_posts`, `community_comments`, `community_reactions`, `community_polls`, `community_poll_options`, `community_poll_votes`, `community_reports`, `moderation_actions`, `moderation_appeals`, `challenges`, `challenge_participants`, `challenge_progress_events` | Plain-text content; moderation actions reversible and audited |
 | Planning | `budgets`, `budget_members`, `budget_allocations`, `budget_period_snapshots`, `budget_alerts`, `recurring_rules`, `recurring_occurrences`, `bills`, `subscription_detection_candidates`, `subscriptions`, `subscription_events`, `subscription_payments`, `goals`, `goal_members`, `goal_contributions`, `goal_milestones` | Budget spend computed from transactions; snapshots for closed periods |
-| Platform features | `notifications`, `notification_preferences`, `notification_deliveries`, `integration_connections`, `integration_sync_runs`, `integration_webhook_events`, `ai_conversations`, `ai_messages`, `ai_usage`, `insights`, `insight_feedback`, `insight_mutes`, `reports`, `scheduled_reports`, `search_history`, `support_requests` | One delivery row per notification and channel; webhook inbox write-only for the API role |
+| Platform features | `notifications`, `notification_preferences`, `notification_deliveries`, `integration_connections`, `integration_sync_runs`, `integration_webhook_events`, `ai_conversations`, `ai_messages`, `ai_usage`, `insights`, `insight_feedback`, `insight_mutes`, `reports`, `scheduled_reports`, `search_history`, `support_requests`, `support_messages` | One delivery row per notification and channel; webhook inbox write-only for the API role |
 
 ## Core relationships
 

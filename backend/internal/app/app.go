@@ -34,6 +34,7 @@ import (
 	"montra/backend/internal/moderation"
 	"montra/backend/internal/notifications"
 	"montra/backend/internal/platform/apperr"
+	"montra/backend/internal/platform/breaker"
 	"montra/backend/internal/platform/config"
 	"montra/backend/internal/platform/crypto"
 	"montra/backend/internal/platform/database"
@@ -110,6 +111,7 @@ func NewServices(d Deps) (*Services, error) {
 	if d.Metrics != nil {
 		m := d.Metrics
 		database.OnPermissionDenied(func() { m.RLSDenials.Inc() })
+		breaker.SetObserver(m)
 	}
 	keys := make([]crypto.Key, 0, len(d.Cfg.Security.DataEncryptionKeys))
 	for _, k := range d.Cfg.Security.DataEncryptionKeys {
@@ -156,7 +158,7 @@ func NewServices(d Deps) (*Services, error) {
 	s.Imports = &imports.Service{DB: d.DB, Finance: s.Finance, Files: s.Files, Metrics: d.Metrics}
 	s.Receipts = &receipts.Service{DB: d.DB, Files: s.Files, Finance: s.Finance, Extractor: receipts.NotConfigured{}}
 	s.Recon = &reconciliation.Service{DB: d.DB, Finance: s.Finance}
-	s.FX = &fx.Service{DB: d.DB, Cfg: d.Cfg.FX}
+	s.FX = &fx.Service{DB: d.DB, Cfg: d.Cfg.FX, Breaker: fx.NewBreaker()}
 	s.Reports = &reports.Service{DB: d.DB, Files: s.Files, Store: store, Cfg: d.Cfg}
 	s.Social = &social.Service{DB: d.DB}
 	s.Groups = &groups.Service{DB: d.DB, Finance: s.Finance, Recurring: s.Recurring, WebAppURL: d.Cfg.HTTP.WebAppURL}
@@ -168,7 +170,7 @@ func NewServices(d Deps) (*Services, error) {
 	// a deterministic path.
 	var provider llm.Provider = llm.Disabled{}
 	if d.Cfg.AI.Provider == config.AIAnthropic && d.Cfg.AI.APIKey != "" {
-		provider = llm.NewAnthropic(llm.AnthropicConfig{APIKey: d.Cfg.AI.APIKey, Model: d.Cfg.AI.Model, Timeout: d.Cfg.AI.Timeout, Retries: 2})
+		provider = llm.WithBreaker(llm.NewAnthropic(llm.AnthropicConfig{APIKey: d.Cfg.AI.APIKey, Model: d.Cfg.AI.Model, Timeout: d.Cfg.AI.Timeout, Retries: 2}), nil)
 	}
 	s.AI = &ai.Service{DB: d.DB, Provider: provider, Analytics: s.Analytics,
 		Planning: &analytics.Planning{Budgets: s.Budgets, Subs: s.Subs, Goals: s.Goals}, Finance: s.Finance, Subs: s.Subs,

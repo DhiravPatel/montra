@@ -31,9 +31,12 @@ final AppLocalizations l10n = lookupAppLocalizations(const Locale('en'));
 /// Password for throwaway users (meets the sign-up policy).
 const String journeyPassword = 'quiet-harbor-71-e2e';
 
-/// `e2e.<timestamp>.ci@example.com`: unique, clearly synthetic.
+/// `e2e.<timestamp>.<tag>@example.com`: unique, clearly synthetic. The tag
+/// is `ci` unless `--dart-define=JOURNEY_TAG=...` names the run.
 String throwawayEmail() =>
-    'e2e.${DateTime.now().millisecondsSinceEpoch}.ci@example.com';
+    'e2e.${DateTime.now().millisecondsSinceEpoch}.$_tag@example.com';
+
+const String _tag = String.fromEnvironment('JOURNEY_TAG', defaultValue: 'ci');
 
 /// Configuration resolved exactly as the app does at start-up.
 AppConfig journeyConfig() => AppConfig.resolve(

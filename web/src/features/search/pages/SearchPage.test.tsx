@@ -493,4 +493,66 @@ describe('SearchPage', () => {
     expect(await screen.findByText('We couldn’t load your recent searches')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
+
+  it('saves a search and runs a saved one, remembering it in recent searches', async () => {
+    recentBackend([]);
+    const calls = searchBackend();
+    const bodies: unknown[] = [];
+    server.use(
+      http.get(`${API}/saved-filters`, () =>
+        HttpResponse.json(
+          envelope([
+            {
+              id: 'f1a2b3c4-0000-4000-8000-000000000001',
+              scope: 'search',
+              name: 'Coffee places',
+              filter: { q: 'coffee', scope: 'merchants', sort: 'name' },
+              created_at: '2026-11-01T10:00:00Z',
+            },
+          ]),
+        ),
+      ),
+      http.post(`${API}/saved-filters`, async ({ request }) => {
+        const body = (await request.json()) as { name: string; filter: unknown };
+        bodies.push(body);
+        return HttpResponse.json(
+          envelope({ id: 'n1', scope: 'search', created_at: '2026-11-13T10:00:00Z', ...body }),
+          { status: 201 },
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute('/search', { user: user0() });
+    await findPageHeading('Search');
+    await user.type(field(), 'holiday');
+
+    await user.click(await screen.findByRole('button', { name: 'Saved filters (1)' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Saved searches' });
+    await user.type(within(dialog).getByLabelText('Name'), 'Trips');
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(() => {
+      expect(bodies).toEqual([
+        {
+          scope: 'search',
+          name: 'Trips',
+          filter: { q: 'holiday', scope: 'all', sort: 'relevance' },
+        },
+      ]);
+    });
+    // Saving does not submit the search form behind the dialog.
+    expect(calls.every((call) => call.save === undefined)).toBe(true);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Apply Coffee places' }));
+    await waitFor(() => {
+      expect(calls.at(-1)).toEqual({
+        q: 'coffee',
+        scope: 'merchants',
+        limit: '20',
+        sort: 'name',
+        save: 'true',
+      });
+    });
+    expect(field()).toHaveValue('coffee');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });

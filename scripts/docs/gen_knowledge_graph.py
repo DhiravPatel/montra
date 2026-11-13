@@ -309,11 +309,11 @@ DOMAINS = {
         label="Platform & cross-cutting",
         packages=[
             "app", "apitypes", "domain/money", "domain/textsafe",
-            "platform/apperr", "platform/audit", "platform/caps", "platform/config",
+            "platform/apperr", "platform/audit", "platform/breaker", "platform/caps", "platform/config",
             "platform/crypto", "platform/database", "platform/httpx", "platform/idempotency",
             "platform/jobs", "platform/logging", "platform/migrate", "platform/observability",
             "platform/outbox", "platform/ratelimit", "testutil/apitest", "testutil/dbtest",
-            "cmd/api", "cmd/worker", "cmd/migrate", "cmd/openapi", "cmd/loadtest",
+            "cmd/api", "cmd/worker", "cmd/migrate", "cmd/openapi", "cmd/loadtest", "cmd/seed", "seed",
         ],
         tags=["Reference"], web=["marketing", "_shared", "_app"], mobile=["_core", "_app"],
         reqs=[

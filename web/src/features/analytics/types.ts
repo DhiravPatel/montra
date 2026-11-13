@@ -16,6 +16,8 @@ export type CategoryReport = Schemas['CategoryReport'];
 export type CategorySlice = Schemas['CategorySlice'];
 export type MerchantReport = Schemas['MerchantReport'];
 export type MerchantSlice = Schemas['MerchantSlice'];
+export type PaymentMethodReport = Schemas['PaymentMethodReport'];
+export type PaymentMethodSlice = Schemas['PaymentMethodSlice'];
 export type AccountsReport = Schemas['AccountsReport'];
 export type BalanceTotals = Schemas['BalanceTotals'];
 

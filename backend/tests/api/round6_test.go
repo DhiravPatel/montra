@@ -494,3 +494,36 @@ func TestWeekStartBucketsSubscriptionsAndTrialEnd(t *testing.T) {
 		t.Fatalf("trial %v: items on its end date = %v", trial["status"], items)
 	}
 }
+
+// A goal marked achieved by hand stays achieved after a withdrawal takes it
+// below target; a goal achieved by reaching its target reopens.
+func TestGoalAchievedByHandStaysAchieved(t *testing.T) {
+	s := apitest.New(t, nil)
+	c, _ := s.Login(t, s.Register(t, "goalstate"))
+	contribute := func(gid, kind, amount string) {
+		c.Do(t, http.MethodPost, "/goals/"+gid+"/contributions", map[string]any{"kind": kind, "amount": amount},
+			"Idempotency-Key", key()).Expect(t, http.StatusCreated)
+	}
+	status := func(gid string) any {
+		return c.Do(t, http.MethodGet, "/goals/"+gid, nil).Expect(t, http.StatusOK).Data()["status"]
+	}
+	manual := c.Do(t, http.MethodPost, "/goals", map[string]any{"name": "Close enough", "goal_type": "custom", "target_amount": "1000"},
+		"Idempotency-Key", key()).Expect(t, http.StatusCreated).Data()["id"].(string)
+	contribute(manual, "contribution", "800")
+	c.Do(t, http.MethodPost, "/goals/"+manual+"/achieve", nil).Expect(t, http.StatusOK)
+	contribute(manual, "withdrawal", "100")
+	if st := status(manual); st != "achieved" {
+		t.Fatalf("hand-achieved goal after a withdrawal = %v", st)
+	}
+
+	auto := c.Do(t, http.MethodPost, "/goals", map[string]any{"name": "Reached", "goal_type": "custom", "target_amount": "500"},
+		"Idempotency-Key", key()).Expect(t, http.StatusCreated).Data()["id"].(string)
+	contribute(auto, "contribution", "500")
+	if st := status(auto); st != "achieved" {
+		t.Fatalf("goal at its target = %v", st)
+	}
+	contribute(auto, "withdrawal", "50")
+	if st := status(auto); st != "active" {
+		t.Fatalf("target-reached goal below target again = %v", st)
+	}
+}

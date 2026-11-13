@@ -16,17 +16,21 @@ import { useCategories } from '@/shared/finance/reference';
 import { transactionTitle } from '@/shared/finance/transactionDisplay';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
+import { SavedFilters } from '@/shared/savedFilters/SavedFilters';
 import { useT } from '@/shared/i18n/I18nContext';
 import { cx } from '@/shared/utils/cx';
 import { useTransactionList } from '../api';
 import { BulkActionsBar } from '../components/BulkActionsBar';
 import { TransactionFilters } from '../components/TransactionFilters';
 import {
+  type AppliedFilters,
   countActiveFilters,
   emptyPrivateFilters,
+  fromSavedFilter,
   type PrivateFilters,
   readUrlFilters,
   toListQuery,
+  toSavedFilter,
   type UrlFilters,
   writeUrlFilters,
 } from '../filters';
@@ -61,6 +65,8 @@ export function TransactionsPage() {
   const [search, setSearch] = useState('');
   const q = useDebouncedValue(search, 300);
   const [amounts, setAmounts] = useState<PrivateFilters>(emptyPrivateFilters);
+  // Bumped when a saved filter is applied, so the filter form re-reads its fields.
+  const [filtersVersion, setFiltersVersion] = useState(0);
   const query = useMemo(() => toListQuery(url, { ...amounts, q }), [url, amounts, q]);
   const queryKey = JSON.stringify(query);
   const list = useTransactionList(query);
@@ -95,6 +101,13 @@ export function TransactionsPage() {
 
   const setUrl = (next: UrlFilters) => {
     setSearchParams(writeUrlFilters(next), { replace: true });
+  };
+
+  const applySaved = ({ url: nextUrl, priv }: AppliedFilters) => {
+    setUrl(nextUrl);
+    setSearch(priv.q);
+    setAmounts({ ...priv, q: '' });
+    setFiltersVersion((version) => version + 1);
   };
 
   const toggle = (id: string, checked: boolean) => {
@@ -257,6 +270,7 @@ export function TransactionsPage() {
         }
       />
       <TransactionFilters
+        key={filtersVersion}
         url={url}
         onUrlChange={setUrl}
         search={search}
@@ -264,6 +278,14 @@ export function TransactionsPage() {
         amounts={amounts}
         onAmountsChange={setAmounts}
         defaultCurrency={user.base_currency}
+        actions={
+          <SavedFilters
+            scope="transactions"
+            current={toSavedFilter(url, { ...amounts, q: search })}
+            parse={fromSavedFilter}
+            onApply={applySaved}
+          />
+        }
       />
       {selected.size > 0 ? (
         <BulkActionsBar selectedIds={[...selected]} onClear={clearSelection} />

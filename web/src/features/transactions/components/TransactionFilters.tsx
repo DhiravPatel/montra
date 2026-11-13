@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { Icon } from '@/shared/components/Icon';
 import { MoneyField } from '@/shared/components/MoneyField';
@@ -31,6 +31,7 @@ import {
   countActiveFilters,
   emptyPrivateFilters,
   emptyUrlFilters,
+  NO_PAYMENT_METHOD,
   type PrivateFilters,
   type UrlFilters,
 } from '../filters';
@@ -44,6 +45,8 @@ interface TransactionFiltersProps {
   amounts: PrivateFilters;
   onAmountsChange: (next: PrivateFilters) => void;
   defaultCurrency: string;
+  /** Extra controls next to "More filters" (saved filters). */
+  actions?: ReactNode;
 }
 
 const SOURCES = (
@@ -86,6 +89,7 @@ export function TransactionFilters({
   amounts,
   onAmountsChange,
   defaultCurrency,
+  actions,
 }: TransactionFiltersProps) {
   const { t, formatLocale } = useI18n();
   const panelId = useId();
@@ -139,6 +143,7 @@ export function TransactionFilters({
   };
   const tagName = (id: string) => tags.data?.find((tag) => tag.id === id)?.name ?? id;
   const methodName = (id: string) => {
+    if (id === NO_PAYMENT_METHOD) return t('transactions.filters.noPaymentMethod');
     const found = methods.data?.find((method) => method.id === id);
     return found ? paymentMethodLabel(found, t) : id;
   };
@@ -315,6 +320,7 @@ export function TransactionFilters({
             ? t('transactions.filters.moreCount', { count: active })
             : t('transactions.filters.more')}
         </Button>
+        {actions ? <div className="sm:mt-[26px]">{actions}</div> : null}
       </div>
 
       <div id={panelId} hidden={!open} className="mt-5 border-t border-line pt-5">
@@ -411,10 +417,13 @@ export function TransactionFilters({
             optional
             placeholder={t('transactions.filters.anyPaymentMethod')}
             value={url.paymentMethodId}
-            options={(methods.data ?? []).map((method) => ({
-              value: method.id,
-              label: paymentMethodLabel(method, t),
-            }))}
+            options={[
+              { value: NO_PAYMENT_METHOD, label: t('transactions.filters.noPaymentMethod') },
+              ...(methods.data ?? []).map((method) => ({
+                value: method.id,
+                label: paymentMethodLabel(method, t),
+              })),
+            ]}
             onChange={(event) => {
               set({ paymentMethodId: event.target.value });
             }}

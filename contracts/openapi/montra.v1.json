@@ -7105,6 +7105,38 @@
         ],
         "type": "object"
       },
+      "EnvelopeJobDTO": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/JobDTO"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EnvelopeJobDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/JobDetail"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
       "EnvelopeLegalDTO": {
         "additionalProperties": false,
         "properties": {
@@ -7732,6 +7764,25 @@
           "data": {
             "items": {
               "$ref": "#/components/schemas/InsightMuteDTO"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EnvelopeListJobDTO": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/JobDTO"
             },
             "type": "array"
           },
@@ -8691,6 +8742,22 @@
         "properties": {
           "data": {
             "$ref": "#/components/schemas/PaymentMethodDeleteResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EnvelopePaymentMethodReport": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PaymentMethodReport"
           },
           "meta": {
             "$ref": "#/components/schemas/Meta"
@@ -13432,6 +13499,162 @@
         ],
         "type": "object"
       },
+      "JobAttemptDTO": {
+        "additionalProperties": false,
+        "properties": {
+          "attempt": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "duration_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "error_code": {
+            "description": "Safe failure code; never the message",
+            "type": "string"
+          },
+          "finished_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "outcome": {
+            "description": "Absent while the attempt runs",
+            "enum": [
+              "succeeded",
+              "retry",
+              "failed",
+              "dead",
+              "cancelled",
+              "lease_expired"
+            ],
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "worker_id": {
+            "description": "Worker process that ran the attempt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attempt",
+          "worker_id",
+          "started_at"
+        ],
+        "type": "object"
+      },
+      "JobDTO": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "description": "Attempts started so far",
+            "format": "int64",
+            "type": "integer"
+          },
+          "cancel_requested": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "finished_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "last_error_code": {
+            "description": "Safe code of the last failure (for example email_send_failed, provider_circuit_open, timeout); never the message",
+            "type": "string"
+          },
+          "max_attempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "priority": {
+            "description": "Lower runs first",
+            "format": "int64",
+            "type": "integer"
+          },
+          "queue": {
+            "type": "string"
+          },
+          "retryable": {
+            "description": "Failed or dead: POST /admin/jobs/{id}/retry re-queues it",
+            "type": "boolean"
+          },
+          "run_after": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "dead",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "user_scoped": {
+            "description": "The job acts for one person (who is not disclosed)",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "queue",
+          "status",
+          "priority",
+          "attempts",
+          "max_attempts",
+          "user_scoped",
+          "cancel_requested",
+          "retryable",
+          "run_after",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "JobDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/JobAttemptDTO"
+            },
+            "type": "array"
+          },
+          "job": {
+            "$ref": "#/components/schemas/JobDTO"
+          }
+        },
+        "required": [
+          "job",
+          "attempts"
+        ],
+        "type": "object"
+      },
       "JoinRequestInput": {
         "additionalProperties": false,
         "properties": {
@@ -15442,6 +15665,101 @@
             "type": "integer"
           }
         },
+        "type": "object"
+      },
+      "PaymentMethodReport": {
+        "additionalProperties": false,
+        "properties": {
+          "payment_methods": {
+            "description": "Grouped by currency (alphabetical), largest net spending first; each currency is ranked separately",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethodSlice"
+            },
+            "type": "array"
+          },
+          "window": {
+            "$ref": "#/components/schemas/Window"
+          }
+        },
+        "required": [
+          "window",
+          "payment_methods"
+        ],
+        "type": "object"
+      },
+      "PaymentMethodSlice": {
+        "additionalProperties": false,
+        "properties": {
+          "archived": {
+            "description": "The payment method is archived (its past spending still counts)",
+            "type": "boolean"
+          },
+          "count": {
+            "description": "Transactions counted",
+            "format": "int64",
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "drill_down_path": {
+            "description": "App path to the underlying transactions",
+            "type": "string"
+          },
+          "key": {
+            "description": "The payment method ID, or unspecified for spending recorded without one",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "cash",
+              "upi",
+              "debit_card",
+              "credit_card",
+              "bank_transfer",
+              "wallet",
+              "cheque",
+              "other",
+              "unspecified"
+            ],
+            "type": "string"
+          },
+          "label": {
+            "description": "Your label for the payment method; Unspecified for the bucket (localize by key)",
+            "type": "string"
+          },
+          "masked_hint": {
+            "description": "Last digits only, as stored on the payment method",
+            "type": "string"
+          },
+          "net_expense": {
+            "$ref": "#/components/schemas/Money",
+            "description": "Spending net of refunds and reimbursements (the /analytics/expenses types), exact minor units"
+          },
+          "network": {
+            "type": "string"
+          },
+          "payment_method_id": {
+            "description": "Absent for the unspecified bucket",
+            "type": "string"
+          },
+          "share_bp": {
+            "description": "Share of this currency's total net spending, in basis points; 0 when that total is not positive",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "kind",
+          "archived",
+          "currency",
+          "net_expense",
+          "count",
+          "share_bp",
+          "drill_down_path"
+        ],
         "type": "object"
       },
       "PostHit": {
@@ -24698,10 +25016,12 @@
             }
           },
           {
+            "description": "A payment method ID, or none for transactions without a payment method",
             "explode": false,
             "in": "query",
             "name": "payment_method_id",
             "schema": {
+              "description": "A payment method ID, or none for transactions without a payment method",
               "type": "string"
             }
           },
@@ -25065,6 +25385,635 @@
         "summary": "Account transaction history",
         "tags": [
           "Accounts"
+        ]
+      }
+    },
+    "/admin/jobs": {
+      "get": {
+        "description": "Filters: status, type, from/to (UTC creation dates, inclusive). Pages with cursor and limit (at most 200; meta.next_cursor). Each job carries its attempts count and last_error_code, never its payload, result, error message or the person it acts for.",
+        "operationId": "admin-jobs-list",
+        "parameters": [
+          {
+            "description": "Only jobs with this status",
+            "explode": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "description": "Only jobs with this status",
+              "enum": [
+                "queued",
+                "running",
+                "succeeded",
+                "failed",
+                "dead",
+                "cancelled",
+                ""
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only jobs of this type, for example notifications.deliver",
+            "explode": false,
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "description": "Only jobs of this type, for example notifications.deliver",
+              "maxLength": 80,
+              "pattern": "^([a-z0-9_.]+)?$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Created on or after this UTC date (YYYY-MM-DD)",
+            "explode": false,
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "description": "Created on or after this UTC date (YYYY-MM-DD)",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Created on or before this UTC date (YYYY-MM-DD)",
+            "explode": false,
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "description": "Created on or before this UTC date (YYYY-MM-DD)",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "format": "int64",
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          },
+          {
+            "$ref": "#/components/parameters/ClientVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeListJobDTO"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Background jobs, newest first (admin; no payloads)",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/jobs/{id}": {
+      "get": {
+        "operationId": "admin-jobs-get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          },
+          {
+            "$ref": "#/components/parameters/ClientVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeJobDetail"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "One background job with its attempts (admin; no payloads)",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/jobs/{id}/retry": {
+      "post": {
+        "description": "Queues the job to run now with at least one more attempt. Requires Idempotency-Key: a retry with the same key returns the original result. A job that is not failed or dead answers 422 DOMAIN_RULE_VIOLATION with details[0].code job_not_retryable (params status, from, to); an unknown job answers 404.",
+        "operationId": "admin-jobs-retry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Client-generated unique key; retries return the original result",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Client-generated unique key; retries return the original result",
+              "maxLength": 128,
+              "minLength": 8,
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          },
+          {
+            "$ref": "#/components/parameters/ClientVersion"
+          },
+          {
+            "$ref": "#/components/parameters/CSRFToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeJobDTO"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Idempotent-Replayed": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Re-queue a failed or dead job (admin; audited)",
+        "tags": [
+          "Admin"
         ]
       }
     },
@@ -30168,6 +31117,319 @@
           }
         ],
         "summary": "Top merchants by net spending, per currency",
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/analytics/payment-methods": {
+      "get": {
+        "description": "Net spending (the /analytics/expenses types: expenses and your group expense shares, reduced by refunds and reimbursements) per payment method, with the same range, from/to and filters as /analytics/categories. Spending recorded without a payment method is the bucket with key and kind unspecified; a refund without its own payment method counts against the payment method of the purchase it refunds. Each currency is ranked separately (up to 100 per currency); amounts in different currencies are never added together. Archived payment methods keep their past spending.",
+        "operationId": "analytics-payment-methods",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "range",
+            "schema": {
+              "default": "this_month",
+              "enum": [
+                "today",
+                "yesterday",
+                "this_week",
+                "last_week",
+                "this_month",
+                "last_month",
+                "this_year",
+                "last_year",
+                "last_7_days",
+                "last_30_days",
+                "last_90_days",
+                ""
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "YYYY-MM-DD (custom range; overrides range)",
+            "explode": false,
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "description": "YYYY-MM-DD (custom range; overrides range)",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated",
+            "explode": false,
+            "in": "query",
+            "name": "account_id",
+            "schema": {
+              "description": "Comma-separated",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Comma-separated",
+            "explode": false,
+            "in": "query",
+            "name": "category_id",
+            "schema": {
+              "description": "Comma-separated",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "currency",
+            "schema": {
+              "pattern": "^([A-Z]{3})?$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated",
+            "explode": false,
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "description": "Comma-separated",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Include pending transactions (posted only by default)",
+            "explode": false,
+            "in": "query",
+            "name": "include_pending",
+            "schema": {
+              "description": "Include pending transactions (posted only by default)",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Only accounts marked include_in_overview",
+            "explode": false,
+            "in": "query",
+            "name": "overview_only",
+            "schema": {
+              "description": "Only accounts marked include_in_overview",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Comma-separated",
+            "explode": false,
+            "in": "query",
+            "name": "merchant_id",
+            "schema": {
+              "description": "Comma-separated",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Comma-separated tag names (any)",
+            "explode": false,
+            "in": "query",
+            "name": "tag",
+            "schema": {
+              "description": "Comma-separated tag names (any)",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "display_currency",
+            "schema": {
+              "pattern": "^([A-Z]{3})?$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MontraClient"
+          },
+          {
+            "$ref": "#/components/parameters/ClientVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopePaymentMethodReport"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestID"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Net spending by payment method, per currency",
         "tags": [
           "Analytics"
         ]
@@ -100219,10 +101481,12 @@
             }
           },
           {
+            "description": "A payment method ID, or none for transactions without a payment method",
             "explode": false,
             "in": "query",
             "name": "payment_method_id",
             "schema": {
+              "description": "A payment method ID, or none for transactions without a payment method",
               "type": "string"
             }
           },
@@ -101288,10 +102552,12 @@
             }
           },
           {
+            "description": "A payment method ID, or none for transactions without a payment method",
             "explode": false,
             "in": "query",
             "name": "payment_method_id",
             "schema": {
+              "description": "A payment method ID, or none for transactions without a payment method",
               "type": "string"
             }
           },

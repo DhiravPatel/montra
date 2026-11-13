@@ -161,11 +161,16 @@ func (s *Service) Search(ctx context.Context, in Input) (*Results, error) {
 	}
 	err = s.DB.WithUserTx(ctx, uid, func(tx pgx.Tx) error {
 		if want("transactions") {
+			// Driven from the caller's visible accounts (as the transaction list is):
+			// an OR around t.user_id kept it from bounding the scan, which then
+			// walked every user's transactions (docs/QUERY_PLAN_REVIEW.md, R-A).
+			// Transactions are only ever recorded in their owner's accounts, so the
+			// inner join drops nothing RLS would show.
 			rows, err := tx.Query(ctx, `select t.id, t.description, m.name, t.amount_minor, t.currency, t.type, t.local_date, t.account_id, t.user_id <> $1
-				from transactions t left join merchants m on m.id = t.merchant_id
+				from transactions t join financial_accounts a on a.id = t.account_id
+				left join merchants m on m.id = t.merchant_id
 				where t.deleted_at is null
-				  and (t.user_id = $1 or exists (select 1 from financial_accounts sa where sa.id = t.account_id and sa.shared_with_group
-				       and sa.group_id is not null and montra.is_group_member(sa.group_id)))
+				  and (t.user_id = $1 or (a.shared_with_group and a.group_id is not null and montra.is_group_member(a.group_id)))
 				  and (t.description ilike $2 escape '\' or t.notes ilike $2 escape '\' or m.name ilike $2 escape '\')
 				order by `+txOrder+` limit $3`, uid, pat, limit)
 			if err != nil {

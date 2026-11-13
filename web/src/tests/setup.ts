@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, configure } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { forgetCsrfToken } from '@/shared/api/csrf';
+import { loadAllCatalogs } from '@/shared/i18n/catalogs';
 import { resetSessionRecoveryForTests } from '@/shared/api/session-recovery';
 import { resetTestBackend } from './msw/backend';
 import { server } from './msw/server';
@@ -44,6 +45,10 @@ function clearCookies() {
     if (name) document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
   }
 }
+
+// The app loads message catalogs with its routes; tests render any screen
+// directly, so every namespace in both languages is loaded up front.
+await loadAllCatalogs();
 
 beforeAll(() => {
   // Any request without a handler fails the test (MSW 3 option name).

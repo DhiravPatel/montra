@@ -10,6 +10,8 @@ import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/auth/auth_controller.dart';
 import 'package:montra_mobile/core/auth/auth_state.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/banners.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
 import 'package:montra_mobile/core/widgets/form_errors.dart';
@@ -306,7 +308,10 @@ class _TwoStepScreenState extends ConsumerState<TwoStepScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(l10n.twoStepTitle)),
+        appBar: AppBar(
+          actions: const <Widget>[HelpGuideButton(HelpGuide.twoStep)],
+          title: Text(l10n.twoStepTitle),
+        ),
         body: _view == _View.setup || _view == _View.recoveryCodes
             ? SecureWindow(child: body)
             : body,

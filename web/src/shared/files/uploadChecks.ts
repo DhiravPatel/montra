@@ -1,4 +1,5 @@
 import { isApiError } from '@/shared/api/errors';
+import { imageKind, MAX_IMAGE_INPUT_BYTES } from '@/shared/files/imageCompression';
 import { type FilePurpose, FileTooLargeError, filePolicies } from '@/shared/files/upload';
 import { describeError } from '@/shared/i18n/describeError';
 import type { Translate } from '@/shared/i18n/types';
@@ -50,7 +51,13 @@ export type FileProblem = 'empty' | 'tooLarge' | 'type';
 export function fileProblem(file: File, purpose: FilePurpose): FileProblem | null {
   if (!acceptedExtensions(purpose).has(extensionOf(file.name))) return 'type';
   if (file.size === 0) return 'empty';
-  if (file.size > filePolicies[purpose].maxBytes) return 'tooLarge';
+  // Photos are scaled down before upload, so a large one usually fits once prepared;
+  // uploadFile checks the prepared size against the purpose's limit.
+  const limit =
+    imageKind(file) && filePolicies[purpose].accept.includes('image/')
+      ? Math.max(MAX_IMAGE_INPUT_BYTES, filePolicies[purpose].maxBytes)
+      : filePolicies[purpose].maxBytes;
+  if (file.size > limit) return 'tooLarge';
   return null;
 }
 

@@ -10,6 +10,8 @@ import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/finance/finance_refresh.dart';
 import 'package:montra_mobile/core/formatting/dates.dart';
 import 'package:montra_mobile/core/formatting/relative_time.dart';
+import 'package:montra_mobile/core/saved_filters/saved_filters.dart';
+import 'package:montra_mobile/core/saved_filters/saved_filters_sheet.dart';
 import 'package:montra_mobile/core/widgets/detail_rows.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
 import 'package:montra_mobile/core/widgets/error_messages.dart';
@@ -158,6 +160,38 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
   }
 
+  /// Saved searches: save this search, or run or delete one.
+  Future<void> _openSaved() async {
+    final AppLocalizations l10n = context.l10n;
+    final AppliedSavedFilter? chosen = await showSavedFiltersSheet(
+      context,
+      scope: SavedFilterScope.search,
+      current: _valid
+          ? <String, Object?>{'q': _text, 'scope': _scope, 'sort': _sort}
+          : null,
+      describe: (Map<String, Object?> json) {
+        final SavedSearch? saved = SavedSearch.fromJson(json);
+        return saved == null
+            ? null
+            : '${l10n.savedFiltersSearchFor(saved.query)} · '
+                  '${searchScopeLabel(l10n, saved.scope)}';
+      },
+    );
+    if (chosen == null || !mounted) {
+      return;
+    }
+    final SavedSearch saved = SavedSearch.fromJson(chosen.filter)!;
+    _query
+      ..text = saved.query
+      ..selection = TextSelection.collapsed(offset: saved.query.length);
+    setState(() {
+      _scope = saved.scope;
+      _sort = saved.sort;
+    });
+    showSnack(context, l10n.savedFiltersApplied(chosen.name));
+    await _submit();
+  }
+
   Future<void> _pickSort() async {
     final AppLocalizations l10n = context.l10n;
     final String? sort = await showOptionSheet<String>(
@@ -181,6 +215,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.searchTitle),
+        actions: <Widget>[
+          IconButton(
+            tooltip: l10n.savedSearchesOpen,
+            icon: const Icon(Icons.bookmarks_outlined),
+            onPressed: _openSaved,
+          ),
+        ],
         bottom: _loading
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
@@ -466,4 +507,49 @@ class _ResultsList extends StatelessWidget {
       children: children,
     );
   }
+}
+
+/// A saved search (`scope: search`): the `q`, `scope` and `sort` of
+/// `GET /search`, as the web saves them too.
+@immutable
+class SavedSearch {
+  /// Creates the search.
+  const SavedSearch(this.query, this.scope, this.sort);
+
+  /// Reads a saved filter; null when it has no usable query. An unknown
+  /// scope or sort falls back to the defaults.
+  static SavedSearch? fromJson(Map<String, Object?> json) {
+    final Object? q = json['q'];
+    if (q is! String) {
+      return null;
+    }
+    final String query = q.trim().split(RegExp(r'\s+')).join(' ');
+    if (query.length < SearchApi.minQueryLength ||
+        query.length > SearchApi.maxQueryLength) {
+      return null;
+    }
+    final Set<String> scopes = <String>{
+      'all',
+      for (final SearchSection s in SearchSection.values) s.wire,
+    };
+    final Object? scope = json['scope'];
+    final Object? sort = json['sort'];
+    return SavedSearch(
+      query,
+      scope is String && scopes.contains(scope) ? scope : 'all',
+      sort is String &&
+              const <String>{'relevance', 'name', 'recent'}.contains(sort)
+          ? sort
+          : 'relevance',
+    );
+  }
+
+  /// The text searched for.
+  final String query;
+
+  /// `all` or one section.
+  final String scope;
+
+  /// `relevance`, `name` or `recent`.
+  final String sort;
 }

@@ -134,7 +134,7 @@ func (s *Service) Register(a Adapter) {
 	if s.adapters == nil {
 		s.adapters = map[string]Adapter{}
 	}
-	s.adapters[a.Info().ID] = a
+	s.adapters[a.Info().ID] = guard(a)
 }
 
 func (s *Service) adapter(id string) (Adapter, bool) {

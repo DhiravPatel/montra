@@ -11243,5 +11243,364 @@
   "onboardingDigestWeekly": "Weekly summary",
   "onboardingDigestWeeklyHelp": "Optional emails are held and sent together at 8:00 on Mondays.",
   "onboardingDigestSecurity": "Security and account emails, such as sign-in alerts, are always sent right away. You can choose for each kind of email later in notification settings.",
-  "profileEditVisibilityBlocked": "People you block never see your profile, whatever you choose here, and you don't see theirs."
+  "profileEditVisibilityBlocked": "People you block never see your profile, whatever you choose here, and you don't see theirs.",
+  "savedFiltersOpen": "Saved filters",
+  "savedSearchesOpen": "Saved searches",
+  "savedFiltersTitle": "Saved filters",
+  "savedSearchesTitle": "Saved searches",
+  "savedFiltersSaveCurrent": "Save current filters",
+  "savedSearchesSaveCurrent": "Save this search",
+  "savedFiltersNothingToSave": "Search or choose filters first, then save them here.",
+  "savedSearchesNothingToSave": "Type at least 2 characters to save a search.",
+  "savedFiltersEmpty": "Nothing saved yet. What you save is kept with your account, so it’s on the web too.",
+  "savedFiltersSaveTitle": "Save filters",
+  "savedSearchesSaveTitle": "Save search",
+  "savedFiltersNameLabel": "Name",
+  "savedFiltersNameHelp": "For example “Groceries this month”. Up to 80 characters.",
+  "savedFiltersNameRequired": "Enter a name.",
+  "savedFiltersNameTooLong": "Use 80 characters or fewer.",
+  "savedFiltersNameTaken": "You already saved one with this name. Choose another name.",
+  "savedFiltersFilterInvalid": "These filters can’t be saved. Change them and try again.",
+  "savedFiltersSaveAction": "Save",
+  "savedFiltersSaved": "Saved “{name}”.",
+  "@savedFiltersSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedFiltersApplied": "Showing “{name}”.",
+  "@savedFiltersApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedFiltersDeleteTooltip": "Delete “{name}”",
+  "@savedFiltersDeleteTooltip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedFiltersDeleteTitle": "Delete “{name}”?",
+  "@savedFiltersDeleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedFiltersDeleteBody": "It’s removed from your account on every device. Your records don’t change.",
+  "savedFiltersDeleted": "Deleted “{name}”.",
+  "@savedFiltersDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedFiltersAlreadyGone": "“{name}” was already deleted.",
+  "@savedFiltersAlreadyGone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "savedFiltersUnusable": "Can’t be used in this version of the app.",
+  "savedFiltersSearchFor": "Search: “{query}”",
+  "@savedFiltersSearchFor": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "savedFiltersCount": "{count, plural, =0{No filters} =1{1 filter} other{{count} filters}}",
+  "@savedFiltersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "helpGuideTopicStart": "Getting started",
+  "helpGuideTopicCalculations": "How Montra calculates",
+  "helpGuideTopicStatements": "Statements and reconciliation",
+  "helpGuideTopicAccount": "Privacy, security and limits",
+  "helpGuideTopicTroubleshooting": "Troubleshooting",
+  "helpGuidesTitle": "Guides",
+  "helpGuidesDescription": "Step-by-step guides and how Montra works out your numbers.",
+  "helpGuidesSearch": "Search the guides",
+  "helpGuidesSearchHelp": "Searches titles and text in the current language.",
+  "helpGuidesNoResults": "No guide matches “{query}”. Try another word, or send us a request below.",
+  "@helpGuidesNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "helpGuidesResultCount": "{count, plural, =1{1 guide found} other{{count} guides found}}",
+  "@helpGuidesResultCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "helpGuidesOpen": "Read the guide",
+  "helpGuidesBack": "All guides",
+  "helpGuidesOnThisPage": "On this page",
+  "helpGuidesRelated": "Where to do this",
+  "helpGuidesNotFound": "This guide doesn’t exist. It may have moved.",
+  "helpGuidesContact": "Didn’t find an answer? Send a support request.",
+  "helpGuidesStatus": "Service status",
+  "helpGuidesStatusHelp": "Check whether Montra is having problems right now.",
+  "helpGuidesAffordance": "How this works",
+  "helpGuidesAffordanceFor": "How this works: {guide}",
+  "@helpGuidesAffordanceFor": {
+    "placeholders": {
+      "guide": {
+        "type": "String"
+      }
+    }
+  },
+  "helpGuideGettingStartedTitle": "Getting started without a bank link",
+  "helpGuideGettingStartedSummary": "Set up accounts, record or import what happens, and plan ahead. Montra never needs your bank login.",
+  "helpGuideGettingStartedLink": "Add an account",
+  "helpGuideGettingStartedHowTitle": "How Montra works",
+  "helpGuideGettingStartedHowB1": "Montra doesn’t connect to your bank. You tell it what happens: you add your accounts, then record transactions as they happen or import a statement your bank gives you. Your numbers are “tracked”, not verified by a bank.",
+  "helpGuideGettingStartedHowB2": "The first-time setup is optional and you can skip any step after the welcome. Nothing in it asks for bank details.",
+  "helpGuideGettingStartedStepsTitle": "First steps",
+  "helpGuideGettingStartedStepsB1": "Add your accounts: cash, bank, savings, card, wallet, UPI, loan and more. Enter today’s balance as the opening balance (for a card or loan, what you owe).",
+  "helpGuideGettingStartedStepsB2": "Record expenses and income as they happen, and use a transfer when money moves between your own accounts.",
+  "helpGuideGettingStartedStepsB3": "To bring in many transactions at once, import a statement file (CSV, XLSX, OFX or QFX). To keep a bill, add a photo of the receipt.",
+  "helpGuideGettingStartedStepsB4": "Add salary, rent and other repeating money as recurring transactions or bills, so they show on the calendar before they’re due.",
+  "helpGuideGettingStartedStepsB5": "Then set a budget or a savings goal when you’re ready.",
+  "helpGuideGettingStartedAccurateTitle": "Keeping it accurate",
+  "helpGuideGettingStartedAccurateB1": "Now and then, compare a balance with your bank app or statement. If it’s different, reconcile the account or record a balance adjustment with a reason; the adjustment keeps a history and never counts as income or spending.",
+  "helpGuideNoBankTitle": "Why don’t I see my bank?",
+  "helpGuideNoBankSummary": "Montra can’t connect to any bank yet. Here’s why, and what to use instead.",
+  "helpGuideNoBankLink": "See connected services",
+  "helpGuideNoBankTodayTitle": "No bank linking yet",
+  "helpGuideNoBankTodayB1": "Montra doesn’t link to any bank today, so no bank appears in the list. The connected services page shows the one option being considered, Account Aggregator (India), as unavailable: it needs an approved partner, registration and a legal review first.",
+  "helpGuideNoBankTodayB2": "It isn’t a setting you’ve missed, and it isn’t a paid feature. When a connection becomes available, it will appear on that page.",
+  "helpGuideNoBankNeverTitle": "What Montra will never do",
+  "helpGuideNoBankNeverB1": "Ask for your bank password, PIN, card number or OTP.",
+  "helpGuideNoBankNeverB2": "Read your SMS or notifications, or scrape your bank’s website.",
+  "helpGuideNoBankNeverB3": "Move money or make payments for you.",
+  "helpGuideNoBankInsteadTitle": "What to use instead",
+  "helpGuideNoBankInsteadB1": "Import the statement file your bank lets you download.",
+  "helpGuideNoBankInsteadB2": "Add receipts from photos, and turn them into transactions.",
+  "helpGuideNoBankInsteadB3": "Set up recurring transactions so regular income and bills record themselves.",
+  "helpGuideBalancesTitle": "How balances are calculated",
+  "helpGuideBalancesSummary": "Opening balance plus every counted transaction, with transfers and adjustments kept apart from spending.",
+  "helpGuideBalancesLink": "Go to accounts",
+  "helpGuideBalancesFormulaTitle": "The balance",
+  "helpGuideBalancesFormulaB1": "An account’s balance is its opening balance plus every posted and pending transaction in it. Drafts and deleted (voided) transactions don’t change it. Restoring a deleted transaction counts it again.",
+  "helpGuideBalancesFormulaB2": "Credit cards and loans are money you owe, so spending on them increases what you owe.",
+  "helpGuideBalancesNotSpendingTitle": "What isn’t income or spending",
+  "helpGuideBalancesNotSpendingB1": "Transfers between your own accounts change both balances but are never income or spending. A transfer fee is recorded as its own expense.",
+  "helpGuideBalancesNotSpendingB2": "Balance adjustments correct a balance to match reality. They keep a history with your reason and never count as income or spending.",
+  "helpGuideBalancesNotSpendingB3": "Refunds reduce spending instead of counting as income.",
+  "helpGuideBalancesCurrenciesTitle": "Several currencies",
+  "helpGuideBalancesCurrenciesB1": "Amounts in different currencies are never simply added together. Totals are shown per currency, unless you choose a display currency; then Montra converts them and tells you which rate it used.",
+  "helpGuideBalancesCurrenciesB2": "An account shared with you by your household is read-only for you, and its balance is the owner’s record.",
+  "helpGuideBudgetsTitle": "How budgets are calculated",
+  "helpGuideBudgetsSummary": "What counts as spent, how pace and projections work, and how refunds and rollover change a budget.",
+  "helpGuideBudgetsLink": "Go to budgets",
+  "helpGuideBudgetsSpentTitle": "What counts as spent",
+  "helpGuideBudgetsSpentB1": "A budget adds up the expenses in its period that match it: its accounts, categories and merchants, and only in the budget’s currency. Transactions in other currencies aren’t counted; the budget tells you how many were left out.",
+  "helpGuideBudgetsSpentB2": "Transfers and balance adjustments never count.",
+  "helpGuideBudgetsSpentB3": "Pending transactions count only if the budget includes pending.",
+  "helpGuideBudgetsSpentB4": "Your share of group expenses counts when the budget includes group shares (the default).",
+  "helpGuideBudgetsRefundsTitle": "Refunds",
+  "helpGuideBudgetsRefundsB1": "When “refunds restore the budget” is on (the default), refunds and reimbursements are subtracted from what you spent. Spent never goes below zero. When it’s off, refunds don’t change the budget.",
+  "helpGuideBudgetsPaceTitle": "Pace and projection",
+  "helpGuideBudgetsPaceB1": "Pace compares what you’ve spent with an even pace through the period: the limit × days passed ÷ days in the period.",
+  "helpGuideBudgetsPaceB2": "On track: within 10% of the even pace.",
+  "helpGuideBudgetsPaceB3": "Spending faster than expected: more than 10% above it.",
+  "helpGuideBudgetsPaceB4": "Spending slower than expected: more than 10% below it.",
+  "helpGuideBudgetsPaceB5": "Over the limit: you’ve spent more than the limit.",
+  "helpGuideBudgetsPaceB6": "The projection is what you’d spend by the end of the period at your current pace. It’s an estimate, not a promise. The daily amount left is what remains ÷ days left.",
+  "helpGuideBudgetsRolloverTitle": "Rollover",
+  "helpGuideBudgetsRolloverB1": "Rollover carries money from one period into the next. The carried amount is added to (or taken from) the next period’s limit.",
+  "helpGuideBudgetsRolloverB2": "Carry unused: what you didn’t spend is added.",
+  "helpGuideBudgetsRolloverB3": "Carry overspend: what you overspent is taken off.",
+  "helpGuideBudgetsRolloverB4": "Both: either one, whichever happened.",
+  "helpGuideBudgetsRolloverB5": "An optional cap limits how much is carried either way. Budgets with a custom period don’t roll over. Editing a budget applies from the current period onward.",
+  "helpGuideBudgetsAlertsTitle": "Alerts",
+  "helpGuideBudgetsAlertsB1": "Each threshold you choose (for example 50%, 80% and 100%) alerts you once per period. A forecast alert warns when your pace would take you over the limit. You can dismiss or snooze alerts, and an empty threshold list turns threshold alerts off.",
+  "helpGuideRecurringTitle": "Recurring, bills and subscriptions",
+  "helpGuideRecurringSummary": "How repeating transactions are scheduled and posted, how bill status works, and how subscription totals and detection are worked out.",
+  "helpGuideRecurringLink": "Go to bills and recurring",
+  "helpGuideRecurringScheduleTitle": "Schedules",
+  "helpGuideRecurringScheduleB1": "Every date is worked out from the start date, so a rule on the 31st lands on 31 January, 28 or 29 February and 31 March. Montra checks schedules about every 15 minutes and catches up after any downtime.",
+  "helpGuideRecurringScheduleB2": "Automatic posting needs a fixed amount and an account, and records exactly one transaction per occurrence. Otherwise you confirm each occurrence, or skip, postpone, change its amount or link a transaction you already recorded.",
+  "helpGuideRecurringBillsTitle": "Bills",
+  "helpGuideRecurringBillsB1": "A bill’s status comes from its due date and payments: overdue, due today, due soon, upcoming or paid. Mark it paid by linking the real payment (Montra suggests matching transactions) or by recording a new one. Reminders arrive the number of days before that you chose.",
+  "helpGuideRecurringSubscriptionsTitle": "Subscriptions",
+  "helpGuideRecurringSubscriptionsB1": "Monthly and yearly totals convert each price to a common cycle: a yearly plan counts as one twelfth of its price per month, and a weekly one as 52 payments a year. Totals are kept separate per currency.",
+  "helpGuideRecurringSubscriptionsB2": "Once a day, Montra looks for charges at the same merchant at a regular interval (weekly to yearly) with similar amounts, and shows them for review. You confirm or dismiss each one. Montra never cancels anything for you; it gives you a checklist and records the cancellation once the provider confirms it.",
+  "helpGuideGoalsTitle": "How goals are calculated",
+  "helpGuideGoalsSummary": "What counts as saved, how milestones are reached and what the forecast assumes.",
+  "helpGuideGoalsLink": "Go to goals",
+  "helpGuideGoalsSavedTitle": "Saved so far",
+  "helpGuideGoalsSavedB1": "Saved is the starting amount plus recorded contributions minus recorded withdrawals. Planned contributions don’t count until you record them. A withdrawal can’t be more than what’s saved.",
+  "helpGuideGoalsSavedB2": "Linking a contribution to a real transaction marks it verified; one transaction can back only one contribution. In a shared goal, contributions a member hides still count towards progress.",
+  "helpGuideGoalsMilestonesTitle": "Milestones",
+  "helpGuideGoalsMilestonesB1": "Milestones are reached at 25%, 50%, 75% and 100% of the target unless you set your own. Each one notifies the goal’s members once. Reaching the target marks the goal achieved.",
+  "helpGuideGoalsForecastTitle": "Forecast",
+  "helpGuideGoalsForecastB1": "The forecast shows how much you’d need to add each month (or week) to reach the target by its date, and when you’d reach it at your recent pace: what you saved in the last 90 days. If you planned contributions, it also shows when that plan would finish. It uses exact amounts with no interest or growth.",
+  "helpGuideGroupBalancesTitle": "How group balances are calculated",
+  "helpGuideGroupBalancesSummary": "Who owes whom: what each person paid, their share, and settlements that were confirmed.",
+  "helpGuideGroupBalancesLink": "Go to groups",
+  "helpGuideGroupBalancesNetTitle": "Your net balance",
+  "helpGuideGroupBalancesNetB1": "For each person: what they paid, minus their share of the expenses, plus settlements they paid, minus settlements they received. A positive number means others owe them; a negative number means they owe.",
+  "helpGuideGroupBalancesNetB2": "Splits (equal, exact amounts, percentages, shares or items) are worked out exactly in the smallest unit of the currency, and any leftover paisa or cent goes to members in a fixed order, so totals always add up.",
+  "helpGuideGroupBalancesSettlementsTitle": "Settlements",
+  "helpGuideGroupBalancesSettlementsB1": "Montra never moves money. When you record that you paid someone, it counts in balances only after they confirm it; until then it shows as pending. Settlement suggestions propose fewer payments that clear the same debts, but they don’t change any record.",
+  "helpGuideGroupBalancesPersonalTitle": "Your own spending",
+  "helpGuideGroupBalancesPersonalB1": "When you record a group payment in your own account, only your share counts as your spending. Expenses in another currency are converted with the rate typed in or Montra’s rate for the expense date.",
+  "helpGuideGroupBalancesPersonalB2": "The home screen shows only your own net balance in each group. Group members never see your personal accounts or transactions.",
+  "helpGuideImportsTitle": "Importing statements and fixing a failed import",
+  "helpGuideImportsSummary": "Upload a statement file, check the columns, review rows and duplicates, and recover when something goes wrong.",
+  "helpGuideImportsLink": "Go to imports",
+  "helpGuideImportsStepsTitle": "How an import works",
+  "helpGuideImportsStepsB1": "Download a statement from your bank as CSV, XLSX, OFX or QFX, and choose the account it belongs to. The statement must be in the account’s currency.",
+  "helpGuideImportsStepsB2": "Check the column mapping: which column is the date, amount or description, the date format and whether spending is shown as negative.",
+  "helpGuideImportsStepsB3": "Review the rows. Rows already imported, and possible duplicates of transactions you entered, are flagged. Correct a value or skip a row.",
+  "helpGuideImportsStepsB4": "Confirm. Montra creates the transactions in the background and notifies you when it’s done.",
+  "helpGuideImportsFailedTitle": "If the file can’t be read",
+  "helpGuideImportsFailedB1": "The import page says why. Common reasons and fixes:",
+  "helpGuideImportsFailedB2": "Unsupported or damaged file: download the statement again as CSV or XLSX and upload that.",
+  "helpGuideImportsFailedB3": "Empty, too many rows or too many columns: split the period into smaller statements. One file can have up to 20,000 rows and 64 columns.",
+  "helpGuideImportsFailedB4": "Currency doesn’t match: choose the account in the statement’s currency, or create one.",
+  "helpGuideImportsFailedB5": "PDF statements: PDFs can’t be read today. Download CSV, XLSX, OFX or QFX instead.",
+  "helpGuideImportsRowsTitle": "If some rows fail",
+  "helpGuideImportsRowsB1": "Each refused row names the value to fix, such as a date or amount that can’t be read. Correct it in the row and confirm again. If the import finished with errors, retry the failed rows once you’ve fixed them.",
+  "helpGuideImportsRowsB2": "Imported the wrong file or into the wrong account? Undo the import: it deletes the transactions it created, except ones you edited since.",
+  "helpGuideReconciliationTitle": "Reconciling an account",
+  "helpGuideReconciliationSummary": "Match statement lines with your transactions and check a balance against your statement.",
+  "helpGuideReconciliationLink": "Go to accounts",
+  "helpGuideReconciliationMatchesTitle": "Matching",
+  "helpGuideReconciliationMatchesB1": "After an import, Montra suggests matches: a statement line and the transaction you already entered for it, a pending transaction and its posted version, or a manual entry and an imported one. Each suggestion shows how sure it is and why.",
+  "helpGuideReconciliationMatchesB2": "Confirming a match keeps one record, so nothing is counted twice. You can also match a line by hand with one or more transactions whose amounts add up, and undo a match later.",
+  "helpGuideReconciliationMatchesB3": "Both sides must be money in or both money out, and the amounts must add up exactly.",
+  "helpGuideReconciliationMatchesB4": "A transaction can be in only one match.",
+  "helpGuideReconciliationMatchesB5": "A pair more than a week apart is shown without confidence: check it yourself.",
+  "helpGuideReconciliationBalanceTitle": "Balance check",
+  "helpGuideReconciliationBalanceB1": "Enter the balance on your statement (for a card, the amount owed) and its date. Montra compares it with the account on that date and records whether it balanced. A balanced check is remembered as the last reconciled date.",
+  "helpGuideReconciliationBalanceB2": "If it doesn’t balance, look for missing or duplicate transactions around that date, unconfirmed matches and pending items. If the difference is real, record a balance adjustment with a reason.",
+  "helpGuidePrivacyTitle": "Privacy, export and deletion",
+  "helpGuidePrivacySummary": "Choose optional consents, download a copy of your data, pause your account or delete it.",
+  "helpGuidePrivacyLink": "Go to privacy and data",
+  "helpGuidePrivacyConsentsTitle": "Consents",
+  "helpGuidePrivacyConsentsB1": "The terms and privacy policy are accepted at sign-up. Everything else (location, notifications, and others) is optional, and you can turn it off at any time. Some choices are only recorded today because the feature they’d enable doesn’t exist yet.",
+  "helpGuidePrivacyConsentsB2": "Montra’s staff have no default access to your financial data, and logs never contain your amounts, merchants or descriptions.",
+  "helpGuidePrivacyExportTitle": "Download your data",
+  "helpGuidePrivacyExportB1": "Ask for an export and confirm it’s you. Montra prepares a ZIP file with your data in the background and notifies you when it’s ready. The download link stays valid for 7 days.",
+  "helpGuidePrivacyDeactivateTitle": "Deactivate",
+  "helpGuidePrivacyDeactivateB1": "Deactivating signs you out everywhere and keeps your data. Signing in again reactivates the account.",
+  "helpGuidePrivacyDeleteTitle": "Delete your account",
+  "helpGuidePrivacyDeleteB1": "Deletion starts after a 7-day grace period, and you can cancel it until then. Montra shows what will happen to each group first. When it runs, your personal records and files are deleted, groups you own are handed over or archived, and what you shared in groups and communities stays as “Deleted member”. A confirmation is emailed to you.",
+  "helpGuidePrivacyDeleteB2": "Download an export first if you want to keep a copy.",
+  "helpGuideTwoStepTitle": "Two-step verification and recovery",
+  "helpGuideTwoStepSummary": "Protect sign-in with an authenticator app, and keep recovery codes for when your phone isn’t available.",
+  "helpGuideTwoStepLink": "Go to security settings",
+  "helpGuideTwoStepSetupTitle": "Turning it on",
+  "helpGuideTwoStepSetupB1": "In security settings, choose to turn on two-step verification and confirm your password.",
+  "helpGuideTwoStepSetupB2": "Scan the QR code (or type the key) into an authenticator app, then enter the 6-digit code it shows.",
+  "helpGuideTwoStepSetupB3": "Save the 10 recovery codes somewhere safe and offline. Each code works once.",
+  "helpGuideTwoStepSignInTitle": "Signing in",
+  "helpGuideTwoStepSignInB1": "After your password, enter the current code from the app, or one of your recovery codes. Codes change every 30 seconds and each code can be used only once, so if one is refused, wait for the next.",
+  "helpGuideTwoStepSignInB2": "Sensitive actions (changing two-step verification, new recovery codes, exporting data, deactivating or deleting the account) ask you to confirm it’s you again if you haven’t in the last few minutes.",
+  "helpGuideTwoStepRecoveryTitle": "Lost your phone?",
+  "helpGuideTwoStepRecoveryB1": "Sign in with a recovery code. Then, in security settings, turn two-step verification off and on again to set up your new phone, or create new recovery codes. New codes replace all the old ones.",
+  "helpGuideTwoStepRecoveryB2": "Montra staff can’t see your codes or skip the second step for you, so without your app or a recovery code you can’t sign in. Keep the recovery codes safe.",
+  "helpGuideTwoStepRecoveryB3": "Montra emails you whenever two-step verification is turned on or off.",
+  "helpGuideFairUseTitle": "Fair-use limits",
+  "helpGuideFairUseSummary": "The same limits apply to everyone. They keep Montra fast; they are never paid tiers.",
+  "helpGuideFairUseLink": "See the limits and your usage",
+  "helpGuideFairUseWhatTitle": "What’s limited",
+  "helpGuideFairUseWhatB1": "Every feature is free, and the limits are the same for every person. The limits page shows the exact values and how much storage you use. The usual defaults are:",
+  "helpGuideFairUseWhatB2": "Storage: 2 GB of files in total, and up to 20 MB per file (some kinds of file have a lower limit).",
+  "helpGuideFairUseWhatB3": "Imports: up to 20,000 rows per statement.",
+  "helpGuideFairUseWhatB4": "Open records: 500 recurring rules, 200 bills, 500 subscriptions and 200 goals.",
+  "helpGuideFairUseWhatB5": "Support: 10 new requests and 10 messages a day.",
+  "helpGuideFairUseReachedTitle": "When you reach a limit",
+  "helpGuideFairUseReachedB1": "Montra tells you which limit you reached. For open records, archive, end or delete ones you no longer need. For storage, delete files you don’t need. If you’re asked to wait, Montra shows how long; daily caps reset the next day.",
+  "helpGuideFairUseReachedB2": "Before uploading, Montra makes large photos smaller, so receipts and pictures use less of your storage. PDFs are uploaded as they are.",
+  "helpGuideTroubleshootingTitle": "Troubleshooting sign-in, sync and notifications",
+  "helpGuideTroubleshootingSummary": "What to check when you can’t sign in, your data looks out of date, or notifications don’t arrive.",
+  "helpGuideTroubleshootingLink": "Go to notification settings",
+  "helpGuideTroubleshootingSignInTitle": "Can’t sign in",
+  "helpGuideTroubleshootingSignInB1": "New account? Open the link in the verification email first. You can ask for a new link; links expire after 24 hours.",
+  "helpGuideTroubleshootingSignInB2": "The error doesn’t say whether the email or the password is wrong, to protect accounts. If you’re unsure, reset your password; the reset link works for 1 hour, and only the newest one counts.",
+  "helpGuideTroubleshootingSignInB3": "After several failed attempts you’ll be asked to wait; the screen shows how long. Resetting your password also works.",
+  "helpGuideTroubleshootingSignInB4": "Two-step code refused? Make sure your phone sets its time automatically, and wait for a new code. Or use a recovery code.",
+  "helpGuideTroubleshootingSignInB5": "On the web, Montra needs cookies for this site. Changing or resetting your password signs you out on your other devices.",
+  "helpGuideTroubleshootingSyncTitle": "Data looks out of date",
+  "helpGuideTroubleshootingSyncB1": "There is no bank sync: Montra shows what you’ve recorded or imported. The web and the app read the same account, so a change on one appears on the other when the screen refreshes. Reload the page, or pull down to refresh in the app.",
+  "helpGuideTroubleshootingSyncB2": "Some figures update in the background a moment after a change: budget progress, imports, recurring occurrences (about every 15 minutes) and subscription suggestions (daily).",
+  "helpGuideTroubleshootingSyncB3": "When your phone is offline, the app shows a banner and changes can’t be saved. Try again when you’re back online: the same save is never recorded twice.",
+  "helpGuideTroubleshootingNotificationsTitle": "Notifications don’t arrive",
+  "helpGuideTroubleshootingNotificationsB1": "Check notification settings: each kind of notification can be on or off for in-app, email and browser notifications. Security and account messages are always on.",
+  "helpGuideTroubleshootingNotificationsB2": "Quiet hours delay email and push until they end, and a daily or weekly digest collects non-urgent email (sent at 08:00 your time; weekly on Mondays).",
+  "helpGuideTroubleshootingNotificationsB3": "Browser notifications need your browser’s permission, and the server must support them; if the option isn’t offered, they aren’t available yet. The phone app doesn’t receive push notifications yet: open the notification centre instead.",
+  "helpGuideTroubleshootingNotificationsB4": "No email? Check your spam folder. Using an unsubscribe link turns off only that kind of email.",
+  "helpGuideTroubleshootingStillStuckTitle": "Still stuck?",
+  "helpGuideTroubleshootingStillStuckB1": "Send a support request and include the reference shown with the error, if there was one. Never include card numbers, PINs, OTPs or passwords.",
+  "analyticsPaymentMethodsTitle": "Payment methods",
+  "analyticsPaymentMethodsSubtitle": "How you paid for your spending",
+  "analyticsPaymentMethodUnspecified": "No payment method",
+  "analyticsPaymentMethodArchived": "{name} (archived)",
+  "@analyticsPaymentMethodArchived": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsNoPaymentMethodSpending": "No spending for {period}.",
+  "@analyticsNoPaymentMethodSpending": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsPaymentMethodsSummary": "{name} had the most spending: {amount}. {count, plural, =1{1 payment method shown.} other{{count} payment methods shown.}}",
+  "@analyticsPaymentMethodsSummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsPaymentMethodRow": "{amount} · {share} · {count, plural, =1{1 transaction} other{{count} transactions}}",
+  "@analyticsPaymentMethodRow": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "share": {
+        "type": "String"
+      }
+    }
+  }
 }

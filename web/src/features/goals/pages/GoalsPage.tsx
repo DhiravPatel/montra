@@ -13,6 +13,7 @@ import { useT } from '@/shared/i18n/I18nContext';
 import { type GoalStatusFilter, useGoalReport, useGoals } from '../api';
 import { GoalCard } from '../components/GoalCard';
 import { GOAL_STATUS_FILTERS, goalFilterLabel, isGoalStatusFilter } from '../labels';
+import { HelpGuideLink } from '@/shared/help/HelpGuideLink';
 
 /** Saved and target per currency (the API never adds currencies together). */
 function GoalTotals() {
@@ -139,6 +140,7 @@ export function GoalsPage() {
   return (
     <>
       <PageHeader
+        help={<HelpGuideLink guide="goals" />}
         title={t('goals.title')}
         description={t('goals.description')}
         actions={addButton}

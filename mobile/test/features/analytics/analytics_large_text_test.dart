@@ -50,6 +50,8 @@ void main() {
     ).thenAnswer((_) async => categoryReport());
     when(() => api.merchants(any(), currency: any(named: 'currency')))
         .thenAnswer((_) async => merchantReport());
+    when(() => api.paymentMethods(any(), currency: any(named: 'currency')))
+        .thenAnswer((_) async => paymentMethodReport());
     when(() => api.accounts(overviewOnly: any(named: 'overviewOnly')))
         .thenAnswer((_) async => accountsReport());
     when(() => api.budgets()).thenAnswer((_) async => budgetPerformance());
@@ -127,6 +129,7 @@ void main() {
           '/analytics/income?currency=USD',
           '/analytics/categories?currency=INR',
           '/analytics/merchants?currency=INR',
+          '/analytics/payment-methods?currency=INR',
           '/analytics/accounts',
           '/analytics/budgets',
           '/analytics/goals',

@@ -104,6 +104,16 @@ analyticsMerchantsProvider = FutureProvider.autoDispose
           .merchants(args.range, currency: args.currency);
     });
 
+/// Spending by payment method in one currency.
+final FutureProviderFamily<PaymentMethodReport, MerchantArgs>
+analyticsPaymentMethodsProvider = FutureProvider.autoDispose
+    .family<PaymentMethodReport, MerchantArgs>((Ref ref, MerchantArgs args) {
+      ref.watch(financeRevisionProvider);
+      return ref
+          .read(analyticsApiProvider)
+          .paymentMethods(args.range, currency: args.currency);
+    });
+
 /// Assets, liabilities and net worth per currency.
 final FutureProviderFamily<AccountsReport, bool> analyticsAccountsProvider =
     FutureProvider.autoDispose.family<AccountsReport, bool>((

@@ -27,7 +27,7 @@ type ListFilter struct {
 	AccountIDs      []uuid.UUID `query:"account_id" doc:"Comma-separated"`
 	CategoryIDs     []uuid.UUID `query:"category_id" doc:"Comma-separated; includes subcategories"`
 	MerchantID      string      `query:"merchant_id"`
-	PaymentMethodID string      `query:"payment_method_id"`
+	PaymentMethodID string      `query:"payment_method_id" doc:"A payment method ID, or none for transactions without a payment method"`
 	TagIDs          []uuid.UUID `query:"tag_id" doc:"Comma-separated (any)"`
 	Currency        string      `query:"currency" doc:"Required when filtering by amount"`
 	MinAmount       string      `query:"min_amount"`
@@ -216,7 +216,9 @@ func (s *Service) applyFilter(ctx context.Context, tx pgx.Tx, b *qb, f ListFilte
 		m := b.arg(id)
 		b.add("(t.merchant_id = " + m + " or t.merchant_id = (select merged_into_id from merchants where id = " + m + " and status = 'merged'))")
 	}
-	if f.PaymentMethodID != "" {
+	if f.PaymentMethodID == "none" {
+		b.add("t.payment_method_id is null")
+	} else if f.PaymentMethodID != "" {
 		id, err := uuid.Parse(f.PaymentMethodID)
 		if err != nil {
 			return apperr.FieldError("query.payment_method_id", "Invalid payment method.")
@@ -318,13 +320,18 @@ func (s *Service) SaveFilter(ctx context.Context, scope, name string, filter jso
 	if err != nil {
 		return nil, err
 	}
-	if len(filter) > 4096 || !json.Valid(filter) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, apperr.FieldError("body.name", "Name the filter.")
+	}
+	var obj map[string]json.RawMessage
+	if len(filter) > 4096 || json.Unmarshal(filter, &obj) != nil || obj == nil {
 		return nil, apperr.FieldError("body.filter", "Filter must be a JSON object under 4 KB.")
 	}
 	var out SavedFilterDTO
 	err = s.DB.WithUserTx(ctx, uid, func(tx pgx.Tx) error {
 		return tx.QueryRow(ctx, `insert into saved_filters (user_id, scope, name, filter) values ($1,$2,$3,$4)
-			returning id, scope, name, filter, created_at`, uid, scope, strings.TrimSpace(name), filter).
+			returning id, scope, name, filter, created_at`, uid, scope, name, filter).
 			Scan(&out.ID, &out.Scope, &out.Name, &out.Filter, &out.CreatedAt)
 	})
 	if database.IsUniqueViolation(err, "saved_filters_name_key") {

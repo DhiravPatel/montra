@@ -21,6 +21,7 @@ import { CashFlowView, type ViewProps } from '../views/CashFlowView';
 import { CategoriesView } from '../views/CategoriesView';
 import { CompareView } from '../views/CompareView';
 import { MerchantsView } from '../views/MerchantsView';
+import { PaymentMethodsView } from '../views/PaymentMethodsView';
 import { PlansView } from '../views/PlansView';
 
 const periodViews: Readonly<
@@ -29,6 +30,7 @@ const periodViews: Readonly<
   'cash-flow': CashFlowView,
   categories: CategoriesView,
   merchants: MerchantsView,
+  'payment-methods': PaymentMethodsView,
   compare: CompareView,
   accounts: AccountsView,
 };

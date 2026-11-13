@@ -58,17 +58,20 @@ closed instead of leaking another user's rows.
 | Group member | groups, group members, shared expenses, splits, settlements, comments, activity | read: `is_group_member(group_id)`; writes need membership or `is_group_admin`; settlements, comments, revisions, disputes and activity cannot be deleted by the API role |
 | Household share | shared accounts | members read through `budget_access` / account-share rows; only the owner writes |
 | Community | communities, members, posts, comments, reactions, polls | `can_view_community_content`, `is_community_member`, `is_community_moderator` |
-| Worker only | jobs (except own-user insert/select/cancel), outbox, webhook inbox, provider FX rates | no API read; narrow API inserts where noted |
+| Worker only | jobs (except own-user insert/select/cancel), outbox, webhook inbox, provider FX rates | no API read; narrow API inserts where noted; platform admins see job operational columns (never payloads) and retry failed or dead jobs only through the `admin_jobs`, `admin_job_attempts` and `admin_job_retry` helpers |
 | Append-only | audit tables, ledger entries, FX rates, transaction audit events | no UPDATE/DELETE for the API role |
 
 <!-- generated -->
 
-Generated from the local schema at migration `20261104000027` by `scripts/docs/gen_rls_matrix.sh`. `me()` is `montra.current_user_id()`; grants use S/I/U/D. Policies are permissive unless noted.
+Generated from the local schema at migration `20261113000029` by `scripts/docs/gen_rls_matrix.sh`. `me()` is `montra.current_user_id()`; grants use S/I/U/D. Policies are permissive unless noted.
 
 ### Security-definer helpers
 
 | Function | Arguments | Executable by |
 |---|---|---|
+| `admin_job_attempts` | `p_job uuid` | montra_app |
+| `admin_job_retry` | `p_job uuid` | montra_app |
+| `admin_jobs` | `p_id uuid, p_status text, p_type text, p_from timestamp with time zone, p_to timestamp with time zone, p_after_created timestamp with time zone, p_after_id uuid, p_limit integer` | montra_app |
 | `admin_usage` | `p_days integer` | montra_app |
 | `are_connected` | `p_a uuid, p_b uuid` | montra_app, montra_worker |
 | `auth_lookup_token` | `p_hash bytea, p_purpose text` | montra_app |

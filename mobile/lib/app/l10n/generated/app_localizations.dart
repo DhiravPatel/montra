@@ -30131,6 +30131,1458 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'People you block never see your profile, whatever you choose here, and you don\'t see theirs.'**
   String get profileEditVisibilityBlocked;
+
+  /// No description provided for @savedFiltersOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved filters'**
+  String get savedFiltersOpen;
+
+  /// No description provided for @savedSearchesOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved searches'**
+  String get savedSearchesOpen;
+
+  /// No description provided for @savedFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved filters'**
+  String get savedFiltersTitle;
+
+  /// No description provided for @savedSearchesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved searches'**
+  String get savedSearchesTitle;
+
+  /// No description provided for @savedFiltersSaveCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Save current filters'**
+  String get savedFiltersSaveCurrent;
+
+  /// No description provided for @savedSearchesSaveCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this search'**
+  String get savedSearchesSaveCurrent;
+
+  /// No description provided for @savedFiltersNothingToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or choose filters first, then save them here.'**
+  String get savedFiltersNothingToSave;
+
+  /// No description provided for @savedSearchesNothingToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least 2 characters to save a search.'**
+  String get savedSearchesNothingToSave;
+
+  /// No description provided for @savedFiltersEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet. What you save is kept with your account, so it’s on the web too.'**
+  String get savedFiltersEmpty;
+
+  /// No description provided for @savedFiltersSaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save filters'**
+  String get savedFiltersSaveTitle;
+
+  /// No description provided for @savedSearchesSaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save search'**
+  String get savedSearchesSaveTitle;
+
+  /// No description provided for @savedFiltersNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get savedFiltersNameLabel;
+
+  /// No description provided for @savedFiltersNameHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For example “Groceries this month”. Up to 80 characters.'**
+  String get savedFiltersNameHelp;
+
+  /// No description provided for @savedFiltersNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name.'**
+  String get savedFiltersNameRequired;
+
+  /// No description provided for @savedFiltersNameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 80 characters or fewer.'**
+  String get savedFiltersNameTooLong;
+
+  /// No description provided for @savedFiltersNameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'You already saved one with this name. Choose another name.'**
+  String get savedFiltersNameTaken;
+
+  /// No description provided for @savedFiltersFilterInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'These filters can’t be saved. Change them and try again.'**
+  String get savedFiltersFilterInvalid;
+
+  /// No description provided for @savedFiltersSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get savedFiltersSaveAction;
+
+  /// No description provided for @savedFiltersSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved “{name}”.'**
+  String savedFiltersSaved(String name);
+
+  /// No description provided for @savedFiltersApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing “{name}”.'**
+  String savedFiltersApplied(String name);
+
+  /// No description provided for @savedFiltersDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”'**
+  String savedFiltersDeleteTooltip(String name);
+
+  /// No description provided for @savedFiltersDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String savedFiltersDeleteTitle(String name);
+
+  /// No description provided for @savedFiltersDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It’s removed from your account on every device. Your records don’t change.'**
+  String get savedFiltersDeleteBody;
+
+  /// No description provided for @savedFiltersDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted “{name}”.'**
+  String savedFiltersDeleted(String name);
+
+  /// No description provided for @savedFiltersAlreadyGone.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” was already deleted.'**
+  String savedFiltersAlreadyGone(String name);
+
+  /// No description provided for @savedFiltersUnusable.
+  ///
+  /// In en, this message translates to:
+  /// **'Can’t be used in this version of the app.'**
+  String get savedFiltersUnusable;
+
+  /// No description provided for @savedFiltersSearchFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Search: “{query}”'**
+  String savedFiltersSearchFor(String query);
+
+  /// No description provided for @savedFiltersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No filters} =1{1 filter} other{{count} filters}}'**
+  String savedFiltersCount(int count);
+
+  /// No description provided for @helpGuideTopicStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting started'**
+  String get helpGuideTopicStart;
+
+  /// No description provided for @helpGuideTopicCalculations.
+  ///
+  /// In en, this message translates to:
+  /// **'How Montra calculates'**
+  String get helpGuideTopicCalculations;
+
+  /// No description provided for @helpGuideTopicStatements.
+  ///
+  /// In en, this message translates to:
+  /// **'Statements and reconciliation'**
+  String get helpGuideTopicStatements;
+
+  /// No description provided for @helpGuideTopicAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy, security and limits'**
+  String get helpGuideTopicAccount;
+
+  /// No description provided for @helpGuideTopicTroubleshooting.
+  ///
+  /// In en, this message translates to:
+  /// **'Troubleshooting'**
+  String get helpGuideTopicTroubleshooting;
+
+  /// No description provided for @helpGuidesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guides'**
+  String get helpGuidesTitle;
+
+  /// No description provided for @helpGuidesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Step-by-step guides and how Montra works out your numbers.'**
+  String get helpGuidesDescription;
+
+  /// No description provided for @helpGuidesSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the guides'**
+  String get helpGuidesSearch;
+
+  /// No description provided for @helpGuidesSearchHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Searches titles and text in the current language.'**
+  String get helpGuidesSearchHelp;
+
+  /// No description provided for @helpGuidesNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No guide matches “{query}”. Try another word, or send us a request below.'**
+  String helpGuidesNoResults(String query);
+
+  /// No description provided for @helpGuidesResultCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 guide found} other{{count} guides found}}'**
+  String helpGuidesResultCount(int count);
+
+  /// No description provided for @helpGuidesOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the guide'**
+  String get helpGuidesOpen;
+
+  /// No description provided for @helpGuidesBack.
+  ///
+  /// In en, this message translates to:
+  /// **'All guides'**
+  String get helpGuidesBack;
+
+  /// No description provided for @helpGuidesOnThisPage.
+  ///
+  /// In en, this message translates to:
+  /// **'On this page'**
+  String get helpGuidesOnThisPage;
+
+  /// No description provided for @helpGuidesRelated.
+  ///
+  /// In en, this message translates to:
+  /// **'Where to do this'**
+  String get helpGuidesRelated;
+
+  /// No description provided for @helpGuidesNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This guide doesn’t exist. It may have moved.'**
+  String get helpGuidesNotFound;
+
+  /// No description provided for @helpGuidesContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn’t find an answer? Send a support request.'**
+  String get helpGuidesContact;
+
+  /// No description provided for @helpGuidesStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Service status'**
+  String get helpGuidesStatus;
+
+  /// No description provided for @helpGuidesStatusHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Check whether Montra is having problems right now.'**
+  String get helpGuidesStatusHelp;
+
+  /// No description provided for @helpGuidesAffordance.
+  ///
+  /// In en, this message translates to:
+  /// **'How this works'**
+  String get helpGuidesAffordance;
+
+  /// No description provided for @helpGuidesAffordanceFor.
+  ///
+  /// In en, this message translates to:
+  /// **'How this works: {guide}'**
+  String helpGuidesAffordanceFor(String guide);
+
+  /// No description provided for @helpGuideGettingStartedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting started without a bank link'**
+  String get helpGuideGettingStartedTitle;
+
+  /// No description provided for @helpGuideGettingStartedSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up accounts, record or import what happens, and plan ahead. Montra never needs your bank login.'**
+  String get helpGuideGettingStartedSummary;
+
+  /// No description provided for @helpGuideGettingStartedLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an account'**
+  String get helpGuideGettingStartedLink;
+
+  /// No description provided for @helpGuideGettingStartedHowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How Montra works'**
+  String get helpGuideGettingStartedHowTitle;
+
+  /// No description provided for @helpGuideGettingStartedHowB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra doesn’t connect to your bank. You tell it what happens: you add your accounts, then record transactions as they happen or import a statement your bank gives you. Your numbers are “tracked”, not verified by a bank.'**
+  String get helpGuideGettingStartedHowB1;
+
+  /// No description provided for @helpGuideGettingStartedHowB2.
+  ///
+  /// In en, this message translates to:
+  /// **'The first-time setup is optional and you can skip any step after the welcome. Nothing in it asks for bank details.'**
+  String get helpGuideGettingStartedHowB2;
+
+  /// No description provided for @helpGuideGettingStartedStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First steps'**
+  String get helpGuideGettingStartedStepsTitle;
+
+  /// No description provided for @helpGuideGettingStartedStepsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your accounts: cash, bank, savings, card, wallet, UPI, loan and more. Enter today’s balance as the opening balance (for a card or loan, what you owe).'**
+  String get helpGuideGettingStartedStepsB1;
+
+  /// No description provided for @helpGuideGettingStartedStepsB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Record expenses and income as they happen, and use a transfer when money moves between your own accounts.'**
+  String get helpGuideGettingStartedStepsB2;
+
+  /// No description provided for @helpGuideGettingStartedStepsB3.
+  ///
+  /// In en, this message translates to:
+  /// **'To bring in many transactions at once, import a statement file (CSV, XLSX, OFX or QFX). To keep a bill, add a photo of the receipt.'**
+  String get helpGuideGettingStartedStepsB3;
+
+  /// No description provided for @helpGuideGettingStartedStepsB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Add salary, rent and other repeating money as recurring transactions or bills, so they show on the calendar before they’re due.'**
+  String get helpGuideGettingStartedStepsB4;
+
+  /// No description provided for @helpGuideGettingStartedStepsB5.
+  ///
+  /// In en, this message translates to:
+  /// **'Then set a budget or a savings goal when you’re ready.'**
+  String get helpGuideGettingStartedStepsB5;
+
+  /// No description provided for @helpGuideGettingStartedAccurateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeping it accurate'**
+  String get helpGuideGettingStartedAccurateTitle;
+
+  /// No description provided for @helpGuideGettingStartedAccurateB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Now and then, compare a balance with your bank app or statement. If it’s different, reconcile the account or record a balance adjustment with a reason; the adjustment keeps a history and never counts as income or spending.'**
+  String get helpGuideGettingStartedAccurateB1;
+
+  /// No description provided for @helpGuideNoBankTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why don’t I see my bank?'**
+  String get helpGuideNoBankTitle;
+
+  /// No description provided for @helpGuideNoBankSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra can’t connect to any bank yet. Here’s why, and what to use instead.'**
+  String get helpGuideNoBankSummary;
+
+  /// No description provided for @helpGuideNoBankLink.
+  ///
+  /// In en, this message translates to:
+  /// **'See connected services'**
+  String get helpGuideNoBankLink;
+
+  /// No description provided for @helpGuideNoBankTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No bank linking yet'**
+  String get helpGuideNoBankTodayTitle;
+
+  /// No description provided for @helpGuideNoBankTodayB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra doesn’t link to any bank today, so no bank appears in the list. The connected services page shows the one option being considered, Account Aggregator (India), as unavailable: it needs an approved partner, registration and a legal review first.'**
+  String get helpGuideNoBankTodayB1;
+
+  /// No description provided for @helpGuideNoBankTodayB2.
+  ///
+  /// In en, this message translates to:
+  /// **'It isn’t a setting you’ve missed, and it isn’t a paid feature. When a connection becomes available, it will appear on that page.'**
+  String get helpGuideNoBankTodayB2;
+
+  /// No description provided for @helpGuideNoBankNeverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What Montra will never do'**
+  String get helpGuideNoBankNeverTitle;
+
+  /// No description provided for @helpGuideNoBankNeverB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for your bank password, PIN, card number or OTP.'**
+  String get helpGuideNoBankNeverB1;
+
+  /// No description provided for @helpGuideNoBankNeverB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Read your SMS or notifications, or scrape your bank’s website.'**
+  String get helpGuideNoBankNeverB2;
+
+  /// No description provided for @helpGuideNoBankNeverB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Move money or make payments for you.'**
+  String get helpGuideNoBankNeverB3;
+
+  /// No description provided for @helpGuideNoBankInsteadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What to use instead'**
+  String get helpGuideNoBankInsteadTitle;
+
+  /// No description provided for @helpGuideNoBankInsteadB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Import the statement file your bank lets you download.'**
+  String get helpGuideNoBankInsteadB1;
+
+  /// No description provided for @helpGuideNoBankInsteadB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Add receipts from photos, and turn them into transactions.'**
+  String get helpGuideNoBankInsteadB2;
+
+  /// No description provided for @helpGuideNoBankInsteadB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up recurring transactions so regular income and bills record themselves.'**
+  String get helpGuideNoBankInsteadB3;
+
+  /// No description provided for @helpGuideBalancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How balances are calculated'**
+  String get helpGuideBalancesTitle;
+
+  /// No description provided for @helpGuideBalancesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening balance plus every counted transaction, with transfers and adjustments kept apart from spending.'**
+  String get helpGuideBalancesSummary;
+
+  /// No description provided for @helpGuideBalancesLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to accounts'**
+  String get helpGuideBalancesLink;
+
+  /// No description provided for @helpGuideBalancesFormulaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The balance'**
+  String get helpGuideBalancesFormulaTitle;
+
+  /// No description provided for @helpGuideBalancesFormulaB1.
+  ///
+  /// In en, this message translates to:
+  /// **'An account’s balance is its opening balance plus every posted and pending transaction in it. Drafts and deleted (voided) transactions don’t change it. Restoring a deleted transaction counts it again.'**
+  String get helpGuideBalancesFormulaB1;
+
+  /// No description provided for @helpGuideBalancesFormulaB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit cards and loans are money you owe, so spending on them increases what you owe.'**
+  String get helpGuideBalancesFormulaB2;
+
+  /// No description provided for @helpGuideBalancesNotSpendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What isn’t income or spending'**
+  String get helpGuideBalancesNotSpendingTitle;
+
+  /// No description provided for @helpGuideBalancesNotSpendingB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfers between your own accounts change both balances but are never income or spending. A transfer fee is recorded as its own expense.'**
+  String get helpGuideBalancesNotSpendingB1;
+
+  /// No description provided for @helpGuideBalancesNotSpendingB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance adjustments correct a balance to match reality. They keep a history with your reason and never count as income or spending.'**
+  String get helpGuideBalancesNotSpendingB2;
+
+  /// No description provided for @helpGuideBalancesNotSpendingB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunds reduce spending instead of counting as income.'**
+  String get helpGuideBalancesNotSpendingB3;
+
+  /// No description provided for @helpGuideBalancesCurrenciesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Several currencies'**
+  String get helpGuideBalancesCurrenciesTitle;
+
+  /// No description provided for @helpGuideBalancesCurrenciesB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Amounts in different currencies are never simply added together. Totals are shown per currency, unless you choose a display currency; then Montra converts them and tells you which rate it used.'**
+  String get helpGuideBalancesCurrenciesB1;
+
+  /// No description provided for @helpGuideBalancesCurrenciesB2.
+  ///
+  /// In en, this message translates to:
+  /// **'An account shared with you by your household is read-only for you, and its balance is the owner’s record.'**
+  String get helpGuideBalancesCurrenciesB2;
+
+  /// No description provided for @helpGuideBudgetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How budgets are calculated'**
+  String get helpGuideBudgetsTitle;
+
+  /// No description provided for @helpGuideBudgetsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'What counts as spent, how pace and projections work, and how refunds and rollover change a budget.'**
+  String get helpGuideBudgetsSummary;
+
+  /// No description provided for @helpGuideBudgetsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to budgets'**
+  String get helpGuideBudgetsLink;
+
+  /// No description provided for @helpGuideBudgetsSpentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What counts as spent'**
+  String get helpGuideBudgetsSpentTitle;
+
+  /// No description provided for @helpGuideBudgetsSpentB1.
+  ///
+  /// In en, this message translates to:
+  /// **'A budget adds up the expenses in its period that match it: its accounts, categories and merchants, and only in the budget’s currency. Transactions in other currencies aren’t counted; the budget tells you how many were left out.'**
+  String get helpGuideBudgetsSpentB1;
+
+  /// No description provided for @helpGuideBudgetsSpentB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfers and balance adjustments never count.'**
+  String get helpGuideBudgetsSpentB2;
+
+  /// No description provided for @helpGuideBudgetsSpentB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending transactions count only if the budget includes pending.'**
+  String get helpGuideBudgetsSpentB3;
+
+  /// No description provided for @helpGuideBudgetsSpentB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Your share of group expenses counts when the budget includes group shares (the default).'**
+  String get helpGuideBudgetsSpentB4;
+
+  /// No description provided for @helpGuideBudgetsRefundsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunds'**
+  String get helpGuideBudgetsRefundsTitle;
+
+  /// No description provided for @helpGuideBudgetsRefundsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'When “refunds restore the budget” is on (the default), refunds and reimbursements are subtracted from what you spent. Spent never goes below zero. When it’s off, refunds don’t change the budget.'**
+  String get helpGuideBudgetsRefundsB1;
+
+  /// No description provided for @helpGuideBudgetsPaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pace and projection'**
+  String get helpGuideBudgetsPaceTitle;
+
+  /// No description provided for @helpGuideBudgetsPaceB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Pace compares what you’ve spent with an even pace through the period: the limit × days passed ÷ days in the period.'**
+  String get helpGuideBudgetsPaceB1;
+
+  /// No description provided for @helpGuideBudgetsPaceB2.
+  ///
+  /// In en, this message translates to:
+  /// **'On track: within 10% of the even pace.'**
+  String get helpGuideBudgetsPaceB2;
+
+  /// No description provided for @helpGuideBudgetsPaceB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending faster than expected: more than 10% above it.'**
+  String get helpGuideBudgetsPaceB3;
+
+  /// No description provided for @helpGuideBudgetsPaceB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending slower than expected: more than 10% below it.'**
+  String get helpGuideBudgetsPaceB4;
+
+  /// No description provided for @helpGuideBudgetsPaceB5.
+  ///
+  /// In en, this message translates to:
+  /// **'Over the limit: you’ve spent more than the limit.'**
+  String get helpGuideBudgetsPaceB5;
+
+  /// No description provided for @helpGuideBudgetsPaceB6.
+  ///
+  /// In en, this message translates to:
+  /// **'The projection is what you’d spend by the end of the period at your current pace. It’s an estimate, not a promise. The daily amount left is what remains ÷ days left.'**
+  String get helpGuideBudgetsPaceB6;
+
+  /// No description provided for @helpGuideBudgetsRolloverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rollover'**
+  String get helpGuideBudgetsRolloverTitle;
+
+  /// No description provided for @helpGuideBudgetsRolloverB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Rollover carries money from one period into the next. The carried amount is added to (or taken from) the next period’s limit.'**
+  String get helpGuideBudgetsRolloverB1;
+
+  /// No description provided for @helpGuideBudgetsRolloverB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Carry unused: what you didn’t spend is added.'**
+  String get helpGuideBudgetsRolloverB2;
+
+  /// No description provided for @helpGuideBudgetsRolloverB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Carry overspend: what you overspent is taken off.'**
+  String get helpGuideBudgetsRolloverB3;
+
+  /// No description provided for @helpGuideBudgetsRolloverB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Both: either one, whichever happened.'**
+  String get helpGuideBudgetsRolloverB4;
+
+  /// No description provided for @helpGuideBudgetsRolloverB5.
+  ///
+  /// In en, this message translates to:
+  /// **'An optional cap limits how much is carried either way. Budgets with a custom period don’t roll over. Editing a budget applies from the current period onward.'**
+  String get helpGuideBudgetsRolloverB5;
+
+  /// No description provided for @helpGuideBudgetsAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get helpGuideBudgetsAlertsTitle;
+
+  /// No description provided for @helpGuideBudgetsAlertsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Each threshold you choose (for example 50%, 80% and 100%) alerts you once per period. A forecast alert warns when your pace would take you over the limit. You can dismiss or snooze alerts, and an empty threshold list turns threshold alerts off.'**
+  String get helpGuideBudgetsAlertsB1;
+
+  /// No description provided for @helpGuideRecurringTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring, bills and subscriptions'**
+  String get helpGuideRecurringTitle;
+
+  /// No description provided for @helpGuideRecurringSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'How repeating transactions are scheduled and posted, how bill status works, and how subscription totals and detection are worked out.'**
+  String get helpGuideRecurringSummary;
+
+  /// No description provided for @helpGuideRecurringLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to bills and recurring'**
+  String get helpGuideRecurringLink;
+
+  /// No description provided for @helpGuideRecurringScheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedules'**
+  String get helpGuideRecurringScheduleTitle;
+
+  /// No description provided for @helpGuideRecurringScheduleB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Every date is worked out from the start date, so a rule on the 31st lands on 31 January, 28 or 29 February and 31 March. Montra checks schedules about every 15 minutes and catches up after any downtime.'**
+  String get helpGuideRecurringScheduleB1;
+
+  /// No description provided for @helpGuideRecurringScheduleB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic posting needs a fixed amount and an account, and records exactly one transaction per occurrence. Otherwise you confirm each occurrence, or skip, postpone, change its amount or link a transaction you already recorded.'**
+  String get helpGuideRecurringScheduleB2;
+
+  /// No description provided for @helpGuideRecurringBillsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bills'**
+  String get helpGuideRecurringBillsTitle;
+
+  /// No description provided for @helpGuideRecurringBillsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'A bill’s status comes from its due date and payments: overdue, due today, due soon, upcoming or paid. Mark it paid by linking the real payment (Montra suggests matching transactions) or by recording a new one. Reminders arrive the number of days before that you chose.'**
+  String get helpGuideRecurringBillsB1;
+
+  /// No description provided for @helpGuideRecurringSubscriptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions'**
+  String get helpGuideRecurringSubscriptionsTitle;
+
+  /// No description provided for @helpGuideRecurringSubscriptionsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly and yearly totals convert each price to a common cycle: a yearly plan counts as one twelfth of its price per month, and a weekly one as 52 payments a year. Totals are kept separate per currency.'**
+  String get helpGuideRecurringSubscriptionsB1;
+
+  /// No description provided for @helpGuideRecurringSubscriptionsB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Once a day, Montra looks for charges at the same merchant at a regular interval (weekly to yearly) with similar amounts, and shows them for review. You confirm or dismiss each one. Montra never cancels anything for you; it gives you a checklist and records the cancellation once the provider confirms it.'**
+  String get helpGuideRecurringSubscriptionsB2;
+
+  /// No description provided for @helpGuideGoalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How goals are calculated'**
+  String get helpGuideGoalsTitle;
+
+  /// No description provided for @helpGuideGoalsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'What counts as saved, how milestones are reached and what the forecast assumes.'**
+  String get helpGuideGoalsSummary;
+
+  /// No description provided for @helpGuideGoalsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to goals'**
+  String get helpGuideGoalsLink;
+
+  /// No description provided for @helpGuideGoalsSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved so far'**
+  String get helpGuideGoalsSavedTitle;
+
+  /// No description provided for @helpGuideGoalsSavedB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved is the starting amount plus recorded contributions minus recorded withdrawals. Planned contributions don’t count until you record them. A withdrawal can’t be more than what’s saved.'**
+  String get helpGuideGoalsSavedB1;
+
+  /// No description provided for @helpGuideGoalsSavedB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Linking a contribution to a real transaction marks it verified; one transaction can back only one contribution. In a shared goal, contributions a member hides still count towards progress.'**
+  String get helpGuideGoalsSavedB2;
+
+  /// No description provided for @helpGuideGoalsMilestonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get helpGuideGoalsMilestonesTitle;
+
+  /// No description provided for @helpGuideGoalsMilestonesB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones are reached at 25%, 50%, 75% and 100% of the target unless you set your own. Each one notifies the goal’s members once. Reaching the target marks the goal achieved.'**
+  String get helpGuideGoalsMilestonesB1;
+
+  /// No description provided for @helpGuideGoalsForecastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecast'**
+  String get helpGuideGoalsForecastTitle;
+
+  /// No description provided for @helpGuideGoalsForecastB1.
+  ///
+  /// In en, this message translates to:
+  /// **'The forecast shows how much you’d need to add each month (or week) to reach the target by its date, and when you’d reach it at your recent pace: what you saved in the last 90 days. If you planned contributions, it also shows when that plan would finish. It uses exact amounts with no interest or growth.'**
+  String get helpGuideGoalsForecastB1;
+
+  /// No description provided for @helpGuideGroupBalancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How group balances are calculated'**
+  String get helpGuideGroupBalancesTitle;
+
+  /// No description provided for @helpGuideGroupBalancesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Who owes whom: what each person paid, their share, and settlements that were confirmed.'**
+  String get helpGuideGroupBalancesSummary;
+
+  /// No description provided for @helpGuideGroupBalancesLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to groups'**
+  String get helpGuideGroupBalancesLink;
+
+  /// No description provided for @helpGuideGroupBalancesNetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your net balance'**
+  String get helpGuideGroupBalancesNetTitle;
+
+  /// No description provided for @helpGuideGroupBalancesNetB1.
+  ///
+  /// In en, this message translates to:
+  /// **'For each person: what they paid, minus their share of the expenses, plus settlements they paid, minus settlements they received. A positive number means others owe them; a negative number means they owe.'**
+  String get helpGuideGroupBalancesNetB1;
+
+  /// No description provided for @helpGuideGroupBalancesNetB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Splits (equal, exact amounts, percentages, shares or items) are worked out exactly in the smallest unit of the currency, and any leftover paisa or cent goes to members in a fixed order, so totals always add up.'**
+  String get helpGuideGroupBalancesNetB2;
+
+  /// No description provided for @helpGuideGroupBalancesSettlementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlements'**
+  String get helpGuideGroupBalancesSettlementsTitle;
+
+  /// No description provided for @helpGuideGroupBalancesSettlementsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra never moves money. When you record that you paid someone, it counts in balances only after they confirm it; until then it shows as pending. Settlement suggestions propose fewer payments that clear the same debts, but they don’t change any record.'**
+  String get helpGuideGroupBalancesSettlementsB1;
+
+  /// No description provided for @helpGuideGroupBalancesPersonalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own spending'**
+  String get helpGuideGroupBalancesPersonalTitle;
+
+  /// No description provided for @helpGuideGroupBalancesPersonalB1.
+  ///
+  /// In en, this message translates to:
+  /// **'When you record a group payment in your own account, only your share counts as your spending. Expenses in another currency are converted with the rate typed in or Montra’s rate for the expense date.'**
+  String get helpGuideGroupBalancesPersonalB1;
+
+  /// No description provided for @helpGuideGroupBalancesPersonalB2.
+  ///
+  /// In en, this message translates to:
+  /// **'The home screen shows only your own net balance in each group. Group members never see your personal accounts or transactions.'**
+  String get helpGuideGroupBalancesPersonalB2;
+
+  /// No description provided for @helpGuideImportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing statements and fixing a failed import'**
+  String get helpGuideImportsTitle;
+
+  /// No description provided for @helpGuideImportsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a statement file, check the columns, review rows and duplicates, and recover when something goes wrong.'**
+  String get helpGuideImportsSummary;
+
+  /// No description provided for @helpGuideImportsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to imports'**
+  String get helpGuideImportsLink;
+
+  /// No description provided for @helpGuideImportsStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How an import works'**
+  String get helpGuideImportsStepsTitle;
+
+  /// No description provided for @helpGuideImportsStepsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Download a statement from your bank as CSV, XLSX, OFX or QFX, and choose the account it belongs to. The statement must be in the account’s currency.'**
+  String get helpGuideImportsStepsB1;
+
+  /// No description provided for @helpGuideImportsStepsB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the column mapping: which column is the date, amount or description, the date format and whether spending is shown as negative.'**
+  String get helpGuideImportsStepsB2;
+
+  /// No description provided for @helpGuideImportsStepsB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the rows. Rows already imported, and possible duplicates of transactions you entered, are flagged. Correct a value or skip a row.'**
+  String get helpGuideImportsStepsB3;
+
+  /// No description provided for @helpGuideImportsStepsB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm. Montra creates the transactions in the background and notifies you when it’s done.'**
+  String get helpGuideImportsStepsB4;
+
+  /// No description provided for @helpGuideImportsFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'If the file can’t be read'**
+  String get helpGuideImportsFailedTitle;
+
+  /// No description provided for @helpGuideImportsFailedB1.
+  ///
+  /// In en, this message translates to:
+  /// **'The import page says why. Common reasons and fixes:'**
+  String get helpGuideImportsFailedB1;
+
+  /// No description provided for @helpGuideImportsFailedB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported or damaged file: download the statement again as CSV or XLSX and upload that.'**
+  String get helpGuideImportsFailedB2;
+
+  /// No description provided for @helpGuideImportsFailedB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty, too many rows or too many columns: split the period into smaller statements. One file can have up to 20,000 rows and 64 columns.'**
+  String get helpGuideImportsFailedB3;
+
+  /// No description provided for @helpGuideImportsFailedB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency doesn’t match: choose the account in the statement’s currency, or create one.'**
+  String get helpGuideImportsFailedB4;
+
+  /// No description provided for @helpGuideImportsFailedB5.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF statements: PDFs can’t be read today. Download CSV, XLSX, OFX or QFX instead.'**
+  String get helpGuideImportsFailedB5;
+
+  /// No description provided for @helpGuideImportsRowsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'If some rows fail'**
+  String get helpGuideImportsRowsTitle;
+
+  /// No description provided for @helpGuideImportsRowsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Each refused row names the value to fix, such as a date or amount that can’t be read. Correct it in the row and confirm again. If the import finished with errors, retry the failed rows once you’ve fixed them.'**
+  String get helpGuideImportsRowsB1;
+
+  /// No description provided for @helpGuideImportsRowsB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported the wrong file or into the wrong account? Undo the import: it deletes the transactions it created, except ones you edited since.'**
+  String get helpGuideImportsRowsB2;
+
+  /// No description provided for @helpGuideReconciliationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconciling an account'**
+  String get helpGuideReconciliationTitle;
+
+  /// No description provided for @helpGuideReconciliationSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Match statement lines with your transactions and check a balance against your statement.'**
+  String get helpGuideReconciliationSummary;
+
+  /// No description provided for @helpGuideReconciliationLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to accounts'**
+  String get helpGuideReconciliationLink;
+
+  /// No description provided for @helpGuideReconciliationMatchesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching'**
+  String get helpGuideReconciliationMatchesTitle;
+
+  /// No description provided for @helpGuideReconciliationMatchesB1.
+  ///
+  /// In en, this message translates to:
+  /// **'After an import, Montra suggests matches: a statement line and the transaction you already entered for it, a pending transaction and its posted version, or a manual entry and an imported one. Each suggestion shows how sure it is and why.'**
+  String get helpGuideReconciliationMatchesB1;
+
+  /// No description provided for @helpGuideReconciliationMatchesB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming a match keeps one record, so nothing is counted twice. You can also match a line by hand with one or more transactions whose amounts add up, and undo a match later.'**
+  String get helpGuideReconciliationMatchesB2;
+
+  /// No description provided for @helpGuideReconciliationMatchesB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Both sides must be money in or both money out, and the amounts must add up exactly.'**
+  String get helpGuideReconciliationMatchesB3;
+
+  /// No description provided for @helpGuideReconciliationMatchesB4.
+  ///
+  /// In en, this message translates to:
+  /// **'A transaction can be in only one match.'**
+  String get helpGuideReconciliationMatchesB4;
+
+  /// No description provided for @helpGuideReconciliationMatchesB5.
+  ///
+  /// In en, this message translates to:
+  /// **'A pair more than a week apart is shown without confidence: check it yourself.'**
+  String get helpGuideReconciliationMatchesB5;
+
+  /// No description provided for @helpGuideReconciliationBalanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance check'**
+  String get helpGuideReconciliationBalanceTitle;
+
+  /// No description provided for @helpGuideReconciliationBalanceB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the balance on your statement (for a card, the amount owed) and its date. Montra compares it with the account on that date and records whether it balanced. A balanced check is remembered as the last reconciled date.'**
+  String get helpGuideReconciliationBalanceB1;
+
+  /// No description provided for @helpGuideReconciliationBalanceB2.
+  ///
+  /// In en, this message translates to:
+  /// **'If it doesn’t balance, look for missing or duplicate transactions around that date, unconfirmed matches and pending items. If the difference is real, record a balance adjustment with a reason.'**
+  String get helpGuideReconciliationBalanceB2;
+
+  /// No description provided for @helpGuidePrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy, export and deletion'**
+  String get helpGuidePrivacyTitle;
+
+  /// No description provided for @helpGuidePrivacySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose optional consents, download a copy of your data, pause your account or delete it.'**
+  String get helpGuidePrivacySummary;
+
+  /// No description provided for @helpGuidePrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to privacy and data'**
+  String get helpGuidePrivacyLink;
+
+  /// No description provided for @helpGuidePrivacyConsentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Consents'**
+  String get helpGuidePrivacyConsentsTitle;
+
+  /// No description provided for @helpGuidePrivacyConsentsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'The terms and privacy policy are accepted at sign-up. Everything else (location, notifications, and others) is optional, and you can turn it off at any time. Some choices are only recorded today because the feature they’d enable doesn’t exist yet.'**
+  String get helpGuidePrivacyConsentsB1;
+
+  /// No description provided for @helpGuidePrivacyConsentsB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra’s staff have no default access to your financial data, and logs never contain your amounts, merchants or descriptions.'**
+  String get helpGuidePrivacyConsentsB2;
+
+  /// No description provided for @helpGuidePrivacyExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download your data'**
+  String get helpGuidePrivacyExportTitle;
+
+  /// No description provided for @helpGuidePrivacyExportB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for an export and confirm it’s you. Montra prepares a ZIP file with your data in the background and notifies you when it’s ready. The download link stays valid for 7 days.'**
+  String get helpGuidePrivacyExportB1;
+
+  /// No description provided for @helpGuidePrivacyDeactivateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get helpGuidePrivacyDeactivateTitle;
+
+  /// No description provided for @helpGuidePrivacyDeactivateB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivating signs you out everywhere and keeps your data. Signing in again reactivates the account.'**
+  String get helpGuidePrivacyDeactivateB1;
+
+  /// No description provided for @helpGuidePrivacyDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account'**
+  String get helpGuidePrivacyDeleteTitle;
+
+  /// No description provided for @helpGuidePrivacyDeleteB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion starts after a 7-day grace period, and you can cancel it until then. Montra shows what will happen to each group first. When it runs, your personal records and files are deleted, groups you own are handed over or archived, and what you shared in groups and communities stays as “Deleted member”. A confirmation is emailed to you.'**
+  String get helpGuidePrivacyDeleteB1;
+
+  /// No description provided for @helpGuidePrivacyDeleteB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Download an export first if you want to keep a copy.'**
+  String get helpGuidePrivacyDeleteB2;
+
+  /// No description provided for @helpGuideTwoStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-step verification and recovery'**
+  String get helpGuideTwoStepTitle;
+
+  /// No description provided for @helpGuideTwoStepSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect sign-in with an authenticator app, and keep recovery codes for when your phone isn’t available.'**
+  String get helpGuideTwoStepSummary;
+
+  /// No description provided for @helpGuideTwoStepLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to security settings'**
+  String get helpGuideTwoStepLink;
+
+  /// No description provided for @helpGuideTwoStepSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning it on'**
+  String get helpGuideTwoStepSetupTitle;
+
+  /// No description provided for @helpGuideTwoStepSetupB1.
+  ///
+  /// In en, this message translates to:
+  /// **'In security settings, choose to turn on two-step verification and confirm your password.'**
+  String get helpGuideTwoStepSetupB1;
+
+  /// No description provided for @helpGuideTwoStepSetupB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the QR code (or type the key) into an authenticator app, then enter the 6-digit code it shows.'**
+  String get helpGuideTwoStepSetupB2;
+
+  /// No description provided for @helpGuideTwoStepSetupB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the 10 recovery codes somewhere safe and offline. Each code works once.'**
+  String get helpGuideTwoStepSetupB3;
+
+  /// No description provided for @helpGuideTwoStepSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in'**
+  String get helpGuideTwoStepSignInTitle;
+
+  /// No description provided for @helpGuideTwoStepSignInB1.
+  ///
+  /// In en, this message translates to:
+  /// **'After your password, enter the current code from the app, or one of your recovery codes. Codes change every 30 seconds and each code can be used only once, so if one is refused, wait for the next.'**
+  String get helpGuideTwoStepSignInB1;
+
+  /// No description provided for @helpGuideTwoStepSignInB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensitive actions (changing two-step verification, new recovery codes, exporting data, deactivating or deleting the account) ask you to confirm it’s you again if you haven’t in the last few minutes.'**
+  String get helpGuideTwoStepSignInB2;
+
+  /// No description provided for @helpGuideTwoStepRecoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost your phone?'**
+  String get helpGuideTwoStepRecoveryTitle;
+
+  /// No description provided for @helpGuideTwoStepRecoveryB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a recovery code. Then, in security settings, turn two-step verification off and on again to set up your new phone, or create new recovery codes. New codes replace all the old ones.'**
+  String get helpGuideTwoStepRecoveryB1;
+
+  /// No description provided for @helpGuideTwoStepRecoveryB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra staff can’t see your codes or skip the second step for you, so without your app or a recovery code you can’t sign in. Keep the recovery codes safe.'**
+  String get helpGuideTwoStepRecoveryB2;
+
+  /// No description provided for @helpGuideTwoStepRecoveryB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra emails you whenever two-step verification is turned on or off.'**
+  String get helpGuideTwoStepRecoveryB3;
+
+  /// No description provided for @helpGuideFairUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fair-use limits'**
+  String get helpGuideFairUseTitle;
+
+  /// No description provided for @helpGuideFairUseSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'The same limits apply to everyone. They keep Montra fast; they are never paid tiers.'**
+  String get helpGuideFairUseSummary;
+
+  /// No description provided for @helpGuideFairUseLink.
+  ///
+  /// In en, this message translates to:
+  /// **'See the limits and your usage'**
+  String get helpGuideFairUseLink;
+
+  /// No description provided for @helpGuideFairUseWhatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What’s limited'**
+  String get helpGuideFairUseWhatTitle;
+
+  /// No description provided for @helpGuideFairUseWhatB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Every feature is free, and the limits are the same for every person. The limits page shows the exact values and how much storage you use. The usual defaults are:'**
+  String get helpGuideFairUseWhatB1;
+
+  /// No description provided for @helpGuideFairUseWhatB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage: 2 GB of files in total, and up to 20 MB per file (some kinds of file have a lower limit).'**
+  String get helpGuideFairUseWhatB2;
+
+  /// No description provided for @helpGuideFairUseWhatB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Imports: up to 20,000 rows per statement.'**
+  String get helpGuideFairUseWhatB3;
+
+  /// No description provided for @helpGuideFairUseWhatB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Open records: 500 recurring rules, 200 bills, 500 subscriptions and 200 goals.'**
+  String get helpGuideFairUseWhatB4;
+
+  /// No description provided for @helpGuideFairUseWhatB5.
+  ///
+  /// In en, this message translates to:
+  /// **'Support: 10 new requests and 10 messages a day.'**
+  String get helpGuideFairUseWhatB5;
+
+  /// No description provided for @helpGuideFairUseReachedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When you reach a limit'**
+  String get helpGuideFairUseReachedTitle;
+
+  /// No description provided for @helpGuideFairUseReachedB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Montra tells you which limit you reached. For open records, archive, end or delete ones you no longer need. For storage, delete files you don’t need. If you’re asked to wait, Montra shows how long; daily caps reset the next day.'**
+  String get helpGuideFairUseReachedB1;
+
+  /// No description provided for @helpGuideFairUseReachedB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Before uploading, Montra makes large photos smaller, so receipts and pictures use less of your storage. PDFs are uploaded as they are.'**
+  String get helpGuideFairUseReachedB2;
+
+  /// No description provided for @helpGuideTroubleshootingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Troubleshooting sign-in, sync and notifications'**
+  String get helpGuideTroubleshootingTitle;
+
+  /// No description provided for @helpGuideTroubleshootingSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'What to check when you can’t sign in, your data looks out of date, or notifications don’t arrive.'**
+  String get helpGuideTroubleshootingSummary;
+
+  /// No description provided for @helpGuideTroubleshootingLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to notification settings'**
+  String get helpGuideTroubleshootingLink;
+
+  /// No description provided for @helpGuideTroubleshootingSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Can’t sign in'**
+  String get helpGuideTroubleshootingSignInTitle;
+
+  /// No description provided for @helpGuideTroubleshootingSignInB1.
+  ///
+  /// In en, this message translates to:
+  /// **'New account? Open the link in the verification email first. You can ask for a new link; links expire after 24 hours.'**
+  String get helpGuideTroubleshootingSignInB1;
+
+  /// No description provided for @helpGuideTroubleshootingSignInB2.
+  ///
+  /// In en, this message translates to:
+  /// **'The error doesn’t say whether the email or the password is wrong, to protect accounts. If you’re unsure, reset your password; the reset link works for 1 hour, and only the newest one counts.'**
+  String get helpGuideTroubleshootingSignInB2;
+
+  /// No description provided for @helpGuideTroubleshootingSignInB3.
+  ///
+  /// In en, this message translates to:
+  /// **'After several failed attempts you’ll be asked to wait; the screen shows how long. Resetting your password also works.'**
+  String get helpGuideTroubleshootingSignInB3;
+
+  /// No description provided for @helpGuideTroubleshootingSignInB4.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-step code refused? Make sure your phone sets its time automatically, and wait for a new code. Or use a recovery code.'**
+  String get helpGuideTroubleshootingSignInB4;
+
+  /// No description provided for @helpGuideTroubleshootingSignInB5.
+  ///
+  /// In en, this message translates to:
+  /// **'On the web, Montra needs cookies for this site. Changing or resetting your password signs you out on your other devices.'**
+  String get helpGuideTroubleshootingSignInB5;
+
+  /// No description provided for @helpGuideTroubleshootingSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data looks out of date'**
+  String get helpGuideTroubleshootingSyncTitle;
+
+  /// No description provided for @helpGuideTroubleshootingSyncB1.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no bank sync: Montra shows what you’ve recorded or imported. The web and the app read the same account, so a change on one appears on the other when the screen refreshes. Reload the page, or pull down to refresh in the app.'**
+  String get helpGuideTroubleshootingSyncB1;
+
+  /// No description provided for @helpGuideTroubleshootingSyncB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Some figures update in the background a moment after a change: budget progress, imports, recurring occurrences (about every 15 minutes) and subscription suggestions (daily).'**
+  String get helpGuideTroubleshootingSyncB2;
+
+  /// No description provided for @helpGuideTroubleshootingSyncB3.
+  ///
+  /// In en, this message translates to:
+  /// **'When your phone is offline, the app shows a banner and changes can’t be saved. Try again when you’re back online: the same save is never recorded twice.'**
+  String get helpGuideTroubleshootingSyncB3;
+
+  /// No description provided for @helpGuideTroubleshootingNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications don’t arrive'**
+  String get helpGuideTroubleshootingNotificationsTitle;
+
+  /// No description provided for @helpGuideTroubleshootingNotificationsB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Check notification settings: each kind of notification can be on or off for in-app, email and browser notifications. Security and account messages are always on.'**
+  String get helpGuideTroubleshootingNotificationsB1;
+
+  /// No description provided for @helpGuideTroubleshootingNotificationsB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet hours delay email and push until they end, and a daily or weekly digest collects non-urgent email (sent at 08:00 your time; weekly on Mondays).'**
+  String get helpGuideTroubleshootingNotificationsB2;
+
+  /// No description provided for @helpGuideTroubleshootingNotificationsB3.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser notifications need your browser’s permission, and the server must support them; if the option isn’t offered, they aren’t available yet. The phone app doesn’t receive push notifications yet: open the notification centre instead.'**
+  String get helpGuideTroubleshootingNotificationsB3;
+
+  /// No description provided for @helpGuideTroubleshootingNotificationsB4.
+  ///
+  /// In en, this message translates to:
+  /// **'No email? Check your spam folder. Using an unsubscribe link turns off only that kind of email.'**
+  String get helpGuideTroubleshootingNotificationsB4;
+
+  /// No description provided for @helpGuideTroubleshootingStillStuckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Still stuck?'**
+  String get helpGuideTroubleshootingStillStuckTitle;
+
+  /// No description provided for @helpGuideTroubleshootingStillStuckB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a support request and include the reference shown with the error, if there was one. Never include card numbers, PINs, OTPs or passwords.'**
+  String get helpGuideTroubleshootingStillStuckB1;
+
+  /// No description provided for @analyticsPaymentMethodsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment methods'**
+  String get analyticsPaymentMethodsTitle;
+
+  /// No description provided for @analyticsPaymentMethodsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How you paid for your spending'**
+  String get analyticsPaymentMethodsSubtitle;
+
+  /// No description provided for @analyticsPaymentMethodUnspecified.
+  ///
+  /// In en, this message translates to:
+  /// **'No payment method'**
+  String get analyticsPaymentMethodUnspecified;
+
+  /// No description provided for @analyticsPaymentMethodArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (archived)'**
+  String analyticsPaymentMethodArchived(String name);
+
+  /// No description provided for @analyticsNoPaymentMethodSpending.
+  ///
+  /// In en, this message translates to:
+  /// **'No spending for {period}.'**
+  String analyticsNoPaymentMethodSpending(String period);
+
+  /// No description provided for @analyticsPaymentMethodsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} had the most spending: {amount}. {count, plural, =1{1 payment method shown.} other{{count} payment methods shown.}}'**
+  String analyticsPaymentMethodsSummary(String name, String amount, int count);
+
+  /// No description provided for @analyticsPaymentMethodRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} · {share} · {count, plural, =1{1 transaction} other{{count} transactions}}'**
+  String analyticsPaymentMethodRow(String amount, int count, String share);
 }
 
 class _AppLocalizationsDelegate

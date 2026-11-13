@@ -151,7 +151,32 @@ func (c codedError) Unwrap() error { return c.err }
 // WithCode attaches a safe classification code.
 func WithCode(code string, err error) error { return codedError{code: code, err: err} }
 
+// jobErrorCoder is implemented by errors from shared infrastructure that
+// carry their own safe code (an open circuit breaker).
+type jobErrorCoder interface{ JobErrorCode() string }
+
+// minRetryDelayer is implemented by errors that know the earliest useful
+// retry (an open circuit breaker's remaining cool-down).
+type minRetryDelayer interface{ MinRetryDelay() time.Duration }
+
+// minRetryDelay returns the longest minimum retry delay found in err's
+// chain (0 when none).
+func minRetryDelay(err error) time.Duration {
+	var m minRetryDelayer
+	if errors.As(err, &m) {
+		return m.MinRetryDelay()
+	}
+	return 0
+}
+
+// errorCode classifies a handler error. Infrastructure codes (an open
+// circuit breaker) win over the handler's own code: they say why the call
+// never reached the provider.
 func errorCode(err error) string {
+	var jc jobErrorCoder
+	if errors.As(err, &jc) {
+		return jc.JobErrorCode()
+	}
 	var c codedError
 	if errors.As(err, &c) {
 		return c.code

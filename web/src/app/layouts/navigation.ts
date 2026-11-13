@@ -136,6 +136,13 @@ export const navigationSections: readonly NavSection[] = [
         icon: 'bar-chart',
         roles: ['admin'],
       },
+      {
+        id: 'staff-jobs',
+        to: paths.staffJobs,
+        labelKey: 'nav.staffJobs',
+        icon: 'refresh',
+        roles: ['admin'],
+      },
     ],
   },
 ];

@@ -33,6 +33,10 @@ type Metrics struct {
 	StorageBytes    *prometheus.CounterVec
 	ImportRows      *prometheus.CounterVec
 	DeletionBacklog prometheus.Gauge
+
+	breakerState       *prometheus.GaugeVec
+	breakerTransitions *prometheus.CounterVec
+	breakerRejections  *prometheus.CounterVec
 }
 
 // New registers all collectors on a private registry.
@@ -90,7 +94,17 @@ func New(service string) *Metrics {
 		DeletionBacklog: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "montra_account_deletion_backlog", Help: "Pending account deletions.", ConstLabels: constLabels,
 		}),
+		breakerState: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "montra_circuit_breaker_state", Help: "Circuit breaker state per provider (0 closed, 1 half-open, 2 open).", ConstLabels: constLabels,
+		}, []string{"breaker"}),
+		breakerTransitions: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "montra_circuit_breaker_transitions_total", Help: "Circuit breaker state changes by provider and new state.", ConstLabels: constLabels,
+		}, []string{"breaker", "to"}),
+		breakerRejections: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "montra_circuit_breaker_rejections_total", Help: "Provider calls refused because the circuit breaker was open.", ConstLabels: constLabels,
+		}, []string{"breaker"}),
 	}
+	reg.MustRegister(m.breakerState, m.breakerTransitions, m.breakerRejections)
 	reg.MustRegister(m.httpRequests, m.httpDuration, m.JobsProcessed, m.JobDuration, m.JobQueueDepth,
 		m.JobRetries, m.AuthEvents, m.RLSDenials, m.ProviderCalls, m.ProviderLatency, m.AICostMicroUSD,
 		m.NotificationOut, m.StorageBytes, m.ImportRows, m.DeletionBacklog)
@@ -101,6 +115,23 @@ func New(service string) *Metrics {
 func (m *Metrics) ObserveHTTP(method, route string, status int, d time.Duration) {
 	m.httpRequests.WithLabelValues(method, route, strconv.Itoa(status/100)+"xx").Inc()
 	m.httpDuration.WithLabelValues(method, route).Observe(d.Seconds())
+}
+
+// breakerStateValue maps breaker state labels to the gauge value.
+var breakerStateValue = map[string]float64{"closed": 0, "half_open": 1, "open": 2}
+
+// BreakerStateChanged implements breaker.Observer. from is empty when a
+// breaker is first published.
+func (m *Metrics) BreakerStateChanged(name, from, to string) {
+	m.breakerState.WithLabelValues(name).Set(breakerStateValue[to])
+	if from != "" {
+		m.breakerTransitions.WithLabelValues(name, to).Inc()
+	}
+}
+
+// BreakerRejected implements breaker.Observer.
+func (m *Metrics) BreakerRejected(name string) {
+	m.breakerRejections.WithLabelValues(name).Inc()
 }
 
 // Handler exposes metrics, optionally protected by a bearer token.

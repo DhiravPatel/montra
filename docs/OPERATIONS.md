@@ -14,7 +14,7 @@ which references the tools by absolute path when they are not on `PATH`.
 ```sh
 make db-bootstrap   # prints target server, creates montra roles + databases (idempotent)
 make migrate        # applies supabase/migrations to montra_dev
-make seed           # optional synthetic data
+make seed           # optional demo users and data (see "Demo data" below)
 make api            # Go API on :8080
 make worker         # Go worker (jobs + scheduler)
 make web            # React portal on :5173
@@ -61,6 +61,40 @@ drops anything, and writes generated passwords to the git-ignored
 | AI | disabled unless key set | Anthropic |
 | FX | manual | manual + ECB |
 | Bank/AA integrations | none (test-only sandbox adapter in tests) | none until reviewed (ADR-016) |
+
+### Demo data (`make seed`)
+
+`make seed` runs `backend/cmd/seed` against `montra_dev` (the
+`DATABASE_URL` and `WORKER_DATABASE_URL` in `backend/.env.local`). It
+creates three demo people through the real services, so every record
+passes the normal validation, ledger, audit and RLS rules:
+
+| Account | Data |
+|---|---|
+| `demo.asha@example.com` | bank, credit card and cash accounts; four payment methods; about 60 transactions over the last 90 days (salary, rent, groceries, dining, fuel, utilities, one refund, a pending charge, card payments and a cash withdrawal); a groceries budget that already has a threshold alert; two bills due soon; two subscriptions; an emergency-fund goal with a contribution; owner of the "Demo Flat" group and the "Montra Demo Savers" community with one post |
+| `demo.ravi@example.com`, `demo.meera@example.com` | a bank account and a few transactions each; members of "Demo Flat" (three shared expenses; Ravi's settlement to Asha is confirmed); Ravi is a member of the community |
+
+- **Password** for all three: `Montra-Demo-Seed-2026!` (also printed at
+  the end of the run).
+- **Deterministic:** fixed names, amounts and descriptions; dates are
+  relative to today in Asia/Kolkata.
+- **Idempotent:** every record is looked up by its fixed name or
+  description before it is created, and creates use fixed idempotency
+  keys, so a second run prints `exists` for everything and adds nothing.
+- **Safe:** it refuses to run unless `APP_ENV` is `development` or
+  `test` and the database name ends in `_dev` or `_test`. It never
+  changes or deletes other users' data. If a `demo.*@example.com`
+  address already belongs to an account with another password, the run
+  stops without touching it. In development the demo accounts are
+  verified at sign-up (the `AUTH_DEV_AUTO_VERIFY_EMAIL` behaviour); in
+  test, verification is not required.
+- **Budget alert:** with `WORKER_DATABASE_URL` set, the seed evaluates
+  the demo budgets itself; otherwise the running worker raises the alert
+  from the outbox events.
+- **Tests:** `backend/internal/seed` (environment guard, fixed data) and
+  `backend/tests/seed` (two runs against `montra_test`: the second adds
+  nothing; other users' data is unchanged; a foreign account is left
+  alone).
 
 ## Hosted environments
 
@@ -131,6 +165,53 @@ lets the worker fetch the ECB daily reference rates (`FX_ECB_URL`) every 6 h;
 rates are appended, never rewritten. Enabling it makes outbound HTTPS
 requests from the worker.
 
+### Circuit breakers for outbound providers (OPS-003)
+
+Every outbound provider call goes through a circuit breaker
+(`backend/internal/platform/breaker`): SMTP delivery (`smtp`), Web Push
+per push-service host (`webpush:<host>`), FCM (`fcm`), the ECB rate fetch
+(`fx.ecb`), Appwrite storage (`storage.appwrite`), the AI provider
+(`ai.anthropic`) and each integration adapter (`integrations.<provider>`).
+
+- **Closed → open** after 5 consecutive failures. Only provider-health
+  failures count: network errors, timeouts, 429 and 5xx. A rejected
+  recipient, a gone push endpoint, an expired consent, a missing object
+  or a model refusal does not.
+- **Open:** calls fail fast for 30 s without contacting the provider. The
+  error is retryable: jobs record `last_error_code =
+  provider_circuit_open` and are retried no sooner than the end of the
+  cool-down (then with the normal exponential backoff). API callers get
+  the provider's usual 503 code (`PROVIDER_UNAVAILABLE`,
+  `STORAGE_UNAVAILABLE`).
+- **Half-open:** after the cool-down one probe call goes through; success
+  closes the breaker, failure opens it for another 30 s.
+- **Metrics:** `montra_circuit_breaker_state{breaker}` (0 closed, 1
+  half-open, 2 open), `montra_circuit_breaker_transitions_total{breaker,to}`
+  and `montra_circuit_breaker_rejections_total{breaker}`.
+- **Seeing affected jobs:** `GET /api/v1/admin/jobs?status=dead` (platform
+  admins; see below).
+
+### Operator job visibility (JOB-007)
+
+Platform admins (`users.platform_role = 'admin'`) can inspect the job
+queue without database access:
+
+- `GET /api/v1/admin/jobs` lists jobs newest first, filtered by `status`,
+  `type` and `from`/`to` (UTC creation dates, inclusive), with cursor
+  paging (`limit` ≤ 200). Each job shows its attempts, `max_attempts`
+  and `last_error_code`.
+- `GET /api/v1/admin/jobs/{id}` adds the attempts (worker, outcome,
+  error code, timing).
+- `POST /api/v1/admin/jobs/{id}/retry` (with `Idempotency-Key`) re-queues
+  a failed or dead job with at least one more attempt. It is audited
+  (`audit_events`: entity `job`, action `retried`). Other states answer
+  422 `job_not_retryable`.
+
+Payloads, results, error messages and the person a job acts for are never
+returned: the API role reads jobs only through the admin-checked SECURITY
+DEFINER helpers `admin_jobs`, `admin_job_attempts` and `admin_job_retry`
+(migration `20261113000029_operator_jobs`).
+
 ## Observability
 
 - **Logs:** structured JSON (`LOG_FORMAT=json`) with request, user and job
@@ -143,6 +224,8 @@ requests from the worker.
   - auth events;
   - RLS and permission denials;
   - external provider calls and latency (AI, Web Push, FCM, SMTP);
+  - circuit breaker state, transitions and fast-fail rejections per
+    provider;
   - estimated AI cost;
   - notification outcomes per channel;
   - storage bytes;

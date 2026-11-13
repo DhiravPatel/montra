@@ -17,12 +17,14 @@ import (
 	"net"
 	"net/mail"
 	"net/smtp"
+	"net/textproto"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"montra/backend/internal/platform/breaker"
 	"montra/backend/internal/platform/config"
 )
 
@@ -53,7 +55,7 @@ func New(cfg config.EmailConfig) (Sender, error) {
 	}
 	switch cfg.Provider {
 	case config.EmailSMTP:
-		return &smtpSender{cfg: cfg, from: from}, nil
+		return &smtpSender{cfg: cfg, from: from, breaker: breaker.New("smtp", breaker.Options{IsFailure: smtpFailure})}, nil
 	case config.EmailDevMailbox:
 		if err := os.MkdirAll(cfg.DevMailDir, 0o700); err != nil {
 			return nil, fmt.Errorf("create dev mail dir: %w", err)
@@ -145,14 +147,32 @@ func (d *devMailbox) Send(_ context.Context, m Message) error {
 // smtpSender delivers via SMTP. Port 465 uses implicit TLS; other ports
 // require STARTTLS (plaintext delivery is refused).
 type smtpSender struct {
-	cfg  config.EmailConfig
-	from *mail.Address
+	cfg     config.EmailConfig
+	from    *mail.Address
+	breaker *breaker.Breaker
 }
 
 func (s *smtpSender) Provider() string { return "smtp" }
 func (s *smtpSender) Configured() bool { return true }
 
+// errRecipient marks a permanent refusal of one recipient (5xx at RCPT): a
+// problem with that address, not with the SMTP server.
+var errRecipient = errors.New("smtp recipient rejected")
+
+// smtpFailure counts failures against the SMTP breaker, except refusals of
+// a single recipient.
+func smtpFailure(err error) bool {
+	return breaker.DefaultIsFailure(err) && !errors.Is(err, errRecipient)
+}
+
+// Send delivers one message through the SMTP circuit breaker: while the
+// server keeps failing, sends fail fast with a retryable error and the
+// job queue backs off.
 func (s *smtpSender) Send(ctx context.Context, m Message) error {
+	return s.breaker.Do(ctx, func(ctx context.Context) error { return s.send(ctx, m) })
+}
+
+func (s *smtpSender) send(ctx context.Context, m Message) error {
 	raw, err := Render(s.from, m, time.Now())
 	if err != nil {
 		return err
@@ -199,6 +219,10 @@ func (s *smtpSender) Send(ctx context.Context, m Message) error {
 		return fmt.Errorf("smtp mail from: %w", err)
 	}
 	if err := c.Rcpt(to.Address); err != nil {
+		var te *textproto.Error
+		if errors.As(err, &te) && te.Code >= 500 && te.Code < 600 {
+			return fmt.Errorf("%w: %w", errRecipient, err)
+		}
 		return fmt.Errorf("smtp rcpt: %w", err)
 	}
 	w, err := c.Data()

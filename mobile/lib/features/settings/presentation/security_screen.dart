@@ -8,6 +8,8 @@ import 'package:montra_mobile/core/api/api_exception.dart';
 import 'package:montra_mobile/core/api/generated/models.dart';
 import 'package:montra_mobile/core/auth/auth_controller.dart';
 import 'package:montra_mobile/core/auth/auth_state.dart';
+import 'package:montra_mobile/core/help/help_guide.dart';
+import 'package:montra_mobile/core/help/help_guide_button.dart';
 import 'package:montra_mobile/core/widgets/dialogs.dart';
 import 'package:montra_mobile/core/widgets/error_messages.dart';
 import 'package:montra_mobile/core/widgets/layout.dart';
@@ -49,7 +51,10 @@ class SecurityScreen extends ConsumerWidget {
     final bool mfaOn = user?.mfaEnabled ?? false;
     final String status = mfaOn ? l10n.statusOn : l10n.statusOff;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.securityTitle)),
+      appBar: AppBar(
+        actions: const <Widget>[HelpGuideButton(HelpGuide.twoStep)],
+        title: Text(l10n.securityTitle),
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           try {

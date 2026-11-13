@@ -309,6 +309,7 @@ func (s *Service) Routes(api huma.API, fin *finance.Service) {
 			}
 			return httpx.OK(ctx, *r), nil
 		})
+	s.paymentMethodRoutes(api, an)
 	httpx.Protected(api, httpx.Op("analytics-accounts", http.MethodGet, "/analytics/accounts", "Assets, liabilities and net worth per currency", an),
 		func(ctx context.Context, in *struct {
 			OverviewOnly bool `query:"overview_only"`

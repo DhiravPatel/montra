@@ -60,9 +60,8 @@ export default defineConfig(({ mode }) => {
                 name: 'vendor-forms',
                 test: /[\\/]node_modules[\\/](zod|react-hook-form|@hookform)[\\/]/,
               },
-              // Message catalogs change with features, not with vendor upgrades.
-              { name: 'i18n-en', test: /[\\/]src[\\/]shared[\\/]i18n[\\/]locales[\\/]en\.ts$/ },
-              { name: 'i18n-hi', test: /[\\/]src[\\/]shared[\\/]i18n[\\/]locales[\\/]hi\.ts$/ },
+              // Message catalogs are not grouped: each namespace and language is its
+              // own chunk, loaded with the routes that use it (pnpm i18n:gen).
               {
                 name: 'vendor-ui',
                 test: /[\\/]node_modules[\\/](@radix-ui|@floating-ui|react-remove-scroll|react-remove-scroll-bar|react-style-singleton|use-callback-ref|use-sidecar|aria-hidden|get-nonce|detect-node-es|tslib)[\\/]/,
